@@ -7,6 +7,9 @@ const int kXpPerSkillLevel = 100;
 /// con Sellos del Gremio en los Caminos del Mensajero (ver skill_tree.dart).
 const int kMaxSkillLevel = 5;
 
+/// Nombre de cada rango (índice 1-5).
+const kRankTitles = ['', 'Correo', 'Mensajero', 'Courier', 'Maestro', 'Leyenda'];
+
 // ─── User ─────────────────────────────────────────────────────────────────────
 class User {
   final String id;
@@ -65,7 +68,7 @@ class Messenger {
   int get rank => switch (totalSkillLevel) {
     < 8 => 1, < 14 => 2, < 20 => 3, < 26 => 4, _ => 5,
   };
-  String get rankTitle => const ['', 'Correo', 'Mensajero', 'Courier', 'Maestro', 'Leyenda'][rank];
+  String get rankTitle => kRankTitles[rank];
   int skillLevel(SkillType t) => skills[t] ?? 1;
 
   /// Suma XP a una skill y sube de nivel cada vez que cruza [kXpPerSkillLevel].
@@ -248,6 +251,9 @@ class Mission {
   final String? arcId;
   final int arcStage;
   final String? epilogue;
+  /// Factor de paga fijado al aceptar, según la ruta nominal (ver
+  /// `routePayFactor`). Se guarda para que un boost de velocidad no la baje.
+  final double payFactor;
 
   const Mission({
     required this.id,
@@ -271,6 +277,7 @@ class Mission {
     this.arcId,
     this.arcStage = 0,
     this.epilogue,
+    this.payFactor = 1.0,
   });
 
   Duration get timeRemaining => deadlineAt.difference(DateTime.now());
@@ -394,6 +401,7 @@ class Mission {
     arcId: arcId,
     arcStage: arcStage,
     epilogue: epilogue ?? this.epilogue,
+    payFactor: payFactor,
   );
 }
 

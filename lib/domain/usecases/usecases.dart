@@ -5,6 +5,7 @@ import '../entities/skill_tree.dart';
 import '../entities/world.dart';
 import '../entities/content.dart';
 import '../entities/notifications.dart';
+import '../entities/progression.dart';
 import 'forecast.dart';
 import '../repositories/content_catalog.dart';
 import '../repositories/repositories.dart';
@@ -370,8 +371,11 @@ class AcceptMissionUseCase {
     }
     final revealEvents = boosts.remove('boost_events'); // Mapa del explorador
 
+    // La paga se fija con la ruta NOMINAL: ir más rápido no cobra menos.
     final mission = await _mission.createMission(
-      effectiveRoute, messenger.id, revealEvents: revealEvents);
+      effectiveRoute, messenger.id,
+      revealEvents: revealEvents,
+      payFactor: routePayFactor(route.durationMinutes, route.danger));
     await _messenger.saveMessenger(messenger.copyWith(
       status: MessengerStatus.onMission,
       activeBoosts: boosts,
@@ -811,9 +815,8 @@ class CompleteMissionUseCase {
     final grade = switch (total) {
       >= 90 => 'S', >= 75 => 'A', >= 60 => 'B', >= 40 => 'C', _ => 'F',
     };
-    final baseReward = switch (grade) {
-      'S' => 150, 'A' => 100, 'B' => 60, 'C' => 30, _ => 10,
-    };
+    // Paga = tabla por nota × factor de la ruta (fijado al aceptar).
+    final baseReward = (gradeBaseReward(grade) * mission.payFactor).round();
     // Perks: Contactos 6-10 (+5% a +20%) y Velocidad 10 (+25 en nota S).
     var denarioReward = baseReward;
     if (messenger != null) {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,9 +6,18 @@ import 'router.dart';
 import 'presentation/theme/app_theme.dart';
 import 'presentation/providers/providers.dart';
 import 'presentation/feedback/feedback.dart';
+import 'presentation/widgets/celebration_host.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Las fuentes van empaquetadas: su licencia OFL tiene que figurar en la app.
+  LicenseRegistry.addLicense(() async* {
+    for (final family in const ['Fredoka', 'Nunito']) {
+      final text = await rootBundle.loadString('assets/fonts/OFL-$family.txt');
+      yield LicenseEntryWithLineBreaks([family], text);
+    }
+  });
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -57,6 +67,9 @@ class TheMessengerApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       routerConfig: appRouter,
+      // Logros y rangos nuevos se festejan sobre cualquier pantalla.
+      builder: (context, child) =>
+          CelebrationHost(router: appRouter, child: child ?? const SizedBox()),
     );
   }
 }

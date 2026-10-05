@@ -3,6 +3,7 @@ import '../entities/guild.dart';
 import '../entities/notifications.dart';
 import '../entities/world.dart';
 import '../entities/content.dart';
+import '../entities/progression.dart';
 
 abstract class AuthRepository {
   Future<User?> getCurrentUser();
@@ -37,7 +38,8 @@ abstract class MissionRepository {
   // Las rutas pueden requerir flags de historia (ej. la ruta nocturna).
   Future<List<GameRoute>> getAvailableRoutes(int messengerRank,
       {Set<String> flags});
-  Future<Mission> createMission(GameRoute route, String messengerId, {bool revealEvents});
+  Future<Mission> createMission(GameRoute route, String messengerId,
+      {bool revealEvents, double payFactor});
   Future<Mission> createTutorialMission(int index, String messengerId);
   // Misión de historia: eventos fijos, arcId/epilogue seteados.
   Future<Mission> createStoryMission(StoryMissionConfig config, String messengerId);
@@ -48,6 +50,15 @@ abstract class GuildRepository {
   /// conservando la racha de paga.
   Future<GuildState> getState();
   Future<void> saveState(GuildState state);
+}
+
+/// Progresión de la cuenta: estadísticas, logros y títulos.
+abstract class ProgressionRepository {
+  /// null si la partida es anterior a la progresión v2 (hay que migrarla).
+  Future<ProgressionState?> load();
+  Future<void> save(ProgressionState state);
+  /// Títulos del esquema viejo, para migrarlos una sola vez.
+  Future<({List<String> titles, String? equipped})> legacyTitles();
 }
 
 abstract class WorldRepository {

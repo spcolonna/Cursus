@@ -7,8 +7,8 @@ class PlayerProgress {
   static const _kTooltipHome = 'tooltip_home_seen_v1';
   static const _kTooltipEvent = 'tooltip_event_seen_v1';
   static const _kTooltipShop = 'tooltip_shop_seen_v1';
-  static const _kTitles = 'cosmetic_titles_v1';
-  static const _kEquippedTitle = 'cosmetic_title_equipped_v1';
+  // Los títulos (cosmetic_titles_v1) migraron a progression_v2:
+  // ver LocalProgressionRepository.
   static const _kAdsTravelToday = 'ads_travel_day_v1';
   static const _kAdsTravelCount = 'ads_travel_count_v1';
   static const _kAdsDoublePayDay = 'ads_double_pay_day_v1';
@@ -69,34 +69,6 @@ class PlayerProgress {
   Future<void> markHomeTooltipSeen() => markTooltipSeen(_kTooltipHome);
   Future<void> markEventTooltipSeen() => markTooltipSeen(_kTooltipEvent);
   Future<void> markShopTooltipSeen() => markTooltipSeen(_kTooltipShop);
-
-  Future<List<String>> getUnlockedTitles() async {
-    final p = await SharedPreferences.getInstance();
-    return p.getStringList(_kTitles) ?? [];
-  }
-
-  Future<void> unlockTitle(String title) async {
-    final p = await SharedPreferences.getInstance();
-    final list = p.getStringList(_kTitles) ?? [];
-    if (!list.contains(title)) {
-      list.add(title);
-      await p.setStringList(_kTitles, list);
-    }
-  }
-
-  Future<String?> getEquippedTitle() async {
-    final p = await SharedPreferences.getInstance();
-    return p.getString(_kEquippedTitle);
-  }
-
-  Future<void> equipTitle(String? title) async {
-    final p = await SharedPreferences.getInstance();
-    if (title == null) {
-      await p.remove(_kEquippedTitle);
-    } else {
-      await p.setString(_kEquippedTitle, title);
-    }
-  }
 
   /// Cap 4/día para rewarded −30 min (GDD §6.4).
   Future<int> travelAdsUsedToday() async {

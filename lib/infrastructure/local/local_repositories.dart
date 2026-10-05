@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/entities/guild.dart';
 import '../../domain/entities/notifications.dart';
+import '../../domain/entities/progression.dart';
 import '../../domain/entities/world.dart';
 import '../../domain/repositories/repositories.dart';
 import '../../data/game_content.dart';
@@ -459,7 +460,7 @@ class LocalMissionRepository implements MissionRepository {
 
   @override
   Future<Mission> createMission(GameRoute route, String messengerId,
-      {bool revealEvents = false}) async {
+      {bool revealEvents = false, double payFactor = 1.0}) async {
     final now = DateTime.now();
     final deadline = now.add(Duration(minutes: route.durationMinutes));
     final cfg = allRealMissions.firstWhere(
@@ -475,6 +476,7 @@ class LocalMissionRepository implements MissionRepository {
       startedAt: now, deadlineAt: deadline, progressPct: 0,
       status: MissionStatus.active, packageState: PackageState.intact, events: events,
       revealEvents: revealEvents,
+      payFactor: payFactor,
     );
     await saveMission(mission);
     return mission;
@@ -527,6 +529,7 @@ class LocalMissionRepository implements MissionRepository {
       arcId: config.arcId,
       arcStage: config.stage,
       epilogue: config.epilogue,
+      payFactor: kStoryPayFactor,
     );
     await saveMission(mission);
     return mission;
@@ -584,6 +587,7 @@ class LocalMissionRepository implements MissionRepository {
     'arcId': m.arcId,
     'arcStage': m.arcStage,
     'epilogue': m.epilogue,
+    'payFactor': m.payFactor,
   };
 
   Mission _missionFromJson(Map<String, dynamic> j) => Mission(
@@ -610,6 +614,8 @@ class LocalMissionRepository implements MissionRepository {
     arcId: j['arcId'] as String?,
     arcStage: j['arcStage'] as int? ?? 0,
     epilogue: j['epilogue'] as String?,
+    // Misiones guardadas antes de la paga por ruta: factor neutro.
+    payFactor: (j['payFactor'] as num?)?.toDouble() ?? 1.0,
   );
 
   Map<String, dynamic> _eventToJson(MissionEvent e) => {
@@ -862,4 +868,40 @@ class LocalWorldRepository implements WorldRepository {
     completedArcs:
         ((j['completedArcs'] as List?) ?? const []).cast<String>().toSet(),
   );
+}
+// ─── Progresión (estadísticas, logros, títulos) ───────────────────────────────
+class LocalProgressionRepository implements ProgressionRepository {
+  static const _kProgression = 'progression_v2';
+  // Claves del esquema v1 (PlayerProgress): solo se leen para migrar.
+  static const _kLegacyTitles = 'cosmetic_titles_v1';
+  static const _kLegacyEquipped = 'cosmetic_title_equipped_v1';
+
+  @override
+  Future<ProgressionState?> load() async {
+    final p = await SharedPreferences.getInstance();
+    final raw = p.getString(_kProgression);
+    if (raw == null) return null;
+    try {
+      return ProgressionState.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (_) {
+      // Corrupto: se guarda aparte y se reconstruye desde el historial.
+      await p.setString('${_kProgression}_corrupt_backup', raw);
+      return null;
+    }
+  }
+
+  @override
+  Future<void> save(ProgressionState state) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setString(_kProgression, jsonEncode(state.toJson()));
+  }
+
+  @override
+  Future<({List<String> titles, String? equipped})> legacyTitles() async {
+    final p = await SharedPreferences.getInstance();
+    return (
+      titles: p.getStringList(_kLegacyTitles) ?? const <String>[],
+      equipped: p.getString(_kLegacyEquipped),
+    );
+  }
 }

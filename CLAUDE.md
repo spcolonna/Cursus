@@ -24,11 +24,14 @@ lib/
 │   ├── entities/skill_tree.dart  skillTree (5×10 nodos), sealCostForLevel, SkillPerks
 │   ├── entities/guild.dart       contratos diarios (pools easy/medium/seal), paga diaria
 │   ├── entities/content.dart     tipos del contenido (TutorialMission, RealEventConfig, StoryMissionConfig…)
+│   ├── entities/progression.dart paga por ruta, PlayerStats, AchievementDef, ProgressionState
 │   ├── repositories/             contratos abstractos + GameContentCatalog (contenido inyectado)
-│   └── usecases/usecases.dart    17 use cases (ResolveEvent, CompleteMission, AscendSkill…)
+│   ├── usecases/usecases.dart    use cases del loop (ResolveEvent, CompleteMission, AscendSkill…)
+│   └── usecases/progression_usecases.dart  GetProgression (migra), RecordProgress, EquipTitle
 ├── infrastructure/local/local_repositories.dart   SharedPreferences (sin backend)
 ├── data/game_content.dart        CONTENIDO: tutorial, rutas fase 1, pool de eventos reales
 ├── data/story_content.dart       CONTENIDO: arcos narrativos (arc_claudius, 5 caps, 3 finales)
+├── data/progression_content.dart CONTENIDO: 26 logros con premios y títulos
 ├── data/static_game_content.dart StaticGameContent: implementa GameContentCatalog con lo de data/
 └── presentation/
     ├── theme/app_theme.dart      AppColors, AppGradients, AppTextStyles, AppSpacing, AppRadii
@@ -40,9 +43,11 @@ lib/
     │                             Loading/Empty/ErrorState, LiveProgressBar, PeriodicBuilder,
     │                             CountUpText, ParticleBurst, showGameSnack/showErrorSnack
     ├── widgets/widgets.dart      CurrencyChip, RewardAmount, showRewardToast, GradeBadge…
+    ├── widgets/progression_widgets.dart  AchievementMedal, RankLaurel, TitlePicker
+    ├── widgets/celebration_host.dart     logros y rangos nuevos sobre toda la app
     ├── providers/providers.dart  Riverpod: DI + notifiers (home, guild, world, titles…)
     └── screens/                  splash, login, onboarding, character, home (+ home/parts/),
-                                  mission, event, mission_result, profile, shop, skills
+                                  mission, event, mission_result, profile, shop, skills, achievements
 ```
 
 `router.dart` (go_router) · `main.dart` entry point.
@@ -73,7 +78,7 @@ Para búsquedas amplias (¿dónde se usa X?, ¿existe Y?), delegá en el subagen
 
 ## Estado real (2026-07)
 
-Implementado: loop core con timer real, tutorial de 4 pruebas, 3+ rutas, pool de eventos con prosa propia, arco `arc_claudius`, reputación/flags/diario, árbol de skills 1-10 con Sellos, contratos diarios, paga del gremio, tienda, multi-mensajero (4 slots).
+Implementado: loop core con timer real, paga por ruta, 26 logros con títulos equipables y celebraciones, tutorial de 4 pruebas, 3+ rutas, pool de eventos con prosa propia, arco `arc_claudius`, reputación/flags/diario, árbol de skills 1-10 con Sellos, contratos diarios, paga del gremio, tienda, multi-mensajero (4 slots).
 
 También: avisos locales (eventos, entrega, ocioso, contratos; el tap abre la misión) y auto-resolución de eventos a los 60 min.
 

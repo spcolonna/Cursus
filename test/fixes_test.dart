@@ -80,7 +80,7 @@ class _MissionRepo implements MissionRepository {
       [];
   @override
   Future<Mission> createMission(GameRoute r, String id,
-          {bool revealEvents = false}) =>
+          {bool revealEvents = false, double payFactor = 1.0}) =>
       throw UnimplementedError();
   @override
   Future<Mission> createTutorialMission(int i, String id) =>

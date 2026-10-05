@@ -8,6 +8,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/app_theme.dart';
 
 export 'components.dart';
+export 'progression_widgets.dart';
 
 // ─── Monedas ──────────────────────────────────────────────────────────────────
 // Una moneda, un trabajo (GDD §6.1). Ícono y color viven acá y en ningún otro

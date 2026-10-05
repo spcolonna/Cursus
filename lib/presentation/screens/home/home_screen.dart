@@ -11,6 +11,7 @@ import '../../widgets/primeros_pasos.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/entities/guild.dart';
 import '../../../domain/entities/notifications.dart';
+import '../../../domain/entities/progression.dart';
 import '../../../domain/usecases/usecases.dart';
 import '../../../data/game_content.dart';
 import '../../../infrastructure/progress/player_progress.dart';

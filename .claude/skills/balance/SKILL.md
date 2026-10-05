@@ -30,7 +30,7 @@ Consecuencias: +8 fatiga y +25 XP a la skill usada por evento resuelto. Fallo: �
 
 ## Nota y paga de misión (`CompleteMissionUseCase`, ~línea 431)
 
-`total = 30% tiempo + 35% paquete + 35% decisiones` → **S/A/B/C/F** → **150/100/60/30/10** Denarios, y −10 fatiga. `SkillPerks.gradeSBonus` suma en nota S.
+`total = 30% tiempo + 35% paquete + 35% decisiones` → **S/A/B/C/F** → **135/90/55/28/10** Denarios (`gradeBaseReward`) **× `mission.payFactor`**, y −10 fatiga. El factor sale de `routePayFactor(minutosNominales, peligro)` (0,7-1,6; historia 1,3), se fija al aceptar y se guarda en la misión. `SkillPerks.gradeSBonus` suma en nota S.
 
 ## Progresión de skills
 
@@ -45,7 +45,7 @@ Consecuencias: +8 fatiga y +25 XP a la skill usada por evento resuelto. Fallo: �
 
 | Moneda | Rol | Faucets | Sinks |
 |---|---|---|---|
-| **Denarios** | operación diaria | misiones 10-150, contratos, racha | pociones, descanso, manuales, adelantar misión (1 Den/min, clamp 5-300) |
+| **Denarios** | operación diaria | misiones (nota × ruta), contratos, racha, logros (una vez) | pociones, descanso, manuales, adelantar misión (1 Den/min, clamp 5-300) |
 | **Aureos** | premium (la única comprable) | IAP, gotas de racha | slots de mensajero 20/50/100, boosts, Sellos |
 | **Sellos** | élite | 3.er contrato diario, día 7 de racha, 1.ª nota S semanal | **solo** niveles 6-10 del árbol |
 
@@ -57,18 +57,22 @@ Catálogo y precios: `shopCatalogue` en `lib/presentation/screens/shop/shop_scre
 
 ## Contratos y racha (`lib/domain/entities/guild.dart`)
 
-3 contratos diarios elegidos de `_easyPool` / `_mediumPool` / `_sealPool` por `contractIdsForDate` (determinístico por fecha). Recompensas 50-150 Denarios; el del pool de sellos da 1 Sello. Racha de 7 días cíclica: 30 → 50 → 70 → 100 Denarios → 1 Aureo → 150 Denarios → 2 Aureos + 1 Sello.
+3 contratos diarios elegidos de `_easyPool` / `_mediumPool` / `_sealPool` por `contractIdsForDate` (determinístico por fecha). Recompensas 50-90 Denarios; el del pool de sellos da 1 Sello. Racha de 7 días cíclica: 30 → 50 → 70 → 100 Denarios → 1 Aureo → 150 Denarios → 2 Aureos + 1 Sello.
 
 ## Ritmo de misión
 
 - Mínimo **1 evento cada 8 h** de duración: una misión de 72 h con pocos eventos se siente muerta.
 - Ningún evento debe exigir más de ~90 segundos de atención.
-- Los eventos congelan el progreso hasta que se resuelvan (todavía **no** hay auto-resolución a los 60 min — está en el roadmap 1.3).
+- Los eventos congelan el progreso hasta que se resuelvan; a los 60 min se auto-resuelven con la opción prudente y aplican sus efectos narrativos (flags, reputación, diario).
+
+## Logros
+
+`data/progression_content.dart`. Nunca Aureos; ≤1 Sello por logro y ≤8 en total (lo verifica `test/progression_test.dart`). Los Denarios de logros son de una sola vez y no cuentan en el presupuesto diario.
 
 ## Antes de commitear un cambio numérico
 
 - [ ] Calculaste el impacto en los dos casos borde (novato riesgo 5, maxeado riesgo 5).
 - [ ] El fallo sigue existiendo en el endgame.
 - [ ] No se rompe el presupuesto diario ni el cap de +25%.
-- [ ] `flutter test` pasa (`test/domain_test.dart` cubre dominio).
+- [ ] `flutter test` pasa (`test/progression_test.dart` simula el día típico: 435 ±10%).
 - [ ] Si el cambio contradice el GDD §5/§6, actualizá el GDD en la misma pasada.

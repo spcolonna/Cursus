@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/entities.dart';
 import '../feedback/feedback.dart';
@@ -269,7 +268,8 @@ class AppTextStyles {
         double letterSpacing = 0,
         FontWeight weight = FontWeight.normal,
       }) {
-    return GoogleFonts.fredoka(
+    return TextStyle(
+      fontFamily: 'Fredoka',
       fontSize: size < minSize ? minSize : size,
       color: color,
       letterSpacing: letterSpacing,
@@ -286,15 +286,18 @@ class AppTextStyles {
   static TextStyle get titleSmall  =>
       fredoka(12, color: AppColors.textSecondary, letterSpacing: 1);
 
-  static TextStyle get bodyLarge => GoogleFonts.nunito(
+  static TextStyle get bodyLarge => const TextStyle(
+    fontFamily: 'Nunito',
     fontSize: 14, color: AppColors.textPrimary, height: 1.5,
     fontWeight: FontWeight.w600,
   );
-  static TextStyle get bodyMedium => GoogleFonts.nunito(
+  static TextStyle get bodyMedium => const TextStyle(
+    fontFamily: 'Nunito',
     fontSize: 12, color: AppColors.textSecondary, height: 1.4,
     fontWeight: FontWeight.w500,
   );
-  static TextStyle get bodySmall => GoogleFonts.nunito(
+  static TextStyle get bodySmall => const TextStyle(
+    fontFamily: 'Nunito',
     fontSize: 12, color: AppColors.textMuted, fontWeight: FontWeight.w600,
   );
 }
@@ -310,7 +313,7 @@ class AppTheme {
       secondary: AppColors.sky,
       surface: AppColors.bgCard,
     ),
-    textTheme: GoogleFonts.nunitoTextTheme(ThemeData.dark().textTheme),
+    fontFamily: 'Nunito',
   );
 }
 

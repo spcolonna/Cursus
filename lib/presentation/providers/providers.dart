@@ -4,10 +4,12 @@ import '../../data/static_game_content.dart';
 import '../../data/story_content.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/entities/guild.dart';
+import '../../domain/entities/progression.dart';
 import '../../domain/entities/world.dart';
 import '../../domain/repositories/content_catalog.dart';
 import '../../domain/repositories/repositories.dart';
 import '../../domain/usecases/usecases.dart';
+import '../../domain/usecases/progression_usecases.dart';
 import '../../domain/entities/notifications.dart';
 import '../../infrastructure/local/local_repositories.dart';
 import '../../infrastructure/notifications/notification_service.dart';
@@ -22,6 +24,8 @@ final messengerRepositoryProvider = Provider<MessengerRepository>((_) => LocalMe
 final missionRepositoryProvider = Provider<MissionRepository>((_) => LocalMissionRepository());
 final guildRepositoryProvider   = Provider<GuildRepository>((_) => LocalGuildRepository());
 final worldRepositoryProvider   = Provider<WorldRepository>((_) => LocalWorldRepository());
+final progressionRepositoryProvider =
+    Provider<ProgressionRepository>((_) => LocalProgressionRepository());
 final notificationSchedulerProvider =
     Provider<NotificationScheduler>((_) => LocalNotificationService());
 final playerProgressProvider = Provider<PlayerProgress>((_) => PlayerProgress());
@@ -166,6 +170,24 @@ final recordContractProgressUseCaseProvider =
     Provider((ref) => RecordContractProgressUseCase(
   ref.read(guildRepositoryProvider),
 ));
+final getProgressionUseCaseProvider = Provider((ref) => GetProgressionUseCase(
+  ref.read(progressionRepositoryProvider),
+  ref.read(messengerRepositoryProvider),
+  ref.read(missionRepositoryProvider),
+  ref.read(worldRepositoryProvider),
+  ref.read(gameContentProvider),
+));
+final recordProgressUseCaseProvider = Provider((ref) => RecordProgressUseCase(
+  ref.read(getProgressionUseCaseProvider),
+  ref.read(progressionRepositoryProvider),
+  ref.read(messengerRepositoryProvider),
+  ref.read(worldRepositoryProvider),
+  ref.read(gameContentProvider),
+));
+final equipTitleUseCaseProvider = Provider((ref) => EquipTitleUseCase(
+  ref.read(getProgressionUseCaseProvider),
+  ref.read(progressionRepositoryProvider),
+));
 final claimContractUseCaseProvider = Provider((ref) => ClaimContractUseCase(
   ref.read(guildRepositoryProvider),
   ref.read(messengerRepositoryProvider),
@@ -211,6 +233,8 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
   /// Primero repara arcos y auto-resuelve eventos vencidos (escribe), después lee.
   Future<HomeState> _load() async {
     await ref.read(repairArcStateUseCaseProvider).execute();
+    // Crea (o migra) la progresión antes de que cualquier acción la registre.
+    await ref.read(getProgressionUseCaseProvider).execute();
     final autoResolved =
         await ref.read(autoResolveExpiredEventsUseCaseProvider).execute();
     return ref
@@ -274,6 +298,8 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
       usedSkill: option.requiredSkills.keys.firstOrNull,
     );
     await ref.read(worldProvider.notifier).refresh();
+    await ref.read(progressionProvider.notifier).record(
+        change: (s) => s.copyWith(eventsResolved: s.eventsResolved + 1));
     await refresh();
     // Subir de nivel por XP también cuenta para "Subí una habilidad".
     if (result.leveledUpSkills.isNotEmpty) {
@@ -301,6 +327,7 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     final messenger = await ref.read(useSkillPickUseCaseProvider).execute(
       messengerId: messengerId, skill: skill,
     );
+    await ref.read(progressionProvider.notifier).record();
     await refresh();
     return messenger;
   }
@@ -312,6 +339,7 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     final messenger = await ref.read(ascendSkillUseCaseProvider).execute(
       messengerId: messengerId, skill: skill,
     );
+    await ref.read(progressionProvider.notifier).record();
     await refresh();
     return messenger;
   }
@@ -337,6 +365,7 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     final messenger = await ref.read(unlockMessengerSlotUseCaseProvider).execute(
       payer: payer, newName: newName, gender: gender,
     );
+    await ref.read(progressionProvider.notifier).record();
     await refresh();
     return messenger;
   }
@@ -359,11 +388,13 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
             .markTask(PlayerProgress.taskFirstRealRoute);
       }
 
-      // Cosmética: título de final de arco.
-      final title = completion.endingTitle;
-      if (title != null && title.isNotEmpty) {
-        await ref.read(playerProgressProvider).unlockTitle(title);
-        ref.invalidate(titlesProvider);
+      // Estadísticas, logros y el título de final de arco.
+      if (active != null) {
+        await ref.read(progressionProvider.notifier).record(
+          change: (s) => statsAfterDelivery(s, active,
+              completion.result.grade, completion.denariosDelta),
+          titles: [if (completion.endingTitle != null) completion.endingTitle!],
+        );
       }
     }
     await refresh();
@@ -397,6 +428,8 @@ class GuildNotifier extends AsyncNotifier<GuildState> {
 
   Future<({DailyPayReward reward, int day})> claimDailyPay() async {
     final result = await ref.read(claimDailyPayUseCaseProvider).execute();
+    await ref.read(progressionProvider.notifier).record(
+        change: (s) => s.recordDailyPay(DateTime.now()));
     await refresh();
     await ref.read(homeProvider.notifier).refresh(); // monedas del mensajero
     return result;
@@ -406,6 +439,11 @@ class GuildNotifier extends AsyncNotifier<GuildState> {
     final result =
         await ref.read(claimContractUseCaseProvider).execute(templateId);
     state = AsyncData(result.state);
+    await ref.read(progressionProvider.notifier).record(
+        change: (s) => s.copyWith(
+              contractsClaimed: s.contractsClaimed + 1,
+              denariosEarned: s.denariosEarned + result.reward.denarios,
+            ));
     await ref.read(homeProvider.notifier).refresh();
     return result.reward;
   }
@@ -557,34 +595,77 @@ NotifierProvider<MissionProgressNotifier, MissionProgressState>(
   MissionProgressNotifier.new,
 );
 
-// ─── Títulos ──────────────────────────────────────────────────────────────────
-/// Títulos ganados y el que el jugador lleva puesto (se ve bajo su nombre).
-typedef TitlesState = ({List<String> unlocked, String? equipped});
-
-final titlesProvider =
-    AsyncNotifierProvider<TitlesNotifier, TitlesState>(TitlesNotifier.new);
-
-class TitlesNotifier extends AsyncNotifier<TitlesState> {
+// ─── Progresión: logros, títulos y celebraciones ──────────────────────────────
+class ProgressionNotifier extends AsyncNotifier<ProgressionState> {
   @override
-  Future<TitlesState> build() async {
-    final progress = ref.read(playerProgressProvider);
-    final unlocked = await progress.getUnlockedTitles();
-    final equipped = await progress.getEquippedTitle();
-    return (
-      unlocked: unlocked,
-      // Un título equipado que ya no existe no se muestra.
-      equipped: unlocked.contains(equipped) ? equipped : null,
-    );
+  Future<ProgressionState> build() =>
+      ref.read(getProgressionUseCaseProvider).execute();
+
+  /// Registra un avance y encola lo que haya para celebrar. Nunca rompe la
+  /// acción que lo disparó: si algo falla, la progresión se pone al día en
+  /// el próximo registro (lo que se lee del estado no se pierde).
+  Future<ProgressionUpdate?> record({
+    PlayerStats Function(PlayerStats)? change,
+    Iterable<String> titles = const [],
+  }) async {
+    try {
+      final update = await ref
+          .read(recordProgressUseCaseProvider)
+          .execute(change: change, titles: titles);
+      state = AsyncData(update.state);
+      ref.read(celebrationQueueProvider.notifier).enqueue(update);
+      return update;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Equipa [title] (o lo saca, si es null o ya estaba puesto).
-  Future<void> toggle(String? title) async {
-    final current = state.valueOrNull;
-    final next = current?.equipped == title ? null : title;
-    await ref.read(playerProgressProvider).equipTitle(next);
-    ref.invalidateSelf();
+  Future<void> toggleTitle(String? title) async {
+    state = AsyncData(await ref.read(equipTitleUseCaseProvider).execute(title));
   }
 }
+
+final progressionProvider =
+    AsyncNotifierProvider<ProgressionNotifier, ProgressionState>(
+        ProgressionNotifier.new);
+
+/// Títulos ganados y el que el jugador lleva puesto (se ve bajo su nombre).
+typedef TitlesState = ({List<String> unlocked, String? equipped});
+
+final titlesProvider = Provider<AsyncValue<TitlesState>>((ref) =>
+    ref.watch(progressionProvider).whenData(
+        (p) => (unlocked: p.titles, equipped: p.equippedTitle)));
+
+/// Algo para festejar: un logro o un rango nuevo. Se muestran de a uno.
+class Celebration {
+  final AchievementDef? achievement;
+  final int? rank;
+  const Celebration.achievement(AchievementDef this.achievement) : rank = null;
+  const Celebration.rank(int this.rank) : achievement = null;
+}
+
+class CelebrationQueue extends Notifier<List<Celebration>> {
+  @override
+  List<Celebration> build() => const [];
+
+  void enqueue(ProgressionUpdate update) {
+    if (update.isEmpty) return;
+    state = [
+      ...state,
+      // El rango primero: es el momento grande; los logros, después.
+      if (update.rankReached != null) Celebration.rank(update.rankReached!),
+      ...update.unlocked.map(Celebration.achievement),
+    ];
+  }
+
+  void pop() {
+    if (state.isNotEmpty) state = state.sublist(1);
+  }
+}
+
+final celebrationQueueProvider =
+    NotifierProvider<CelebrationQueue, List<Celebration>>(CelebrationQueue.new);
 
 // ─── Completed missions ───────────────────────────────────────────────────────
 final completedMissionsProvider = FutureProvider<List<Mission>>((ref) {

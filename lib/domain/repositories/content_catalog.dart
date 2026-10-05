@@ -1,4 +1,5 @@
 import '../entities/content.dart';
+import '../entities/progression.dart';
 
 /// Contenido del juego que necesitan los use cases. La implementación vive en
 /// `lib/data/` (contenido estático); el dominio solo conoce esta interfaz.
@@ -20,4 +21,7 @@ abstract class GameContentCatalog {
 
   /// Evento (de historia o del pool real) por id, para encadenar eventos.
   RealEventConfig? eventById(String id);
+
+  /// Logros del juego, en el orden en que se muestran.
+  List<AchievementDef> get achievements;
 }

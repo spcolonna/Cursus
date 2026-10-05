@@ -15,6 +15,10 @@ El design system vive en `lib/presentation/theme/app_theme.dart`. Antes de escri
 - `widgets/components.dart`: `GameChip` (toda etiqueta) · `GameIconButton` / `GameBackButton` (44 px) · `showGameDialog` + `GameDialog` · `showGameSheet` · `LoadingState` / `EmptyState` / `ErrorState` · `showGameSnack` / `showErrorSnack` (nunca `Text('$e')`) · `LiveProgressBar` (progreso por tiempo, 60 fps sin rebuilds) · `PeriodicBuilder` (relojes) · `CountUpText` · `ParticleBurst`.
 - `widgets/widgets.dart`: `CurrencyChip` · `RewardAmount` · `showRewardToast` · `GradeBadge` · `SectionHeader`. `MessengerHero` (retrato con Hero) en `messenger_avatar.dart`.
 
+Fuentes: Fredoka y Nunito van empaquetadas en `assets/fonts/` (OFL, licencia registrada en `main.dart`); se usan por `fontFamily` vía `AppTextStyles`. No vuelvas a `google_fonts`: descargaba en runtime.
+
+Celebraciones (logros, rango nuevo): no las muestres a mano; encolá un `ProgressionUpdate` vía `progressionProvider.notifier.record(...)` y las pinta `CelebrationHost`.
+
 Tokens: `AppColors`, `AppGradients`, `AppTextStyles`, `AppSpacing`, `AppRadii`, `AppMotion`. **Nunca escribas un `Color(0x…)`, un `Colors.xxx` ni un `TextStyle` crudo en una pantalla** (lo verifica `test/design_system_test.dart`). Si falta un token, agregalo al theme.
 
 Movimiento: duraciones y curvas de `AppMotion` (`fast/base/slow/celebrate`, `enter/exit/standard/pop`). Envolvé duraciones con `AppMotion.of(context, d)` y salteá loops/sacudidas si `AppMotion.reduced(context)`. Feedback físico: `AppFeedback.tap/reward/success/partial/fail/delivery/impact/denied`, nunca `HapticFeedback` ni el SFX directo. Texto mínimo 12 pt (lo fuerza `AppTextStyles.fredoka`).

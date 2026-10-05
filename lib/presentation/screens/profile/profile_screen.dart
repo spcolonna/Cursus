@@ -9,6 +9,7 @@ import '../../widgets/widgets.dart';
 import '../../widgets/messenger_avatar.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/entities/world.dart';
+import '../../../domain/entities/progression.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PERFIL — tres pestañas cortas en vez de un scroll de seis secciones:
@@ -167,15 +168,9 @@ class _MessengerTab extends ConsumerWidget {
             onTap: () => context.push('/skills'),
           ),
         ),
-        if (titles != null && titles.unlocked.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          SectionHeader(title: 'Títulos'),
-          _TitlesCard(
-            titles: titles.unlocked,
-            equipped: titles.equipped,
-            onToggle: (t) => ref.read(titlesProvider.notifier).toggle(t),
-          ),
-        ],
+        const SizedBox(height: 20),
+        SectionHeader(title: 'Logros y títulos'),
+        const _AchievementsCard(),
         const SizedBox(height: AppSpacing.xl),
         Center(
           child: TextButton(
@@ -380,69 +375,55 @@ class _SkillsGrid extends StatelessWidget {
 
 // ─── Títulos ──────────────────────────────────────────────────────────────────
 // Tocá un título para llevarlo puesto: se ve bajo tu nombre.
-class _TitlesCard extends StatelessWidget {
-  final List<String> titles;
-  final String? equipped;
-  final ValueChanged<String> onToggle;
-  const _TitlesCard(
-      {required this.titles, required this.equipped, required this.onToggle});
+/// Resumen de logros: cuántos van, los últimos ganados y la puerta a la
+/// pantalla completa (donde también se elige el título).
+class _AchievementsCard extends ConsumerWidget {
+  const _AchievementsCard();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(progressionProvider).valueOrNull;
+    final defs = ref.watch(gameContentProvider).achievements;
+    final unlocked =
+        defs.where((d) => state?.unlocked.contains(d.id) ?? false).toList();
+    final next = defs
+        .where((d) => !(state?.unlocked.contains(d.id) ?? true) && !d.secret)
+        .firstOrNull;
+
     return GameCard(
-      borderColor: AppColors.gold.withValues(alpha: 0.35),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Tocá uno para llevarlo bajo tu nombre.',
-            style: AppTextStyles.bodySmall),
-        const SizedBox(height: AppSpacing.sm),
-        Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          children: [
-            for (final t in titles)
-              Semantics(
-                button: true,
-                selected: t == equipped,
-                child: GestureDetector(
-                  onTap: () {
-                    AppFeedback.tap();
-                    onToggle(t);
-                  },
-                  child: AnimatedContainer(
-                    duration: AppMotion.of(context, AppMotion.base),
-                    constraints: const BoxConstraints(minHeight: 40),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      gradient: t == equipped ? AppGradients.gold : null,
-                      color: t == equipped
-                          ? null
-                          : AppColors.gold.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppRadii.lg),
-                      border: Border.all(
-                          color: t == equipped
-                              ? AppColors.outline
-                              : AppColors.gold.withValues(alpha: 0.45),
-                          width: 2),
-                    ),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      Icon(t == equipped ? Icons.check : Icons.military_tech,
-                          color: t == equipped
-                              ? AppColors.outline
-                              : AppColors.gold,
-                          size: 16),
-                      const SizedBox(width: 6),
-                      Text(t,
-                          style: AppTextStyles.fredoka(13,
-                              color: t == equipped
-                                  ? AppColors.outline
-                                  : AppColors.gold,
-                              weight: FontWeight.bold)),
-                    ]),
-                  ),
-                ),
+      borderColor: AppColors.gold.withValues(alpha: 0.5),
+      semanticLabel: 'Logros: ${unlocked.length} de ${defs.length}. '
+          'Tocá para verlos y elegir tu título.',
+      onTap: () => context.push('/achievements'),
+      child: Row(children: [
+        SizedBox(
+          // Las medallas se enciman: cada una más corre 20 px.
+          width: 46 + 20.0 * (unlocked.length.clamp(1, 3) - 1),
+          height: 46,
+          child: Stack(children: [
+            for (final (i, d) in unlocked.reversed.take(3).indexed)
+              Positioned(
+                left: i * 20.0,
+                child: AchievementMedal(kind: d.kind, unlocked: true, size: 46),
               ),
-          ],
+            if (unlocked.isEmpty)
+              const AchievementMedal(
+                  kind: AchievementKind.road, unlocked: false, size: 46),
+          ]),
         ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('${unlocked.length} de ${defs.length} logros',
+                style: AppTextStyles.fredoka(16, weight: FontWeight.bold)),
+            if (next != null)
+              Text('Próximo: ${next.goal}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodyMedium),
+          ]),
+        ),
+        const Icon(Icons.chevron_right, color: AppColors.textSecondary),
       ]),
     );
   }

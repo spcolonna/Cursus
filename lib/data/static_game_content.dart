@@ -1,7 +1,9 @@
 import '../domain/entities/content.dart';
+import '../domain/entities/progression.dart';
 import '../domain/repositories/content_catalog.dart';
 import 'game_content.dart' as base;
 import 'game_content_expansion.dart';
+import 'progression_content.dart';
 import 'story_content.dart' as story;
 
 /// Catálogo con el contenido estático de `lib/data/`.
@@ -31,4 +33,7 @@ class StaticGameContent implements GameContentCatalog {
   RealEventConfig? eventById(String id) =>
       story.storyEventById(id) ??
       allRealEvents.where((e) => e.id == id).firstOrNull;
+
+  @override
+  List<AchievementDef> get achievements => allAchievements;
 }

@@ -43,7 +43,7 @@ Flutter, arquitectura limpia (`domain/` → `infrastructure/` → `presentation/
    `score = 40 base + (nivel de skill usada × 15) − (riesgo × 8) − fatiga (−10 si ≥40, −20 si ≥70) + azar`
    Resultado: éxito / parcial / fallo. Afecta salud, llegada (el costo de tiempo **demora** la llegada y corre los eventos que faltan; el fallo cuesta el doble) y estado del paquete (intacto → dañado → perdido). Cada evento resuelto suma **+8 de fatiga** y **+25 XP a la skill usada**.
    **Tiradas críticas** (d100 aparte, `mishapPercent` / `kLuckyBreakPercent` en `forecast.dart`): *Imprevisto* = fallo seguro el 5% de las veces en riesgo nominal 4 y el 10% en riesgo 5 (los perks de Sigilo no lo anulan); *Golpe de suerte* = éxito seguro el 5% de las veces en cualquier opción. Garantizan que el maxeado pueda fallar y que una opción sin oficio pueda salir bien. Ambos aparecen en el desglose de la tirada y entran en el pronóstico.
-6. Al llegar al 100%, botón **"ENTREGAR MENSAJE"** (no autocompleta). Nota final = `30% tiempo + 35% paquete + 35% decisiones` → **S/A/B/C/F** → paga **150/100/60/30/10 Denarios** y −10 de fatiga. El puntaje de tiempo mide los minutos que costaron las decisiones (`timeScoreFor`: sin retraso = 100, 25% de retraso = 50, piso 20); cuánto tarda el jugador en tocar ENTREGAR no cuenta.
+6. Al llegar al 100%, botón **"ENTREGAR MENSAJE"** (no autocompleta). Nota final = `30% tiempo + 35% paquete + 35% decisiones` → **S/A/B/C/F** → paga **135/90/55/28/10 Denarios × factor de la ruta** (§6.2) y −10 de fatiga. El puntaje de tiempo mide los minutos que costaron las decisiones (`timeScoreFor`: sin retraso = 100, 25% de retraso = 50, piso 20); cuánto tarda el jugador en tocar ENTREGAR no cuenta.
 7. **Billetera común:** Denarios, Aureos y Sellos viven en el mensajero principal. La paga de cualquier mensajero va ahí, y de ahí salen las compras de la tienda y "adelantar". En la tienda se elige a qué mensajero se le aplica el efecto.
 
 ### 2.2 Contenido actual
@@ -184,8 +184,8 @@ El árbol no debe trivializar los eventos: con cap +25% y la fórmula actual, un
 
 | Moneda | Rol | Se gana | Se gasta |
 |---|---|---|---|
-| **Denarios** | Operación diaria | Misiones (10-150), contratos, racha | Pociones, descanso, manuales 1-5, adelantar misión |
-| **Aureos** | Premium (única comprable con dinero) | IAP, gotas F2P (racha, logros) | Slots de mensajero (20/50/100), boosts, Sellos |
+| **Denarios** | Operación diaria | Misiones (7-216 según nota y ruta), contratos, racha, logros (una vez) | Pociones, descanso, manuales 1-5, adelantar misión |
+| **Aureos** | Premium (única comprable con dinero) | IAP, gotas F2P (racha) — los logros **nunca** dan Aureos | Slots de mensajero (20/50/100), boosts, Sellos |
 | **Sellos del Gremio** | Progresión de élite | Contratos, racha día 7, nota S semanal | Exclusivamente niveles 6-10 del árbol |
 
 ### 6.2 Presupuesto diario del jugador activo (objetivo)
@@ -194,11 +194,16 @@ Jugador que hace 3 sesiones, completa 2-3 misiones y los 3 contratos:
 
 | Faucet | Denarios | Aureos | Sellos |
 |---|---|---|---|
-| Misiones (2-3, nota A/B) | ~180 | — | — |
-| Contratos del día | ~120 | — | 1 |
+| Misiones (una corta + una larga, nota A/B) | ~152 | — | — |
+| Encargos semanales (reserva, Fase 3) | ~25 | — | — |
+| Contratos del día | ~141 | — | 1 |
 | Paga del gremio (promedio) | ~75 | ~0,4 | ~0,15 |
 | Rewarded ads (2-3 vistas) | ~60 | ~1 | — |
 | **Total/día** | **~435** | **~1,5** | **~1,1** |
+
+**Paga por ruta (implementado).** Cada ruta tiene un factor que se fija al aceptar, con la duración *nominal* (un boost de velocidad no baja la paga): `factor = clamp(0,6 + 0,15·log2(horas+1) + 0,3·peligro, 0,7, 1,6)`. Ruta de 2 h ≈ ×0,9 · 8 h ≈ ×1,2 · 3 días = ×1,6. Crece con el logaritmo: la ruta larga paga más en total pero menos por hora. Los capítulos de historia pagan ×1,3. La card de ruta muestra "Paga ~N" (nota A) y el resultado explica "Nota A: 90 × ruta 1,2". Lo verifica `test/progression_test.dart` (día típico 435 ±10%; hoy da ~449).
+
+**Logros y títulos (implementado).** 26 logros en `data/progression_content.dart` (camino, notas, gremio, oficio, historia, fortuna). Premios: Denarios de una sola vez, un título, y como mucho 1 Sello por logro con **tope de 8 Sellos en toda la partida**; nunca Aureos. Las estadísticas viven en `progression_v2`; al migrar se reconstruyen desde el historial y los logros ya cumplidos se pagan en silencio. Celebraciones: cinta de logro desde arriba y laurel a pantalla completa al subir de rango; nunca durante un evento.
 
 Sinks de referencia: curación completa 120, descanso 80, manual nivel 3 = 500 (≈ 2 días de ahorro), adelantar una misión de 2h ≈ 120. El Denario debe sentirse abundante para operar y justo para acelerar. Revisar estos números tras el primer playtest largo.
 

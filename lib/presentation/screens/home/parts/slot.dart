@@ -451,6 +451,12 @@ class _RouteCard extends ConsumerWidget {
           GameChip('${route.distanceKm} km', icon: Icons.straighten),
           GameChip(route.durationLabel, icon: Icons.schedule),
           RiskChip(level: route.dangerLevel),
+          // Lo que paga con nota A: rutas más largas y peligrosas, más paga.
+          GameChip(
+            'Paga ~${(gradeBaseReward('A') * routePayFactor(route.durationMinutes, route.danger)).round()}',
+            icon: CurrencyType.denarios.icon,
+            color: AppColors.sky,
+          ),
         ]),
         const SizedBox(height: AppSpacing.md),
         SizedBox(

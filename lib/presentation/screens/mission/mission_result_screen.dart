@@ -8,6 +8,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/widgets.dart';
 import '../../widgets/messenger_avatar.dart';
 import '../../../domain/entities/entities.dart';
+import '../../../domain/entities/progression.dart';
 import '../../../domain/entities/world.dart';
 import '../../../domain/usecases/usecases.dart';
 import '../../../data/story_content.dart';
@@ -226,6 +227,8 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
                 _RewardCard(
                   denarios: reward,
                   gradeColor: color,
+                  grade: grade,
+                  payFactor: mission.payFactor,
                 )
                     .animate(delay: at(650))
                     .fadeIn(duration: d(300))
@@ -696,7 +699,14 @@ class _WhatChanged extends StatelessWidget {
 class _RewardCard extends StatelessWidget {
   final int denarios;
   final Color gradeColor;
-  const _RewardCard({required this.denarios, required this.gradeColor});
+  final String grade;
+  final double payFactor;
+  const _RewardCard({
+    required this.denarios,
+    required this.gradeColor,
+    required this.grade,
+    required this.payFactor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -709,21 +719,34 @@ class _RewardCard extends StatelessWidget {
         border:
             Border.all(color: AppColors.sky.withValues(alpha: 0.4), width: 2),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Contador que sube de 0 al total — la recompensa se siente ganada.
-          TweenAnimationBuilder<int>(
-            tween: IntTween(begin: 0, end: denarios),
-            duration: AppMotion.of(context, const Duration(milliseconds: 900)),
-            curve: AppMotion.enter,
-            builder: (_, value, __) => RewardAmount(
-                type: CurrencyType.denarios, amount: value, fontSize: 22),
+      child: Column(children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Contador que sube de 0 al total — la recompensa se siente ganada.
+            TweenAnimationBuilder<int>(
+              tween: IntTween(begin: 0, end: denarios),
+              duration:
+                  AppMotion.of(context, const Duration(milliseconds: 900)),
+              curve: AppMotion.enter,
+              builder: (_, value, __) => RewardAmount(
+                  type: CurrencyType.denarios, amount: value, fontSize: 22),
+            ),
+            const SizedBox(width: 10),
+            const GameChip('RECOMPENSA', color: AppColors.sky),
+          ],
+        ),
+        // De dónde sale el número: nota × la ruta que elegiste.
+        if (payFactor != 1.0) ...[
+          const SizedBox(height: 6),
+          Text(
+            'Nota $grade: ${gradeBaseReward(grade)} × ruta '
+            '${payFactor.toStringAsFixed(1).replaceAll('.', ',')}',
+            style: AppTextStyles.bodySmall
+                .copyWith(color: AppColors.textSecondary),
           ),
-          const SizedBox(width: 10),
-          const GameChip('RECOMPENSA', color: AppColors.sky),
         ],
-      ),
+      ]),
     );
   }
 }

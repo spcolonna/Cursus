@@ -72,17 +72,17 @@ const _mediumPool = <ContractTemplate>[
   ContractTemplate(
     id: 'c_deliver2', description: 'Entregá 2 paquetes',
     goal: ContractGoal.deliver, target: 2,
-    reward: ContractReward(denarios: 120),
+    reward: ContractReward(denarios: 90),
   ),
   ContractTemplate(
     id: 'c_events3', description: 'Resolvé 3 eventos en el camino',
     goal: ContractGoal.resolveEvents, target: 3,
-    reward: ContractReward(denarios: 100),
+    reward: ContractReward(denarios: 80),
   ),
   ContractTemplate(
     id: 'c_success2', description: 'Superá 2 eventos con éxito',
     goal: ContractGoal.eventSuccesses, target: 2,
-    reward: ContractReward(denarios: 110),
+    reward: ContractReward(denarios: 85),
   ),
 ];
 
