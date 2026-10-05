@@ -225,8 +225,10 @@ void main() {
       expect(endUnder?.setFlagsOnComplete, contains('route_nocturna_unlocked'));
     });
 
-    test('sin flag de bando, el capítulo IV no está disponible', () {
-      expect(storyMissionFor(kArcClaudius, 3, {}), isNull);
+    test('sin flag de bando, el capítulo IV cae en la variante por defecto',
+        () {
+      // Antes devolvía null y el arco quedaba trabado para siempre.
+      expect(storyMissionFor(kArcClaudius, 3, {})?.isDefaultVariant, isTrue);
     });
 
     test('el arco se marca completo con el final elegido', () {

@@ -211,6 +211,9 @@ class StoryMissionConfig {
   // Variantes de capítulo: se elige la primera cuyo flag matchea.
   final String? requiredFlag;
   final String? forbiddenFlag;
+  /// Variante que se juega si ninguna otra matchea (p. ej. el evento que
+  /// decide el camino se resolvió sin dejar flag). Una por stage ramificado.
+  final bool isDefaultVariant;
   // Efectos al completar el capítulo.
   final List<String>? setFlagsOnComplete;
   final Map<Faction, int>? repDeltaOnComplete;
@@ -234,6 +237,7 @@ class StoryMissionConfig {
     required this.fixedEventIds,
     this.requiredFlag,
     this.forbiddenFlag,
+    this.isDefaultVariant = false,
     this.setFlagsOnComplete,
     this.repDeltaOnComplete,
     this.endingId,

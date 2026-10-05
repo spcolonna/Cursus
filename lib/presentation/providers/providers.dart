@@ -95,6 +95,10 @@ final getHomeStateUseCaseProvider = Provider((ref) => GetHomeStateUseCase(
   ref.read(worldRepositoryProvider),
   ref.read(gameContentProvider),
 ));
+final repairArcStateUseCaseProvider = Provider((ref) => RepairArcStateUseCase(
+      ref.read(worldRepositoryProvider),
+      ref.read(gameContentProvider),
+    ));
 final autoResolveExpiredEventsUseCaseProvider =
     Provider((ref) => AutoResolveExpiredEventsUseCase(
   ref.read(messengerRepositoryProvider),
@@ -204,8 +208,9 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     state = AsyncData(await _load());
   }
 
-  /// Primero auto-resuelve los eventos vencidos (escribe), después lee.
+  /// Primero repara arcos y auto-resuelve eventos vencidos (escribe), después lee.
   Future<HomeState> _load() async {
+    await ref.read(repairArcStateUseCaseProvider).execute();
     final autoResolved =
         await ref.read(autoResolveExpiredEventsUseCaseProvider).execute();
     return ref

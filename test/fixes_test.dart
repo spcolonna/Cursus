@@ -602,4 +602,75 @@ void main() {
           DateTime(2026, 10, 6, kContractsReminderHour));
     });
   });
+
+  // ─── Fase 0: el arco no se traba ───────────────────────────────────────────
+  group('Arco y auto-resolución', () {
+    final arc = kContent.mainArcId;
+
+    test('la auto-resolución aplica flags, reputación y diario', () async {
+      final now = DateTime.now();
+      const option = EventOption(
+        id: 'opt_path',
+        text: 'Elegir',
+        riskLevel: 1,
+        timeCostMinutes: 0,
+        requiredSkills: {},
+        outcomeSuccess: 'Bien.',
+        outcomePartial: 'Más o menos.',
+        outcomeFail: 'Mal.',
+        setFlags: ['path_claudius'],
+        repDelta: {Faction.patricians: 2},
+        journalNote: 'Elegiste.',
+      );
+      final mission = _mission(
+        startedAt: now.subtract(const Duration(hours: 4)),
+        deadlineAt: now.add(const Duration(hours: 1)),
+        events: [
+          _event('e1', now.subtract(const Duration(hours: 3)), option: option)
+        ],
+      );
+      final world = _WorldRepo();
+      await AutoResolveExpiredEventsUseCase(
+              _MessengerRepo([_messenger()]), _MissionRepo(mission), world)
+          .execute();
+      expect(world.state.hasFlag('path_claudius'), isTrue);
+      expect(world.state.repOf(Faction.patricians), 2);
+      expect(world.state.journal.last.text, contains('No estabas'));
+    });
+
+    test('sin flag de camino, los capítulos IV y V usan la variante por defecto',
+        () {
+      for (var stage = 0; stage < kContent.arcStageCount(arc); stage++) {
+        expect(kContent.storyMissionFor(arc, stage, const {}), isNotNull,
+            reason: 'stage $stage');
+      }
+    });
+
+    test('cada camino tiene su variante en todos los capítulos', () {
+      for (final path in ['path_varus', 'path_claudius', 'path_underworld']) {
+        for (var stage = 3; stage < kContent.arcStageCount(arc); stage++) {
+          expect(kContent.storyMissionFor(arc, stage, {path})?.requiredFlag,
+              path);
+        }
+      }
+    });
+
+    test('la reparación pone el flag de la variante por defecto', () async {
+      final world = _WorldRepo()
+        ..state = WorldState.initial().copyWith(arcProgress: {arc: 3});
+      final repaired = await RepairArcStateUseCase(world, kContent).execute();
+      expect(repaired, isTrue);
+      expect(world.state.hasFlag('path_varus'), isTrue);
+      // Idempotente.
+      expect(await RepairArcStateUseCase(world, kContent).execute(), isFalse);
+    });
+
+    test('la reparación no toca partidas sanas', () async {
+      final world = _WorldRepo()
+        ..state = WorldState.initial()
+            .copyWith(arcProgress: {arc: 3}, flags: {'path_underworld'});
+      expect(await RepairArcStateUseCase(world, kContent).execute(), isFalse);
+      expect(world.state.hasFlag('path_varus'), isFalse);
+    });
+  });
 }

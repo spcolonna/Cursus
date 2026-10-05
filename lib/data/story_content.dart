@@ -20,12 +20,20 @@ export '../domain/entities/content.dart';
 /// Capítulo que corresponde jugar para un arco/stage según los flags.
 StoryMissionConfig? storyMissionFor(
     String arcId, int stage, Set<String> flags) {
-  return storyArcClaudius.where((m) {
-    if (m.arcId != arcId || m.stage != stage) return false;
-    if (m.requiredFlag != null && !flags.contains(m.requiredFlag)) return false;
-    if (m.forbiddenFlag != null && flags.contains(m.forbiddenFlag)) return false;
-    return true;
-  }).firstOrNull;
+  final atStage =
+      storyArcClaudius.where((m) => m.arcId == arcId && m.stage == stage);
+  return atStage.where((m) {
+        if (m.requiredFlag != null && !flags.contains(m.requiredFlag)) {
+          return false;
+        }
+        if (m.forbiddenFlag != null && flags.contains(m.forbiddenFlag)) {
+          return false;
+        }
+        return true;
+      }).firstOrNull ??
+      // Red de seguridad: si ningún flag de camino quedó puesto, el arco no
+      // se traba — sigue por la variante por defecto.
+      atStage.where((m) => m.isDefaultVariant).firstOrNull;
 }
 
 /// Cantidad de capítulos del arco (índices 0..n-1).
@@ -146,6 +154,7 @@ const List<StoryMissionConfig> storyArcClaudius = [
     arcId: kArcClaudius,
     stage: 3,
     requiredFlag: 'path_varus',
+    isDefaultVariant: true,
     chapterTitle: 'Capítulo IV — La noche de los cuchillos',
     origin: 'Cuartel de Varus',
     destination: 'Villa del Senador Petro',
@@ -231,6 +240,7 @@ const List<StoryMissionConfig> storyArcClaudius = [
     arcId: kArcClaudius,
     stage: 4,
     requiredFlag: 'path_varus',
+    isDefaultVariant: true,
     chapterTitle: 'Capítulo V — El hombre de Varus',
     origin: 'Cuartel de Varus',
     destination: 'Roma — Foro',
@@ -804,6 +814,16 @@ const Map<String, String> flagDescriptions = {
   'paid_the_augur': 'Los dioses del cruce quedaron conformes con vos.',
   'read_the_birds':
       'Dejaste a un augur sin presagio. Alguien lo vio y le causó gracia.',
+  'helped_lost_child':
+      'Una nena volvió a su casa de tu mano. En ese pueblo te van a recordar.',
+  'heard_the_sibyl':
+      'Escuchaste el vaticinio entero. Las palabras de la sibila no se olvidan.',
+  'helped_deserter':
+      'Un desertor anda por ahí con tu capa vieja. Te debe la vida.',
+  'saw_the_message':
+      'Leíste lo que no era para vos. Ahora sabés algo que otros pagarían por saber.',
+  'fled_temple_accusation':
+      'Te fuiste del templo antes de tiempo. Alguien anotó tu cara.',
 
   // ── Arco 1: La Sombra del Senado
   'told_varus': 'Varus sabe del encargo. Confía en vos, y ahora espera más.',

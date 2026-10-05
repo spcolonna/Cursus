@@ -176,6 +176,38 @@ class GetHomeStateUseCase {
   }
 }
 
+// ─── Reparación de arcos ──────────────────────────────────────────────────────
+// Partidas viejas: si el evento que decidía el camino se auto-resolvió antes
+// de que la auto-resolución aplicara flags, el arco quedó sin flag de camino.
+// El catálogo cae en la variante por defecto; acá se deja el mundo coherente
+// con esa variante (flag puesto y una línea de diario).
+class RepairArcStateUseCase {
+  final WorldRepository _world;
+  final GameContentCatalog _content;
+  RepairArcStateUseCase(this._world, this._content);
+
+  /// Devuelve true si tuvo que reparar algo.
+  Future<bool> execute() async {
+    var world = await _world.getState();
+    final arc = _content.mainArcId;
+    if (world.arcCompleted(arc)) return false;
+    final stage = world.arcProgress[arc] ?? 0;
+    if (stage >= _content.arcStageCount(arc)) return false;
+
+    final chapter = _content.storyMissionFor(arc, stage, world.flags);
+    final missing = chapter?.requiredFlag;
+    if (missing == null || world.hasFlag(missing)) return false;
+
+    world = world.applyChoiceEffects(
+      setFlags: [missing],
+      journalNote: 'Las cosas se acomodaron solas mientras no mirabas. '
+          'El camino siguió por donde siguió.',
+    );
+    await _world.saveState(world);
+    return true;
+  }
+}
+
 // ─── Auto-resolución ─────────────────────────────────────────────────────────
 // Eventos cuya ventana de decisión venció se resuelven solos con la opción más
 // segura, a resultado parcial. Evita misiones congeladas para siempre si el
@@ -191,8 +223,9 @@ class AutoResolveExpiredEventsUseCase {
     final missions = await _mission.getAllActiveMissions();
     if (missions.isEmpty) return report;
     final messengers = await _messenger.getAllMessengers();
-    final world = await _world.getState();
     for (final mission in missions) {
+      // Se relee por misión: la anterior pudo haber dejado flags nuevos.
+      final world = await _world.getState();
       await _autoResolveExpired(
           mission, messengers, world, now ?? DateTime.now(), report);
     }
@@ -201,7 +234,8 @@ class AutoResolveExpiredEventsUseCase {
 
   /// Resuelve automáticamente los eventos con ventana de decisión vencida
   /// (no aplica a tutoriales: sus ventanas son de minutos y son guiados).
-  /// La auto-resolución NO aplica efectos narrativos (rep/flags/diario).
+  /// Aplica los efectos narrativos de la opción elegida (rep/flags/diario):
+  /// sin ellos, un evento de historia auto-resuelto trababa el arco.
   Future<Mission> _autoResolveExpired(Mission mission,
       List<Messenger> messengers, WorldState world, DateTime now,
       [List<AutoResolvedEvent>? report]) async {
@@ -254,6 +288,20 @@ class AutoResolveExpiredEventsUseCase {
         eventTitle: expired.title,
         chosenOptionText: option.text,
       ));
+
+      if (option.repDelta != null ||
+          option.setFlags != null ||
+          option.journalNote != null) {
+        world = world.applyChoiceEffects(
+          repDelta: option.repDelta,
+          setFlags: option.setFlags,
+          journalNote: option.journalNote == null
+              ? null
+              : 'No estabas: tu mensajero decidió por vos. '
+                  '${option.journalNote}',
+        );
+        await _world.saveState(world);
+      }
 
       if (messenger != null) {
         messenger = messenger.copyWith(
@@ -956,12 +1004,12 @@ class ResolveEventUseCase {
     if (option.repDelta != null ||
         option.setFlags != null ||
         option.journalNote != null) {
-      var world = await _world.getState();
-      world = world.applyRepDeltas(option.repDelta).addFlags(option.setFlags);
-      if (option.journalNote != null) {
-        world = world.addJournal(option.journalNote!);
-      }
-      await _world.saveState(world);
+      final world = await _world.getState();
+      await _world.saveState(world.applyChoiceEffects(
+        repDelta: option.repDelta,
+        setFlags: option.setFlags,
+        journalNote: option.journalNote,
+      ));
     }
 
     var updatedEvents = mission.events.map((e) {

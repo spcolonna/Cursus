@@ -107,6 +107,19 @@ class WorldState {
     return copyWith(flags: {...flags, ...newFlags});
   }
 
+  /// Huella narrativa de una decisión: reputación, flags y diario. La usan
+  /// tanto la decisión del jugador como la auto-resolución — si la segunda no
+  /// la aplicara, un arco que depende de un flag de camino se trabaría.
+  WorldState applyChoiceEffects({
+    Map<Faction, int>? repDelta,
+    Iterable<String>? setFlags,
+    String? journalNote,
+  }) {
+    var next = applyRepDeltas(repDelta).addFlags(setFlags);
+    if (journalNote != null) next = next.addJournal(journalNote);
+    return next;
+  }
+
   /// Agrega una entrada al diario (se guardan las últimas 40).
   WorldState addJournal(String text) {
     final next = [...journal, JournalEntry(date: DateTime.now(), text: text)];
