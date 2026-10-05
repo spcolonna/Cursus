@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"priceAureos\\\\|priceDenarios\\\\|priceUsd\\\\|'\\\\\\\\$\\\\|id: '\" lib/data/game_content.dart)",
+      "Bash(rm \"lib/presentation/widgets/[Interface]\" \"lib/presentation/widgets/Untitled-4.json\" && ls lib/presentation/widgets/)",
+      "Bash(flutter test *)",
+      "Bash(sed -i '' \"/^import '..\\\\/..\\\\/widgets\\\\/widgets.dart';$/d\" lib/presentation/screens/home/home_screen.dart lib/presentation/screens/login/login_screen.dart)",
+      "Bash(sed -i '' \"4d\" lib/presentation/screens/shop/shop_screen.dart)",
+      "Edit(/.claude/skills/historia/**)",
+      "Bash(python3 -c ' *)",
+      "Edit(/.claude/skills/interfaz/**)",
+      "Edit(/.claude/skills/balance/**)",
+      "Bash(python3 -)",
+      "Bash(rm -f test/audit_tmp.dart /tmp/audit.dart)",
+      "Bash(sed -n '/id: .evt_storm./,/^  \\),/p' lib/data/game_content.dart)",
+      "Bash(sed -n \"/id: 'evt_injured'/,/^  \\),/p\" lib/data/game_content.dart)",
+      "Bash(sed -n \"/id: 'evt_bandits',/,/^  \\),/p\" lib/data/game_content.dart)"
+    ],
+    "additionalDirectories": [
+      "/Users/sebastianperez/Documents/Personal/TheMessanger_Folder/messenger_app/lib/presentation/widgets"
+    ]
+  }
+}

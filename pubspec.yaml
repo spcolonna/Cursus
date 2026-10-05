@@ -1,0 +1,51 @@
+name: the_messenger
+description: The Messenger - Historical courier game
+publish_to: 'none'
+version: 1.0.0+2
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.4.10
+
+  # Local storage
+  shared_preferences: ^2.2.2
+
+  # Navigation
+  go_router: ^13.2.0
+
+  # Animations
+  flutter_animate: ^4.5.0
+
+  # Fonts
+  google_fonts: ^6.2.1
+
+  # Utils
+  intl: ^0.19.0
+  uuid: ^4.3.3
+  flutter_local_notifications: ^22.2.0
+  timezone: ^0.11.1
+  flutter_timezone: ^5.1.0
+
+  # Audio SFX
+  audioplayers: ^6.1.0
+
+  # Monetization
+  in_app_purchase: ^3.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/audio/
+    - assets/content/

@@ -1,0 +1,293 @@
+{
+  "missions": [
+    {
+      "id": "real_04",
+      "origin": "Roma",
+      "destination": "Tibur",
+      "distanceKm": 25,
+      "durationMinutes": 30,
+      "danger": 0.1,
+      "requiredRank": 1,
+      "lore": "Un recado breve a Tibur, entre villas de veraneo y el rumor fresco de las cascadas.",
+      "packageOptions": [
+        "Una invitación para una cena de verano",
+        "Un recado personal para la villa de un magistrado"
+      ],
+      "eventPoolIds": [
+        "evt_patrol",
+        "evt_pickpocket",
+        "evt_tax_collector",
+        "evt_lost_child"
+      ],
+      "minEvents": 1,
+      "maxEvents": 1
+    },
+    {
+      "id": "real_05",
+      "origin": "Roma",
+      "destination": "Praeneste",
+      "distanceKm": 38,
+      "durationMinutes": 45,
+      "danger": 0.15,
+      "requiredRank": 1,
+      "lore": "El Templo de la Fortuna en Praeneste espera un mensaje que no puede demorarse ni un día.",
+      "packageOptions": [
+        "Una ofrenda sellada para el templo",
+        "Correspondencia de un sacerdote a su familia en Roma"
+      ],
+      "eventPoolIds": [
+        "evt_patrol",
+        "evt_omen",
+        "evt_temple_theft",
+        "evt_wedding_road"
+      ],
+      "minEvents": 1,
+      "maxEvents": 1
+    },
+    {
+      "id": "real_06",
+      "origin": "Roma",
+      "destination": "Antium",
+      "distanceKm": 57,
+      "durationMinutes": 60,
+      "danger": 0.15,
+      "requiredRank": 1,
+      "lore": "La costa de Antium, villa de patricios, aguarda correspondencia que prefiere no viajar sola.",
+      "packageOptions": [
+        "Cartas entre dos villas de la costa",
+        "Un pedido urgente de un patricio retirado"
+      ],
+      "eventPoolIds": [
+        "evt_patrol",
+        "evt_merchant_offer",
+        "evt_cart_jam",
+        "evt_tax_collector",
+        "evt_ferry"
+      ],
+      "minEvents": 1,
+      "maxEvents": 2
+    },
+    {
+      "id": "real_07",
+      "origin": "Neapolis",
+      "destination": "Pompeii",
+      "distanceKm": 25,
+      "durationMinutes": 90,
+      "danger": 0.3,
+      "requiredRank": 1,
+      "lore": "Un salto corto entre Neapolis y Pompeii, por caminos que huelen a mar y a azufre.",
+      "packageOptions": [
+        "Un cargamento de pergaminos comerciales",
+        "Una carta entre comerciantes de vino"
+      ],
+      "eventPoolIds": [
+        "evt_bandits",
+        "evt_heatwave",
+        "evt_wolf",
+        "evt_pickpocket",
+        "evt_oracle"
+      ],
+      "minEvents": 1,
+      "maxEvents": 2
+    },
+    {
+      "id": "real_08",
+      "origin": "Roma",
+      "destination": "Cumae",
+      "distanceKm": 225,
+      "durationMinutes": 180,
+      "danger": 0.35,
+      "requiredRank": 2,
+      "lore": "La cueva de la Sibila espera en Cumae. Dicen que ahí los caminos también hablan.",
+      "packageOptions": [
+        "Una consulta escrita para la Sibila",
+        "Correspondencia de un senador supersticioso"
+      ],
+      "eventPoolIds": [
+        "evt_storm",
+        "evt_oracle",
+        "evt_omen",
+        "evt_ghost_road",
+        "evt_bandits",
+        "evt_merchant_offer"
+      ],
+      "minEvents": 2,
+      "maxEvents": 3
+    },
+    {
+      "id": "real_09",
+      "origin": "Roma",
+      "destination": "Beneventum",
+      "distanceKm": 240,
+      "durationMinutes": 240,
+      "danger": 0.4,
+      "requiredRank": 2,
+      "lore": "Beneventum, cruce de caminos del sur, necesita noticias que no esperen la próxima caravana.",
+      "packageOptions": [
+        "Órdenes administrativas para el cruce de caminos",
+        "Correspondencia militar de rutina"
+      ],
+      "eventPoolIds": [
+        "evt_bandits",
+        "evt_injured",
+        "evt_wolf",
+        "evt_deserter",
+        "evt_old_soldier",
+        "evt_heatwave"
+      ],
+      "minEvents": 2,
+      "maxEvents": 3
+    },
+    {
+      "id": "real_10",
+      "origin": "Ravenna",
+      "destination": "Aquileia",
+      "distanceKm": 130,
+      "durationMinutes": 360,
+      "danger": 0.3,
+      "requiredRank": 2,
+      "lore": "Entre pantanos del norte, Ravenna y Aquileia se hablan por mensajeros, no por mapas confiables.",
+      "packageOptions": [
+        "Registros de aduana entre puertos del norte",
+        "Correspondencia de mercaderes de ámbar"
+      ],
+      "eventPoolIds": [
+        "evt_flood",
+        "evt_ferry",
+        "evt_landslide",
+        "evt_patrol",
+        "evt_storm",
+        "evt_spy_drop"
+      ],
+      "minEvents": 2,
+      "maxEvents": 3
+    },
+    {
+      "id": "real_11",
+      "origin": "Pisae",
+      "destination": "Genua",
+      "distanceKm": 140,
+      "durationMinutes": 480,
+      "danger": 0.4,
+      "requiredRank": 2,
+      "lore": "La costa entre Pisae y Genua es hermosa y traicionera a partes iguales. Llevá abrigo.",
+      "packageOptions": [
+        "Cartas entre astilleros de la costa",
+        "Un contrato de compra de madera naval"
+      ],
+      "eventPoolIds": [
+        "evt_landslide",
+        "evt_storm",
+        "evt_wolf",
+        "evt_bridge",
+        "evt_forge_fire",
+        "evt_injured"
+      ],
+      "minEvents": 2,
+      "maxEvents": 4
+    },
+    {
+      "id": "real_12",
+      "origin": "Roma",
+      "destination": "Tarentum",
+      "distanceKm": 480,
+      "durationMinutes": 480,
+      "danger": 0.5,
+      "requiredRank": 2,
+      "lore": "Tarentum, puerto del sur, paga bien a quien llega antes que el rumor.",
+      "packageOptions": [
+        "Correspondencia de un armador del sur",
+        "Documentos de embarque hacia Oriente"
+      ],
+      "eventPoolIds": [
+        "evt_tax_collector",
+        "evt_deserter",
+        "evt_spy_drop",
+        "evt_heatwave",
+        "evt_merchant_offer",
+        "evt_rival_messenger"
+      ],
+      "minEvents": 2,
+      "maxEvents": 4
+    },
+    {
+      "id": "real_13",
+      "origin": "Roma",
+      "destination": "Brundisium",
+      "distanceKm": 540,
+      "durationMinutes": 720,
+      "danger": 0.55,
+      "requiredRank": 3,
+      "lore": "Brundisium embarca hacia Oriente. Lo que llega tarde, se queda en el muelle.",
+      "packageOptions": [
+        "Órdenes de embarque para las legiones de Oriente",
+        "Correspondencia diplomática sellada"
+      ],
+      "eventPoolIds": [
+        "evt_deserter",
+        "evt_spy_drop",
+        "evt_tax_collector",
+        "evt_letter_bribe",
+        "evt_heatwave",
+        "evt_old_soldier",
+        "evt_wedding_road"
+      ],
+      "minEvents": 3,
+      "maxEvents": 4
+    },
+    {
+      "id": "real_14",
+      "origin": "Roma",
+      "destination": "Aquileia",
+      "distanceKm": 600,
+      "durationMinutes": 1440,
+      "danger": 0.5,
+      "requiredRank": 3,
+      "lore": "Un día entero de camino hasta la frontera de Aquileia, donde Roma empieza a dudar de sus propios mapas.",
+      "packageOptions": [
+        "Tratados fronterizos para el gobernador de la región",
+        "Correspondencia militar confidencial"
+      ],
+      "eventPoolIds": [
+        "evt_flood",
+        "evt_landslide",
+        "evt_ghost_road",
+        "evt_wolf",
+        "evt_storm",
+        "evt_patrol",
+        "evt_omen",
+        "evt_deserter"
+      ],
+      "minEvents": 4,
+      "maxEvents": 6
+    },
+    {
+      "id": "real_15",
+      "origin": "Roma",
+      "destination": "Massilia",
+      "distanceKm": 900,
+      "durationMinutes": 2880,
+      "danger": 0.55,
+      "requiredRank": 3,
+      "lore": "Dos días de camino hasta Massilia, en la Galia. La ruta más larga que un mensajero puede aceptar sin preguntar por qué.",
+      "packageOptions": [
+        "Un tratado comercial con la Galia",
+        "Correspondencia diplomática de largo alcance"
+      ],
+      "eventPoolIds": [
+        "evt_storm",
+        "evt_bandits",
+        "evt_ghost_road",
+        "evt_wolf",
+        "evt_landslide",
+        "evt_oracle",
+        "evt_merchant_offer",
+        "evt_old_soldier",
+        "evt_letter_bribe",
+        "evt_deserter"
+      ],
+      "minEvents": 5,
+      "maxEvents": 7
+    }
+  ]
+}

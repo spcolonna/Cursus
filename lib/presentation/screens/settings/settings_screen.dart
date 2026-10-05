@@ -1,0 +1,335 @@
+// lib/presentation/screens/settings/settings_screen.dart
+//
+// Ajustes de avisos + panel de diagnóstico.
+//
+// El panel existe para responder una pregunta concreta en el dispositivo:
+// "¿las notificaciones están llegando?". Muestra el permiso y todo lo que
+// hay programado con su hora, y permite disparar una de prueba.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+
+import '../../providers/providers.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/widgets.dart';
+import '../../../domain/entities/notifications.dart';
+
+class SettingsScreen extends ConsumerStatefulWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  late Future<_Diagnostics> _diagnostics;
+
+  @override
+  void initState() {
+    super.initState();
+    _diagnostics = _loadDiagnostics();
+  }
+
+  Future<_Diagnostics> _loadDiagnostics() async {
+    final scheduler = ref.read(notificationSchedulerProvider);
+    return _Diagnostics(
+      permission: await scheduler.permissionStatus(),
+      pending: await scheduler.pending(),
+    );
+  }
+
+  void _reload() => setState(() => _diagnostics = _loadDiagnostics());
+
+  @override
+  Widget build(BuildContext context) {
+    final prefsAsync = ref.watch(notificationPrefsProvider);
+
+    return GradientScaffold(
+      body: SafeArea(
+        child: Column(children: [
+          _header(context),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+              children: [
+                SectionHeader(title: 'AVISOS DEL CAMINO'),
+                prefsAsync.when(
+                  loading: () => const Center(
+                      child:
+                          CircularProgressIndicator(color: AppColors.gold)),
+                  error: (e, _) => Text('Error: $e',
+                      style: AppTextStyles.bodyMedium),
+                  data: (prefs) => _PrefsCard(prefs: prefs, onChanged: _reload),
+                ),
+                const SizedBox(height: 20),
+                SectionHeader(title: 'SONIDO'),
+                const _SfxToggleCard(),
+                const SizedBox(height: 20),
+                SectionHeader(title: 'DIAGNÓSTICO'),
+                FutureBuilder<_Diagnostics>(
+                  future: _diagnostics,
+                  builder: (context, snap) {
+                    if (!snap.hasData) {
+                      return const Center(
+                          child: CircularProgressIndicator(
+                              color: AppColors.gold));
+                    }
+                    return _DiagnosticsCard(
+                      data: snap.data!,
+                      onReload: _reload,
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _header(BuildContext context) => Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        decoration: const BoxDecoration(
+          gradient: AppGradients.header,
+          border: Border(bottom: BorderSide(color: AppColors.bgLine)),
+        ),
+        child: Row(children: [
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+              ),
+              child: const Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 16),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text('Ajustes', style: AppTextStyles.titleLarge),
+        ]),
+      );
+}
+
+class _Diagnostics {
+  final NotificationPermission permission;
+  final List<ScheduledNotification> pending;
+  const _Diagnostics({required this.permission, required this.pending});
+}
+
+// ─── Preferencias ─────────────────────────────────────────────────────────────
+class _PrefsCard extends ConsumerWidget {
+  final NotificationPrefs prefs;
+  final VoidCallback onChanged;
+  const _PrefsCard({required this.prefs, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(notificationPrefsProvider.notifier);
+    return GameCard(
+      child: Column(children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          value: prefs.enabled,
+          activeThumbColor: AppColors.gold,
+          title: Text('Recibir avisos', style: AppTextStyles.bodyLarge),
+          subtitle: Text(
+            'Nunca entre las 22 y las 8, salvo un evento de una misión que '
+            'ya está en marcha. Máximo 4 por día.',
+            style: AppTextStyles.bodySmall.copyWith(height: 1.35),
+          ),
+          onChanged: (v) async {
+            await notifier.setEnabled(v);
+            onChanged();
+          },
+        ),
+        if (prefs.enabled) ...[
+          const Divider(color: AppColors.bgLine),
+          for (final kind in NotificationKind.values)
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: !prefs.muted.contains(kind),
+              activeThumbColor: AppColors.gold,
+              title: Text(kind.label, style: AppTextStyles.bodyLarge),
+              subtitle: Text(kind.description,
+                  style: AppTextStyles.bodySmall.copyWith(height: 1.35)),
+              onChanged: (_) async {
+                await notifier.toggleKind(kind);
+                onChanged();
+              },
+            ),
+        ],
+      ]),
+    );
+  }
+}
+
+// ─── Diagnóstico ──────────────────────────────────────────────────────────────
+class _DiagnosticsCard extends ConsumerWidget {
+  final _Diagnostics data;
+  final VoidCallback onReload;
+  const _DiagnosticsCard({required this.data, required this.onReload});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scheduler = ref.read(notificationSchedulerProvider);
+    final fmt = DateFormat('d/MM HH:mm');
+    final (permLabel, permColor) = switch (data.permission) {
+      NotificationPermission.granted => ('Concedido', AppColors.green),
+      NotificationPermission.denied => ('Denegado', AppColors.red),
+      NotificationPermission.notRequested =>
+        ('Todavía no se pidió', AppColors.amber),
+    };
+
+    return GameCard(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(Icons.verified_user_outlined, size: 15, color: permColor),
+          const SizedBox(width: 7),
+          Text('Permiso del sistema: ',
+              style: AppTextStyles.bodyMedium.copyWith(fontSize: 12)),
+          Text(permLabel,
+              style: AppTextStyles.fredoka(12,
+                  color: permColor, weight: FontWeight.bold)),
+        ]),
+        const SizedBox(height: 6),
+        Text('${data.pending.length} aviso(s) programado(s)',
+            style: AppTextStyles.bodyMedium.copyWith(fontSize: 12)),
+        const SizedBox(height: 4),
+        Text(
+          'iOS descarta lo que pase de 64 pendientes: por eso se programan '
+          'solo los dos próximos eventos de cada misión.',
+          style: AppTextStyles.bodySmall.copyWith(height: 1.35),
+        ),
+        const SizedBox(height: 12),
+
+        if (data.pending.isEmpty)
+          Text('Nada en la cola. Aceptá una misión para que se programen.',
+              style: AppTextStyles.bodyMedium.copyWith(fontSize: 12))
+        else
+          ...data.pending.map((n) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(_iconFor(n.kind),
+                          size: 14, color: AppColors.textSecondary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(n.title,
+                                  style: AppTextStyles.fredoka(12,
+                                      color: AppColors.textPrimary)),
+                              Text(n.body,
+                                  style: AppTextStyles.bodySmall
+                                      .copyWith(height: 1.3)),
+                            ]),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(fmt.format(n.at),
+                          style: AppTextStyles.fredoka(12,
+                              color: AppColors.gold)),
+                    ]),
+              )),
+
+        const SizedBox(height: 14),
+        Row(children: [
+          Expanded(
+            child: GameButton(
+              label: 'PROBAR EN 10s',
+              icon: Icons.notifications_active_outlined,
+              fontSize: 13,
+              onTap: () async {
+                await scheduler.fireTestNotification();
+                if (!context.mounted) return;
+                showRewardToast(context, const [],
+                    note: 'Cerrá la app: el aviso llega en 10 segundos.');
+                onReload();
+              },
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: GameButton(
+              label: 'RECARGAR',
+              icon: Icons.refresh,
+              fontSize: 13,
+              gradient: AppGradients.sky,
+              shadowColor: AppColors.skyDark,
+              onTap: onReload,
+            ),
+          ),
+        ]),
+        const SizedBox(height: 10),
+        Center(
+          child: TextButton(
+            onPressed: () async {
+              await scheduler.cancelAll();
+              onReload();
+            },
+            child: Text('Cancelar todos los avisos',
+                style:
+                    AppTextStyles.fredoka(12, color: AppColors.textSecondary)),
+          ),
+        ),
+      ]),
+    ).animate().fadeIn();
+  }
+
+  IconData _iconFor(NotificationKind kind) => switch (kind) {
+        NotificationKind.event => Icons.warning_amber_rounded,
+        NotificationKind.delivery => Icons.inventory_2_outlined,
+        NotificationKind.idle => Icons.hotel_outlined,
+        NotificationKind.contracts => Icons.assignment_outlined,
+      };
+}
+
+class _SfxToggleCard extends ConsumerStatefulWidget {
+  const _SfxToggleCard();
+
+  @override
+  ConsumerState<_SfxToggleCard> createState() => _SfxToggleCardState();
+}
+
+class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
+  bool? _enabled;
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(playerProgressProvider).isSfxEnabled().then((v) {
+      if (mounted) setState(() => _enabled = v);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = _enabled ?? true;
+    return GameCard(
+      child: SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text('Efectos de sonido',
+            style: AppTextStyles.fredoka(14, color: AppColors.white)),
+        subtitle: Text('Outcomes, entrega y feedback de sesión',
+            style: AppTextStyles.bodyMedium.copyWith(fontSize: 12)),
+        value: enabled,
+        activeThumbColor: AppColors.gold,
+        onChanged: (v) async {
+          await ref.read(playerProgressProvider).setSfxEnabled(v);
+          ref.read(sfxServiceProvider).setEnabled(v);
+          setState(() => _enabled = v);
+          if (v) ref.read(sfxServiceProvider).playTap();
+        },
+      ),
+    );
+  }
+}
