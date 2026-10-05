@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
+import 'widgets.dart';
 import '../../infrastructure/progress/player_progress.dart';
 
 /// Checklist post-tutorial (GDD §7): 5 tareas → 3 Aureos + 1 Sello.
@@ -108,7 +109,7 @@ class PrimerosPasosCard extends ConsumerWidget {
   }
 }
 
-/// Spotlight descartable de primera vez.
+/// Consejo de primera vez: una vez por pantalla, con el estilo del juego.
 Future<void> maybeShowSpotlight({
   required BuildContext context,
   required bool alreadySeen,
@@ -117,27 +118,23 @@ Future<void> maybeShowSpotlight({
   required String body,
 }) async {
   if (alreadySeen || !context.mounted) return;
-  await showDialog<void>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      backgroundColor: AppColors.bgCard,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: AppColors.gold.withValues(alpha: 0.4), width: 2),
-      ),
-      title: Text(title,
-          style: AppTextStyles.fredoka(18, color: AppColors.gold)),
-      content: Text(body, style: AppTextStyles.bodyMedium),
+  await showGameDialog<void>(
+    context,
+    builder: (ctx) => GameDialog(
+      icon: Icons.lightbulb_outline,
+      title: title,
       actions: [
-        TextButton(
-          onPressed: () {
-            onSeen();
-            Navigator.pop(ctx);
-          },
-          child: Text('Entendido',
-              style: AppTextStyles.fredoka(14, color: AppColors.gold)),
+        SizedBox(
+          width: double.infinity,
+          child: GameButton(
+            label: 'ENTENDIDO',
+            fontSize: 15,
+            onTap: () => Navigator.pop(ctx),
+          ),
         ),
       ],
+      child: Text(body,
+          style: AppTextStyles.bodyLarge, textAlign: TextAlign.center),
     ),
   );
   onSeen();

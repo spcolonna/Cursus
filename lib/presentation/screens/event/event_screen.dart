@@ -252,14 +252,17 @@ class _DecisionView extends StatelessWidget {
         child: Row(children: [
           GameBackButton(onTap: () => _leaveEventScreen(context)),
           const SizedBox(width: 10),
-          Flexible(
-            child: GameChip(
-              mission.isTutorial ? 'PRUEBA DE VARUS' : 'EVENTO CRÍTICO',
-              icon: Icons.warning_amber_rounded,
-              color: AppColors.amber,
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: GameChip(
+                mission.isTutorial ? 'PRUEBA DE VARUS' : 'EVENTO CRÍTICO',
+                icon: Icons.warning_amber_rounded,
+                color: AppColors.amber,
+              ),
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: AppSpacing.sm),
           PeriodicBuilder(
               builder: (_) => _DecisionCountdown(deadline: event.deadlineAt)),
         ]),

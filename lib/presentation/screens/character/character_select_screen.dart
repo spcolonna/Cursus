@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../feedback/feedback.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/messenger_avatar.dart';
 import '../../providers/providers.dart';
@@ -31,11 +32,13 @@ class _CharacterSelectScreenState
   Future<void> _confirm() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      setState(() => _error = 'Ingresa un nombre para tu mensajero');
+      setState(() => _error = 'Ponele un nombre a tu mensajero.');
+      AppFeedback.denied();
       return;
     }
     if (name.length < 2) {
-      setState(() => _error = 'El nombre debe tener al menos 2 letras');
+      setState(() => _error = 'El nombre necesita al menos 2 letras.');
+      AppFeedback.denied();
       return;
     }
     setState(() { _saving = true; _error = null; });
@@ -62,11 +65,13 @@ class _CharacterSelectScreenState
                   .animate().fadeIn(duration: 300.ms),
               const SizedBox(height: 6),
               Text(
-                'Antes de empezar,\n',
-                style: AppTextStyles.fredoka(28, color: Colors.white),
+                'Elegí quién lleva el mensaje',
+                style: AppTextStyles.fredoka(28, weight: FontWeight.bold),
               ).animate(delay: 100.ms).fadeIn(),
+              const SizedBox(height: AppSpacing.sm),
               Text(
-                'elige quien llevas el mensaje.',
+                'Va a ser tu mensajero principal. Más adelante vas a poder '
+                'contratar otros.',
                 style: AppTextStyles.bodyLarge.copyWith(
                     color: AppColors.textSecondary, fontSize: 15),
               ).animate(delay: 150.ms).fadeIn(),
@@ -115,15 +120,15 @@ class _CharacterSelectScreenState
                 ),
                 child: TextField(
                   controller: _nameController,
-                  style: AppTextStyles.fredoka(18, color: Colors.white),
+                  style: AppTextStyles.fredoka(18),
                   textCapitalization: TextCapitalization.words,
                   maxLength: 20,
                   decoration: InputDecoration(
                     hintText: _gender == MessengerGender.male
                         ? 'Ej: Marcus, Lucius...'
                         : 'Ej: Julia, Livia...',
-                    hintStyle: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textMuted.withValues(alpha: 0.5)),
+                    hintStyle: AppTextStyles.bodyMedium
+                        .copyWith(color: AppColors.textMuted),
                     counterText: '',
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
@@ -135,18 +140,21 @@ class _CharacterSelectScreenState
                     prefixIconConstraints: const BoxConstraints(
                         minWidth: 52, minHeight: 52),
                   ),
-                  onChanged: (_) {
-                    if (_error != null) setState(() => _error = null);
-                  },
+                  // La tarjeta de abajo muestra el nombre mientras se escribe.
+                  onChanged: (_) => setState(() => _error = null),
                 ),
               )
                   .animate(delay: 450.ms).fadeIn(),
 
               if (_error != null) ...[
-                const SizedBox(height: 8),
-                Text(_error!,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.red, fontSize: 12)),
+                const SizedBox(height: AppSpacing.sm),
+                Row(children: [
+                  const Icon(Icons.error_outline,
+                      color: AppColors.red, size: 16),
+                  const SizedBox(width: 6),
+                  Text(_error!, style: AppTextStyles.bodyMedium
+                      .copyWith(color: AppColors.textPrimary)),
+                ]).animate().shakeX(hz: 4, amount: 3, duration: 300.ms),
               ],
 
               const SizedBox(height: 32),
@@ -196,12 +204,15 @@ class _GenderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMale = gender == MessengerGender.male;
-    final accentColor = isMale ? AppColors.blue : AppColors.purple;
+    const accentColor = AppColors.gold;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        AppFeedback.tap();
+        onTap();
+      },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: AppMotion.of(context, AppMotion.base),
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
           gradient: selected
@@ -240,13 +251,13 @@ class _GenderCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             isMale ? 'Mensajero' : 'Mensajera',
-            style: AppTextStyles.bodyMedium.copyWith(fontSize: 11),
+            style: AppTextStyles.bodyMedium,
           ),
           if (selected) ...[
             const SizedBox(height: 8),
             Container(
               width: 8, height: 8,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                   color: accentColor, shape: BoxShape.circle),
             ),
           ],
@@ -280,12 +291,12 @@ class _PreviewCard extends StatelessWidget {
             children: [
               Text(
                 name,
-                style: AppTextStyles.fredoka(20, color: Colors.white),
+                style: AppTextStyles.fredoka(20, weight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               Text(
                 '${gender.label} · Correo · Rank 1',
-                style: AppTextStyles.bodyMedium.copyWith(fontSize: 12),
+                style: AppTextStyles.bodyMedium,
               ),
               const SizedBox(height: 6),
               Row(children: [
@@ -303,7 +314,7 @@ class _PreviewCard extends StatelessWidget {
   Widget _miniStat(String label, String value, Color color) => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Text('$label: ', style: AppTextStyles.bodyMedium.copyWith(fontSize: 11)),
+      Text('$label: ', style: AppTextStyles.bodyMedium),
       Text(value, style: AppTextStyles.fredoka(12, color: color)),
     ],
   );

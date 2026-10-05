@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../feedback/feedback.dart';
 import '../../providers/providers.dart';
+import '../../widgets/messenger_avatar.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/entities/entities.dart';
@@ -163,7 +165,8 @@ final shopCatalogue = <ShopItem>[
   const ShopItem(
     id: 'skill_contacts_1',
     name: 'Red de contactos I',
-    description: 'Sube Contactos un nivel (hasta 5). Mejores opciones diplomáticas.',
+    description:
+        'Sube Contactos un nivel (hasta 5). Mejores opciones diplomáticas.',
     category: ShopCategory.skills,
     price: 200,
     currency: PriceCurrency.denarios,
@@ -274,6 +277,7 @@ class ShopScreen extends ConsumerStatefulWidget {
 class _ShopScreenState extends ConsumerState<ShopScreen> {
   ShopCategory _activeTab = ShopCategory.boosters;
   String? _purchasedId;
+
   /// Mensajero que recibe el efecto (pociones, manuales, boosts).
   String? _targetId;
   static bool _spotlightShown = false;
@@ -341,8 +345,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                   justBought: _purchasedId == _items[i].id,
                   onBuy: () => _buy(_items[i], target),
                 )
-                    .animate(delay: Duration(milliseconds: i * 60))
-                    .fadeIn()
+                    .animate(delay: AppMotion.stagger * i.clamp(0, 8))
+                    .fadeIn(duration: AppMotion.of(context, AppMotion.base))
                     .slideY(begin: 0.08, end: 0),
               ),
             ),
@@ -391,12 +395,10 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             aureosCost: item.currency == PriceCurrency.aureos ? price : 0,
           );
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(e.toString().replaceFirst('Exception: ', ''))));
-      }
+      if (mounted) showErrorSnack(context, e);
       return;
     }
+    AppFeedback.reward();
     ref.invalidate(homeProvider);
     if (manualSkillFor(item.id) != null) {
       await ref
@@ -435,7 +437,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       'boost_health_full' => 'Salud restaurada al 100%',
       'boost_fatigue' => 'Fatiga eliminada',
       'boost_speed' => 'Sandalias listas: tu próxima misión durará 20% menos',
-      'boost_events' => 'Mapa listo: tu próxima misión revelará el evento por venir',
+      'boost_events' =>
+        'Mapa listo: tu próxima misión revelará el evento por venir',
       'skill_speed_1' ||
       'skill_stealth_1' ||
       'skill_combat_1' ||
@@ -444,27 +447,12 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         '¡Habilidad mejorada!',
       _ => 'Compra aplicada',
     };
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      backgroundColor: AppColors.bgCard,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: AppColors.green.withValues(alpha: 0.5), width: 2),
-      ),
-      content: Row(children: [
-        const Icon(Icons.check_circle, color: AppColors.green),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(msg,
-              style: AppTextStyles.fredoka(14, color: AppColors.white)),
-        ),
-      ]),
-    ));
+    showGameSnack(context, msg);
   }
 
   Future<void> _showPaywallDialog(ShopItem item) async {
-    await showDialog(
-      context: context,
+    await showGameDialog(
+      context,
       builder: (_) => _PaywallDialog(
         item: item,
         onConfirm: () => _purchaseIap(item),
@@ -476,24 +464,16 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final productId = IapProducts.productIdForShopItem(item.id);
     if (productId == null) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: AppColors.bgCard,
-        content: Text('Producto no configurado',
-            style: AppTextStyles.fredoka(14, color: AppColors.red)),
-      ));
+      showGameSnack(context, 'Este producto todavía no está disponible.',
+          isError: true);
       return;
     }
 
-    final result =
-        await ref.read(iapServiceProvider).purchase(productId);
+    final result = await ref.read(iapServiceProvider).purchase(productId);
     if (!mounted) return;
 
     if (!result.success) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: AppColors.bgCard,
-        content: Text(result.error ?? 'Compra cancelada',
-            style: AppTextStyles.fredoka(14, color: AppColors.red)),
-      ));
+      showGameSnack(context, result.error ?? 'Compra cancelada', isError: true);
       return;
     }
 
@@ -503,13 +483,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       await _creditIap(item);
     } else {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        backgroundColor: AppColors.bgCard,
-        content: Text(
-          'Compra iniciada. La tienda confirmará el pago.',
-          style: AppTextStyles.fredoka(14, color: AppColors.gold),
-        ),
-      ));
+      showGameSnack(context, 'Compra iniciada. La tienda confirmará el pago.');
     }
   }
 
@@ -517,12 +491,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     try {
       await ref.read(creditPurchaseUseCaseProvider).execute(item.id);
     } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e.toString().replaceFirst('Exception: ', ''))));
+      if (mounted) showErrorSnack(context, e);
       return;
     }
 
+    AppFeedback.reward();
     ref.invalidate(homeProvider);
     await ref
         .read(primerosPasosProvider.notifier)
@@ -549,20 +522,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
   void _showInsufficientFunds(PriceCurrency type) {
     final name = type == PriceCurrency.denarios ? 'Denarios' : 'Aureos';
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      backgroundColor: AppColors.bgCard,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: AppColors.red.withValues(alpha: 0.5), width: 2),
-      ),
-      content: Row(children: [
-        const Icon(Icons.warning_amber_rounded, color: AppColors.red),
-        const SizedBox(width: 10),
-        Text('No tienes suficientes $name',
-            style: AppTextStyles.fredoka(14, color: AppColors.white)),
-      ]),
-    ));
+    showGameSnack(context, 'No te alcanzan los $name.', isError: true);
   }
 }
 
@@ -578,45 +538,31 @@ class _TopBar extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: AppGradients.header,
         border: Border(
-            bottom:
-                BorderSide(color: AppColors.gold.withValues(alpha: 0.3), width: 2)),
+            bottom: BorderSide(
+                color: AppColors.gold.withValues(alpha: 0.3), width: 2)),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x88000000), blurRadius: 10, offset: Offset(0, 3)),
+              color: AppColors.shadowHard,
+              blurRadius: 10,
+              offset: Offset(0, 3)),
         ],
       ),
       child: Row(children: [
-        GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: AppColors.bgCard2,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.bgLine, width: 2),
-            ),
-            child: const Icon(Icons.arrow_back_ios_new,
-                color: AppColors.textSecondary, size: 16),
-          ),
-        ),
+        GameBackButton(onTap: () => Navigator.of(context).pop()),
         const SizedBox(width: 10),
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('TIENDA',
+        Expanded(
+          child: Text('TIENDA',
               style: AppTextStyles.fredoka(18,
                   color: AppColors.gold,
                   letterSpacing: 1,
                   weight: FontWeight.bold)),
-          Text('Imperio Romano', style: AppTextStyles.bodySmall),
-        ]),
-        const Spacer(),
+        ),
         // Wallet display
         if (messenger != null) ...[
-          CurrencyChip(
-              type: CurrencyType.denarios, value: messenger!.denarios),
-          const SizedBox(width: 8),
+          CurrencyChip(type: CurrencyType.denarios, value: messenger!.denarios),
+          const SizedBox(width: 6),
           CurrencyChip(type: CurrencyType.aureos, value: messenger!.aureos),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           CurrencyChip(type: CurrencyType.seals, value: messenger!.seals),
         ],
       ]),
@@ -641,9 +587,12 @@ class _TabRow extends StatelessWidget {
         children: ShopCategory.values.map((cat) {
           final selected = cat == active;
           return GestureDetector(
-            onTap: () => onTap(cat),
+            onTap: () {
+              AppFeedback.tap();
+              onTap(cat);
+            },
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: AppMotion.of(context, AppMotion.base),
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
@@ -706,10 +655,35 @@ class _TargetSelector extends StatelessWidget {
             style: AppTextStyles.fredoka(13, color: AppColors.textSecondary)),
         const SizedBox(width: 8),
         for (final m in messengers) ...[
-          ChoiceChip(
-            label: Text(m.name),
-            selected: m.id == selectedId,
-            onSelected: (_) => onSelect(m.id),
+          GestureDetector(
+            onTap: () {
+              AppFeedback.tap();
+              onSelect(m.id);
+            },
+            child: AnimatedContainer(
+              duration: AppMotion.of(context, AppMotion.base),
+              constraints: const BoxConstraints(minHeight: 40),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color:
+                    m.id == selectedId ? AppColors.bgCard : AppColors.bgCard2,
+                borderRadius: BorderRadius.circular(AppRadii.lg),
+                border: Border.all(
+                    color:
+                        m.id == selectedId ? AppColors.gold : AppColors.bgLine,
+                    width: m.id == selectedId ? 2.5 : 1.5),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                MessengerAvatar.from(m, size: 22),
+                const SizedBox(width: 6),
+                Text(m.name,
+                    style: AppTextStyles.fredoka(13,
+                        color: m.id == selectedId
+                            ? AppColors.gold
+                            : AppColors.textSecondary,
+                        weight: FontWeight.bold)),
+              ]),
+            ),
           ),
           const SizedBox(width: 6),
         ],
@@ -722,6 +696,7 @@ class _TargetSelector extends StatelessWidget {
 class _ShopCard extends StatelessWidget {
   final ShopItem item;
   final Messenger? messenger;
+
   /// Precio efectivo (los manuales escalan); null = no disponible.
   final int? price;
   final bool justBought;
@@ -763,12 +738,7 @@ class _ShopCard extends StatelessWidget {
           : item.isLimited
               ? AppColors.red.withValues(alpha: 0.6)
               : AppColors.bgLine,
-      gradient: justBought
-          ? const LinearGradient(
-              colors: [Color(0xFF0A2E0A), Color(0xFF061406)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight)
-          : null,
+      gradient: justBought ? AppGradients.purchased : null,
       child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
         // Icon box
         Container(
@@ -777,7 +747,8 @@ class _ShopCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: item.color.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: item.color.withValues(alpha: 0.5), width: 2.5),
+            border: Border.all(
+                color: item.color.withValues(alpha: 0.5), width: 2.5),
           ),
           child: Center(
             child: justBought
@@ -794,8 +765,7 @@ class _ShopCard extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(item.name,
-                    style: AppTextStyles.fredoka(15,
-                        color: AppColors.white, weight: FontWeight.bold)),
+                    style: AppTextStyles.fredoka(15, weight: FontWeight.bold)),
               ),
               if (item.tag != null) _Tag(label: item.tag!, item: item),
             ]),
@@ -813,25 +783,25 @@ class _ShopCard extends StatelessWidget {
                       size: 12, color: AppColors.gold),
                   const SizedBox(width: 3),
                   Text('+${item.aureosReward} Aureos',
-                      style: AppTextStyles.fredoka(11, color: AppColors.gold)),
+                      style: AppTextStyles.fredoka(12, color: AppColors.gold)),
                   const SizedBox(width: 8),
                 ],
                 if (item.dinariosReward != null) ...[
                   const Icon(Icons.toll, size: 12, color: AppColors.sky),
                   const SizedBox(width: 3),
                   Text('+${item.dinariosReward} Denarios',
-                      style: AppTextStyles.fredoka(11, color: AppColors.sky)),
+                      style: AppTextStyles.fredoka(12, color: AppColors.sky)),
                 ],
               ]),
             ],
             if (item.isLimited) ...[
               const SizedBox(height: 4),
               Row(children: [
-                const Icon(Icons.timer, size: 11, color: AppColors.red),
-                const SizedBox(width: 3),
+                const Icon(Icons.timer, size: 14, color: AppColors.red),
+                const SizedBox(width: 4),
                 Text('TIEMPO LIMITADO',
-                    style: AppTextStyles.fredoka(10,
-                        color: AppColors.red, letterSpacing: 0.5)),
+                    style: AppTextStyles.fredoka(12,
+                        color: AppColors.textPrimary, letterSpacing: 0.5)),
               ]),
             ],
           ]),
@@ -865,17 +835,9 @@ class _Tag extends StatelessWidget {
       'OFERTA' => AppColors.red,
       _ => AppColors.gold,
     };
-    return Container(
-      margin: const EdgeInsets.only(left: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color, width: 1.5),
-      ),
-      child: Text(label,
-          style: AppTextStyles.fredoka(9,
-              color: color, letterSpacing: 0.5, weight: FontWeight.bold)),
+    return Padding(
+      padding: const EdgeInsets.only(left: 6),
+      child: GameChip(label, color: color),
     );
   }
 }
@@ -907,7 +869,7 @@ class _BuyButton extends StatelessWidget {
           border: Border.all(color: AppColors.green, width: 2),
         ),
         child: Text('COMPRADO',
-            style: AppTextStyles.fredoka(11,
+            style: AppTextStyles.fredoka(12,
                 color: AppColors.green, weight: FontWeight.bold)),
       );
     }
@@ -933,40 +895,45 @@ class _BuyButton extends StatelessWidget {
         ),
     };
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          gradient: canAfford
-              ? gradient
-              : const LinearGradient(
-                  colors: [Color(0xFF3A4A5A), Color(0xFF2A3A4A)]),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.outline, width: 2.5),
-          boxShadow: [
-            BoxShadow(
-                color: canAfford ? shadow : Colors.black38,
-                offset: const Offset(0, 3),
-                blurRadius: 0),
-          ],
-        ),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(
-            isRealMoney
-                ? Icons.shopping_cart
-                : currency == PriceCurrency.aureos
-                    ? Icons.monetization_on
-                    : Icons.toll,
-            size: 16,
-            color: canAfford ? iconColor : Colors.white38,
+    return Semantics(
+      button: true,
+      label: 'Comprar por $priceLabel',
+      child: GestureDetector(
+        onTap: () {
+          canAfford ? AppFeedback.tap() : AppFeedback.denied();
+          onTap();
+        },
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 64, minHeight: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: canAfford ? gradient : AppGradients.disabled,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.outline, width: 2.5),
+            boxShadow: [
+              BoxShadow(
+                  color: canAfford ? shadow : AppColors.outline,
+                  offset: const Offset(0, 3),
+                  blurRadius: 0),
+            ],
           ),
-          const SizedBox(height: 2),
-          Text(priceLabel,
-              style: AppTextStyles.fredoka(13,
-                  color: canAfford ? textColor : Colors.white38,
-                  weight: FontWeight.bold)),
-        ]),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Icon(
+              isRealMoney
+                  ? Icons.shopping_cart
+                  : currency == PriceCurrency.aureos
+                      ? Icons.monetization_on
+                      : Icons.toll,
+              size: 16,
+              color: canAfford ? iconColor : AppColors.textSecondary,
+            ),
+            const SizedBox(height: 2),
+            Text(priceLabel,
+                style: AppTextStyles.fredoka(13,
+                    color: canAfford ? textColor : AppColors.textSecondary,
+                    weight: FontWeight.bold)),
+          ]),
+        ),
       ),
     );
   }
@@ -980,79 +947,67 @@ class _PaywallDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: AppColors.bgCard,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: AppColors.gold.withValues(alpha: 0.5), width: 3),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: item.color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: item.color.withValues(alpha: 0.6), width: 3),
-            ),
-            child: Center(child: Icon(item.icon, color: item.color, size: 32)),
+    return GameDialog(
+      title: item.name,
+      actions: [
+        SizedBox(
+          width: double.infinity,
+          child: GameButton(
+            label: 'COMPRAR · ${_priceStr(item.price)}',
+            icon: Icons.shopping_cart,
+            fontSize: 16,
+            onTap: () {
+              Navigator.pop(context);
+              onConfirm();
+            },
           ),
-          const SizedBox(height: 14),
-          Text(item.name,
-              style: AppTextStyles.fredoka(20, color: AppColors.white),
-              textAlign: TextAlign.center),
-          const SizedBox(height: 6),
-          Text(item.description,
-              style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.bgCard2,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.bgLine, width: 2),
-            ),
-            child: Column(children: [
-              if (item.aureosReward != null)
-                _rewardRow(Icons.monetization_on, AppColors.gold,
-                    '+${item.aureosReward} Aureos'),
-              if (item.dinariosReward != null)
-                _rewardRow(Icons.toll, AppColors.sky,
-                    '+${item.dinariosReward} Denarios'),
-              if (item.id == 'bundle_starter') ...[
-                _rewardRow(Icons.person_add, AppColors.green, '+2.º mensajero'),
-                _rewardRow(Icons.verified, AppColors.amber, '+2 Sellos'),
-              ],
-              if (item.id == 'bundle_warrior')
-                _rewardRow(Icons.trending_up, AppColors.green,
-                    '+2 niveles de habilidad a elección (en Caminos)'),
-            ]),
+        ),
+        GameButton(
+          label: 'Cancelar',
+          fontSize: 14,
+          variant: GameButtonVariant.secondary,
+          onTap: () => Navigator.pop(context),
+        ),
+      ],
+      child: Column(children: [
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: item.color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: item.color, width: 3),
           ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: GameButton(
-              label: 'COMPRAR · ${_priceStr(item.price)}',
-              icon: Icons.shopping_cart,
-              gradient: AppGradients.green,
-              shadowColor: AppColors.greenShadow,
-              fontSize: 16,
-              onTap: () {
-                Navigator.pop(context);
-                onConfirm();
-              },
-            ),
+          child: Icon(item.icon, color: item.color, size: 32),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Text(item.description,
+            style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
+        const SizedBox(height: AppSpacing.lg),
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: AppColors.bgCard2,
+            borderRadius: BorderRadius.circular(AppRadii.md - 2),
+            border: Border.all(color: AppColors.bgLine, width: 2),
           ),
-          const SizedBox(height: 10),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar',
-                style: AppTextStyles.fredoka(14, color: AppColors.textMuted)),
-          ),
-        ]),
-      ),
+          child: Column(children: [
+            if (item.aureosReward != null)
+              _rewardRow(Icons.monetization_on, AppColors.gold,
+                  '+${item.aureosReward} Aureos'),
+            if (item.dinariosReward != null)
+              _rewardRow(Icons.toll, AppColors.sky,
+                  '+${item.dinariosReward} Denarios'),
+            if (item.id == 'bundle_starter') ...[
+              _rewardRow(Icons.person_add, AppColors.green, '+2.º mensajero'),
+              _rewardRow(Icons.verified, AppColors.amber, '+2 Sellos'),
+            ],
+            if (item.id == 'bundle_warrior')
+              _rewardRow(Icons.trending_up, AppColors.green,
+                  '+2 niveles de habilidad a elección (en Caminos)'),
+          ]),
+        ),
+      ]),
     );
   }
 
@@ -1061,9 +1016,13 @@ class _PaywallDialog extends StatelessWidget {
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(icon, size: 16, color: color),
           const SizedBox(width: 6),
-          Text(text,
-              style: AppTextStyles.fredoka(14,
-                  color: color, weight: FontWeight.bold)),
+          Flexible(
+            child: Text(text,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.fredoka(14,
+                    color: GameChip.legibleText(color),
+                    weight: FontWeight.bold)),
+          ),
         ]),
       );
 

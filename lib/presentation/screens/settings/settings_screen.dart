@@ -58,11 +58,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 SectionHeader(title: 'AVISOS DEL CAMINO'),
                 prefsAsync.when(
-                  loading: () => const Center(
-                      child:
-                          CircularProgressIndicator(color: AppColors.gold)),
-                  error: (e, _) => Text('Error: $e',
-                      style: AppTextStyles.bodyMedium),
+                  loading: () => const LoadingState(),
+                  error: (e, _) => ErrorState(error: e),
                   data: (prefs) => _PrefsCard(prefs: prefs, onChanged: _reload),
                 ),
                 const SizedBox(height: 20),
@@ -99,20 +96,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           border: Border(bottom: BorderSide(color: AppColors.bgLine)),
         ),
         child: Row(children: [
-          GestureDetector(
-            onTap: () => context.pop(),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-              ),
-              child: const Icon(Icons.arrow_back_ios_new,
-                  color: Colors.white, size: 16),
-            ),
-          ),
+          GameBackButton(onTap: () => context.pop()),
           const SizedBox(width: 12),
           Text('Ajustes', style: AppTextStyles.titleLarge),
         ]),

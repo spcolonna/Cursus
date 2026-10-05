@@ -31,20 +31,25 @@ lib/
 ├── data/story_content.dart       CONTENIDO: arcos narrativos (arc_claudius, 5 caps, 3 finales)
 ├── data/static_game_content.dart StaticGameContent: implementa GameContentCatalog con lo de data/
 └── presentation/
-    ├── theme/app_theme.dart      AppColors, AppGradients, AppTextStyles + GameButton, GameCard,
-    │                             GradientScaffold, StatBar, RiskChip, DeadlineChip,
-    │                             PackageBadge, SkillIcon   ← el design system vive acá
-    ├── widgets/widgets.dart      GradeBadge, PulsingDot, SectionHeader
-    ├── providers/providers.dart  Riverpod: DI + notifiers (home, guild, world, missionProgress)
-    └── screens/                  splash, login, onboarding, character, home, mission, event,
-                                  mission_result, profile, shop, skills
+    ├── theme/app_theme.dart      AppColors, AppGradients, AppTextStyles, AppSpacing, AppRadii
+    │                             + GameButton (variantes), GameCard, GradientScaffold, StatBar,
+    │                             RiskChip, DeadlineChip, PackageBadge   ← design system
+    ├── theme/motion.dart         AppMotion: duraciones, curvas y movimiento reducido
+    ├── feedback/feedback.dart    AppFeedback: sonido + vibración en un solo lugar
+    ├── widgets/components.dart   GameChip, GameIconButton/BackButton, GameDialog/Sheet,
+    │                             Loading/Empty/ErrorState, LiveProgressBar, PeriodicBuilder,
+    │                             CountUpText, ParticleBurst, showGameSnack/showErrorSnack
+    ├── widgets/widgets.dart      CurrencyChip, RewardAmount, showRewardToast, GradeBadge…
+    ├── providers/providers.dart  Riverpod: DI + notifiers (home, guild, world, titles…)
+    └── screens/                  splash, login, onboarding, character, home (+ home/parts/),
+                                  mission, event, mission_result, profile, shop, skills
 ```
 
 `router.dart` (go_router) · `main.dart` entry point.
 
 ## Cómo navegar sin quemar tokens
 
-Archivos grandes: `home_screen.dart` (1.9k líneas), `mission_screen.dart` (1.2k), `game_content.dart` (1k), `usecases.dart` (885), `shop_screen.dart` (887). **No los leas enteros.** Anclas útiles:
+Archivos grandes: `mission_screen.dart` (900), `game_content.dart` (1k), `usecases.dart` (885), `shop_screen.dart` (887). **No los leas enteros.** Anclas útiles:
 
 ```bash
 grep -n "^class \|^const \|^final \|^// ═\|^  // ──" <archivo>   # índice del archivo

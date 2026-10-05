@@ -673,4 +673,11 @@ void main() {
       expect(world.state.hasFlag('path_varus'), isFalse);
     });
   });
+
+  test('la prosa de los resultados no arrastra marcas sueltas', () {
+    // Había outcomes que empezaban con "~ " (marca de borrador).
+    final src = File('lib/data/game_content.dart').readAsStringSync();
+    expect(RegExp(r"outcome(Success|Partial|Fail): '[~*#]").hasMatch(src),
+        isFalse);
+  });
 }

@@ -82,6 +82,14 @@ class AppColors {
   static const amberCard = Color(0xDD1A0800);  // panel de evento en ruta
   static const trackDark = Color(0xFF0A1020);  // fondo de barras de progreso
 
+  // Barra inferior: madera oscura con filo dorado
+  static const navBg     = Color(0xEE130A00);
+  static const navBorder = Color(0xFF8B6000);
+
+  static const purpleShadow = Color(0xFF2A0E55);
+
+  static const transparent = Color(0x00000000);
+
   // Sombras y velos
   static const shadowSoft = Color(0x66000000);
   static const shadowHard = Color(0x88000000);
@@ -148,6 +156,30 @@ class AppGradients {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [Color(0xFF241A38), Color(0xFF16101F)],
+  );
+
+  // Velo del fondo del Home: deja ver la ilustración en el centro.
+  static const homeOverlay = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xDD060E1A), Color(0x22060E1A), Color(0xF0060E1A)],
+    stops: [0.0, 0.45, 1.0],
+  );
+
+  // Portada (login/splash): la ilustración arriba, el texto sobre un velo
+  // que se oscurece hacia abajo (regla 6: texto sobre imagen lleva scrim).
+  static const coverScrim = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0x33060E1A), Color(0x66060E1A), Color(0xEE060E1A)],
+    stops: [0.0, 0.45, 0.8],
+  );
+
+  // Card recién comprada: verde oscuro un instante.
+  static const purchased = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF0A2E0A), Color(0xFF061406)],
   );
 
   static const disabled = LinearGradient(
@@ -632,12 +664,13 @@ class DeadlineChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isUrgent = mission.timeRemaining.inHours < 2;
-    final color = mission.isOverdue
-        ? AppColors.red
+    final arrived = mission.isOverdue;
+    final isUrgent = mission.timeRemaining.inMinutes < 10;
+    final color = arrived
+        ? AppColors.gold
         : isUrgent
-        ? AppColors.amber
-        : AppColors.sky;
+            ? AppColors.amber
+            : AppColors.sky;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
@@ -646,10 +679,11 @@ class DeadlineChip extends StatelessWidget {
         border: Border.all(color: color, width: 1.5),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(Icons.schedule, size: 11, color: color),
+        Icon(arrived ? Icons.flag_rounded : Icons.schedule,
+            size: 13, color: color),
         const SizedBox(width: 3),
         Text(mission.timeRemainingLabel,
-            style: AppTextStyles.fredoka(11,
+            style: AppTextStyles.fredoka(12,
                 color: color, weight: FontWeight.bold)),
       ]),
     );

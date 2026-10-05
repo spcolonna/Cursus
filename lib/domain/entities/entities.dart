@@ -278,7 +278,8 @@ class Mission {
 
   String get timeRemainingLabel {
     final r = timeRemaining;
-    if (r.isNegative) return 'ATRASADO';
+    // Tardar en entregar no baja la nota (ver timeScoreFor): no es "atraso".
+    if (r.isNegative) return 'LLEGÓ';
     if (r.inDays > 0) return '${r.inDays}d ${r.inHours % 24}h';
     if (r.inHours > 0) return '${r.inHours}h ${r.inMinutes % 60}m';
     if (r.inMinutes > 0) return '${r.inMinutes}m ${r.inSeconds % 60}s';

@@ -48,6 +48,7 @@ class OptionForecast {
 const int _luckMin = -10;
 const int _luckMax = 19;
 const int _successThreshold = 55;
+const int _partialThreshold = 30;
 
 // ── Tiradas críticas ─────────────────────────────────────────────────────────
 // Se tira un d100 aparte del azar del camino. Garantizan las dos puntas del
@@ -66,9 +67,12 @@ int mishapPercent(int nominalRisk) => switch (nominalRisk) {
 const int kLuckyBreakPercent = 5;
 
 /// Probabilidad de éxito (0..1) dado el score sin azar.
-double _successChance(int baseScore) {
-  // Éxito si base + luck >= 55 → luck >= 55 - base.
-  final needed = _successThreshold - baseScore;
+double _successChance(int baseScore) =>
+    _chanceAtLeast(baseScore, _successThreshold);
+
+/// Probabilidad (0..1) de que base + azar llegue a [threshold].
+double _chanceAtLeast(int baseScore, int threshold) {
+  final needed = threshold - baseScore;
   if (needed <= _luckMin) return 1.0;
   if (needed > _luckMax) return 0.0;
   const total = _luckMax - _luckMin + 1;
@@ -124,7 +128,12 @@ OptionForecast forecastFor(EventOption option, Messenger? messenger) {
 
   final mishap = mishapPercent(option.riskLevel) / 100;
   const lucky = kLuckyBreakPercent / 100;
-  final chance = lucky + (1 - mishap - lucky) * _successChance(score);
+  // Un parcial vale medio éxito: sales del paso, con algún costo. Sin esto,
+  // una opción prudente sin habilidad (casi siempre parcial) se pintaba
+  // como "tirarse al vacío".
+  final success = _successChance(score);
+  final partial = _chanceAtLeast(score, _partialThreshold) - success;
+  final chance = lucky + (1 - mishap - lucky) * (success + partial * 0.5);
   final band = switch (chance) {
     >= 0.85 => ForecastBand.assured,
     >= 0.60 => ForecastBand.favourable,
@@ -169,10 +178,12 @@ String _reason({
 }) {
   // La fatiga es lo primero que hay que decir: es lo que el jugador puede
   // arreglar hoy mismo (descanso, poción).
+  // Agotado se avisa siempre; cansado, solo si ya pinta mal.
+  if (fatiguePenalty > 0 && fatigue >= 70) {
+    return 'Vas agotado: cualquier cosa te puede salir mal.';
+  }
   if (fatiguePenalty > 0 && band.index >= ForecastBand.uncertain.index) {
-    return fatigue >= 70
-        ? 'Vas agotado: cualquier cosa te puede salir mal.'
-        : 'El cansancio te está pesando en las manos.';
+    return 'El cansancio te está pesando en las manos.';
   }
 
   // Sin habilidad de por medio: solo pesa el riesgo del camino.
@@ -180,7 +191,8 @@ String _reason({
     return switch (band) {
       ForecastBand.assured => 'Es la opción prudente. Lenta, pero segura.',
       ForecastBand.favourable => 'No necesitás nada especial para intentarlo.',
-      ForecastBand.uncertain => 'Sin un oficio que te ayude, depende del día.',
+      ForecastBand.uncertain =>
+        'Salís del paso, pero sin oficio no sale redondo.',
       ForecastBand.risky => 'Puro pulso y suerte. Puede salir feo.',
       ForecastBand.reckless => 'Esto es tirarse al vacío y esperar lo mejor.',
     };

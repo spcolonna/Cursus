@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../feedback/feedback.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/widgets.dart';
@@ -34,9 +34,9 @@ class _SkillTreeScreenState extends ConsumerState<SkillTreeScreen> {
 
     return GradientScaffold(
       body: homeAsync.when(
-        loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.gold)),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(
+            error: e, onRetry: () => ref.read(homeProvider.notifier).refresh()),
         data: (state) {
           if (state.slots.isEmpty) {
             return Center(
@@ -93,9 +93,9 @@ class _SkillTreeScreenState extends ConsumerState<SkillTreeScreen> {
                           }),
                           onAscend: () => _ascend(selected, e.value),
                         )
-                            .animate(
-                                delay: Duration(milliseconds: 80 + e.key * 60))
-                            .fadeIn()
+                            .animate(delay: AppMotion.stagger * (1 + e.key))
+                            .fadeIn(
+                                duration: AppMotion.of(context, AppMotion.base))
                             .slideY(begin: 0.05, end: 0),
                       );
                     }),
@@ -117,18 +117,8 @@ class _SkillTreeScreenState extends ConsumerState<SkillTreeScreen> {
         border: Border(bottom: BorderSide(color: AppColors.bgLine)),
       ),
       child: Row(children: [
-        GestureDetector(
-          onTap: () => context.go('/home'),
-          child: Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-            ),
-            child: const Icon(Icons.arrow_back_ios_new,
-                color: Colors.white, size: 16),
-          ),
+        GameBackButton(
+          onTap: () => context.canPop() ? context.pop() : context.go('/home'),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -151,12 +141,16 @@ class _SkillTreeScreenState extends ConsumerState<SkillTreeScreen> {
       await ref
           .read(primerosPasosProvider.notifier)
           .markTask(PlayerProgress.taskLevelSkill);
-      HapticFeedback.mediumImpact();
-    } catch (e) {
+      AppFeedback.impact();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(e.toString().replaceFirst('Exception: ', ''))));
+        final node = skillNode(skill, messenger.skillLevel(skill) + 1);
+        await showGameDialog(
+          context,
+          builder: (_) => _AscendedDialog(skill: skill, node: node),
+        );
       }
+    } catch (e) {
+      if (mounted) showErrorSnack(context, e);
     } finally {
       if (mounted) setState(() => _ascending = false);
     }
@@ -173,20 +167,16 @@ class _SkillTreeScreenState extends ConsumerState<SkillTreeScreen> {
       await ref
           .read(primerosPasosProvider.notifier)
           .markTask(PlayerProgress.taskLevelSkill);
-      HapticFeedback.heavyImpact();
+      AppFeedback.impact();
       if (mounted) {
         final node = skillNode(skill, messenger.skillLevel(skill) + 1);
-        await showDialog(
-          context: context,
+        await showGameDialog(
+          context,
           builder: (_) => _AscendedDialog(skill: skill, node: node),
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content:
-                Text(e.toString().replaceFirst('Exception: ', ''))));
-      }
+      if (mounted) showErrorSnack(context, e);
     } finally {
       if (mounted) setState(() => _ascending = false);
     }
@@ -366,20 +356,23 @@ class _PathCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xDD0D1830),
+        gradient: AppGradients.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: level >= 6 ? AppColors.purple.withValues(alpha: 0.6) : _color.withValues(alpha: 0.4),
+            color: level >= 6 ? AppColors.purple.withValues(alpha: 0.7) : _color.withValues(alpha: 0.5),
             width: 2),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x44000000), offset: Offset(0, 4), blurRadius: 8),
+              color: AppColors.shadowSoft, offset: Offset(0, 4), blurRadius: 8),
         ],
       ),
       child: Column(children: [
         // Cabecera (tap = expandir)
         GestureDetector(
-          onTap: onToggle,
+          onTap: () {
+            AppFeedback.tap();
+            onToggle();
+          },
           behavior: HitTestBehavior.opaque,
           child: Padding(
             padding: const EdgeInsets.all(14),
@@ -404,27 +397,8 @@ class _PathCard extends StatelessWidget {
                                 color: AppColors.textPrimary,
                                 weight: FontWeight.bold)),
                         const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: (level >= 6
-                                    ? AppColors.purple
-                                    : _color)
-                                .withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                                color:
-                                    level >= 6 ? AppColors.purple : _color,
-                                width: 1.5),
-                          ),
-                          child: Text('Nv.$level/10',
-                              style: AppTextStyles.fredoka(11,
-                                  color: level >= 6
-                                      ? AppColors.purple
-                                      : _color,
-                                  weight: FontWeight.bold)),
-                        ),
+                        GameChip('Nv.$level/10',
+                            color: level >= 6 ? AppColors.purple : _color),
                       ]),
                       const SizedBox(height: 3),
                       Text('«${node.name}»',
@@ -433,8 +407,12 @@ class _PathCard extends StatelessWidget {
                               fontStyle: FontStyle.italic)),
                     ]),
               ),
-              Icon(expanded ? Icons.expand_less : Icons.expand_more,
-                  color: AppColors.textMuted, size: 22),
+              AnimatedRotation(
+                turns: expanded ? 0.5 : 0,
+                duration: AppMotion.of(context, AppMotion.base),
+                child: const Icon(Icons.expand_more,
+                    color: AppColors.textMuted, size: 24),
+              ),
             ]),
           ),
         ),
@@ -461,12 +439,12 @@ class _PathCard extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: AppGradients.purple,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.black38, width: 2),
+                border: Border.all(color: AppColors.outline, width: 2),
               ),
               child: Center(
                 child: Text('CAMINO COMPLETADO',
                     style: AppTextStyles.fredoka(13,
-                        color: Colors.white,
+                        color: AppColors.parchment,
                         weight: FontWeight.bold,
                         letterSpacing: 1)),
               ),
@@ -474,8 +452,13 @@ class _PathCard extends StatelessWidget {
           ),
 
         // Lista completa de nodos
-        if (expanded)
-          Container(
+        AnimatedSize(
+          duration: AppMotion.of(context, AppMotion.base),
+          curve: AppMotion.standard,
+          alignment: Alignment.topCenter,
+          child: !expanded
+              ? const SizedBox(width: double.infinity)
+              : Container(
             decoration: const BoxDecoration(
               border: Border(top: BorderSide(color: AppColors.bgLine)),
             ),
@@ -494,6 +477,7 @@ class _PathCard extends StatelessWidget {
                   .toList(),
             ),
           ),
+        ),
       ]),
     );
   }
@@ -538,16 +522,23 @@ class _NextLevelRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(5),
               child: Stack(children: [
                 Container(height: 8, color: AppColors.outline),
-                FractionallySizedBox(
-                  widthFactor: (xp / kXpPerSkillLevel).clamp(0.0, 1.0),
-                  child: Container(height: 8, color: color),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(
+                      begin: 0, end: (xp / kXpPerSkillLevel).clamp(0.0, 1.0)),
+                  duration: AppMotion.of(context, AppMotion.slow * 2),
+                  curve: AppMotion.enter,
+                  builder: (_, v, __) => FractionallySizedBox(
+                    widthFactor: v,
+                    child: Container(height: 8, color: color),
+                  ),
                 ),
               ]),
             ),
           ),
           const SizedBox(width: 8),
           Text('$xp/$kXpPerSkillLevel XP',
-              style: AppTextStyles.fredoka(11, color: color)),
+              style: AppTextStyles.fredoka(12,
+                  color: GameChip.legibleText(color))),
         ]),
       ]);
     }
@@ -556,9 +547,14 @@ class _NextLevelRow extends StatelessWidget {
     final cost = sealCostForLevel[level + 1] ?? 999;
     final canAfford = seals >= cost;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text('Ascenso: «${next.name}»',
-          style: AppTextStyles.fredoka(13,
-              color: AppColors.purple, weight: FontWeight.bold)),
+      Row(children: [
+        const Icon(Icons.workspace_premium, color: AppColors.purple, size: 16),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text('Ascenso: «${next.name}»',
+              style: AppTextStyles.fredoka(13, weight: FontWeight.bold)),
+        ),
+      ]),
       const SizedBox(height: 2),
       Text(next.perk,
           style:
@@ -577,12 +573,8 @@ class _NextLevelRow extends StatelessWidget {
           label: canAfford
               ? 'ASCENDER — $cost SELLOS'
               : 'NECESITÁS $cost SELLOS (tenés $seals)',
-          gradient: canAfford
-              ? AppGradients.purple
-              : const LinearGradient(
-                  colors: [Color(0xFF334455), Color(0xFF223344)]),
-          shadowColor:
-              canAfford ? const Color(0xFF2A0E55) : const Color(0xFF111822),
+          gradient: AppGradients.purple,
+          shadowColor: AppColors.purpleShadow,
           fontSize: 14,
           isLoading: ascending,
           onTap: canAfford && !ascending ? onAscend : null,
@@ -617,7 +609,7 @@ class _LevelDelta extends StatelessWidget {
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('QUÉ GANÁS',
-            style: AppTextStyles.fredoka(9,
+            style: AppTextStyles.fredoka(12,
                 color: AppColors.textSecondary, letterSpacing: 1.2)),
         const SizedBox(height: 5),
         for (final d in deltas)
@@ -630,13 +622,14 @@ class _LevelDelta extends StatelessWidget {
                         .copyWith(color: AppColors.textSecondary)),
               ),
               Text(d.before,
-                  style: AppTextStyles.fredoka(11,
+                  style: AppTextStyles.fredoka(12,
                       color: AppColors.textMuted)),
               const Icon(Icons.arrow_right_alt,
                   size: 14, color: AppColors.textMuted),
               Text(d.after,
-                  style: AppTextStyles.fredoka(11,
-                      color: color, weight: FontWeight.bold)),
+                  style: AppTextStyles.fredoka(12,
+                      color: GameChip.legibleText(color),
+                      weight: FontWeight.bold)),
             ]),
           ),
       ]),
@@ -672,7 +665,7 @@ class _NodeRow extends StatelessWidget {
           decoration: BoxDecoration(
             color: state == _NodeState.unlocked
                 ? circleColor.withValues(alpha: 0.2)
-                : Colors.transparent,
+                : AppColors.transparent,
             shape: BoxShape.circle,
             border: Border.all(color: circleColor, width: 2),
           ),
@@ -680,8 +673,9 @@ class _NodeRow extends StatelessWidget {
             child: state == _NodeState.unlocked
                 ? Icon(Icons.check, size: 13, color: circleColor)
                 : Text('${node.level}',
-                    style: AppTextStyles.fredoka(11,
-                        color: circleColor, weight: FontWeight.bold)),
+                    style: AppTextStyles.fredoka(12,
+                        color: GameChip.legibleText(circleColor),
+                        weight: FontWeight.bold)),
           ),
         ),
         const SizedBox(width: 10),
@@ -704,10 +698,10 @@ class _NodeRow extends StatelessWidget {
                         : AppColors.purple),
                 const SizedBox(width: 3),
                 Text('${sealCostForLevel[node.level] ?? '?'}',
-                    style: AppTextStyles.fredoka(11,
+                    style: AppTextStyles.fredoka(12,
                         color: state == _NodeState.locked
                             ? AppColors.textMuted
-                            : AppColors.purple,
+                            : AppColors.textPrimary,
                         weight: FontWeight.bold)),
               ] else if (isElite) ...[
                 const SizedBox(width: 6),
@@ -728,27 +722,41 @@ class _NodeRow extends StatelessWidget {
 }
 
 // ─── Dialog de ascenso ────────────────────────────────────────────────────────
+// El sello se lacra: cae, brilla y suelta polvo dorado.
 class _AscendedDialog extends StatelessWidget {
   final SkillType skill;
   final SkillNodeDef node;
   const _AscendedDialog({required this.skill, required this.node});
 
   @override
-  Widget build(BuildContext context) => Dialog(
-        backgroundColor: const Color(0xFF160A28),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.purple, width: 2.5),
+  Widget build(BuildContext context) {
+    final reduced = AppMotion.reduced(context);
+    return GameDialog(
+      accent: AppColors.purple,
+      actions: [
+        SizedBox(
+          width: double.infinity,
+          child: GameButton(
+            label: 'CONTINUAR',
+            fontSize: 15,
+            onTap: () => Navigator.pop(context),
+          ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
+      ],
+      child: Column(children: [
+        SizedBox(
+          height: 110,
+          child: Stack(alignment: Alignment.center, children: [
+            const Positioned.fill(
+                child: ParticleBurst(
+                    delay: Duration(milliseconds: 300), spread: 110)),
             Container(
-              width: 76, height: 76,
+              width: 80,
+              height: 80,
               decoration: BoxDecoration(
                 gradient: AppGradients.purple,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.black38, width: 3),
+                border: Border.all(color: AppColors.outline, width: 3),
                 boxShadow: [
                   BoxShadow(
                       color: AppColors.purple.withValues(alpha: 0.5),
@@ -756,43 +764,39 @@ class _AscendedDialog extends StatelessWidget {
                       spreadRadius: 4),
                 ],
               ),
-              child: const Icon(Icons.workspace_premium,
-                  color: Colors.white, size: 38),
+              child: Icon(skillIconData(skill),
+                  color: AppColors.parchment, size: 38),
             )
                 .animate()
                 .scale(
-                    begin: const Offset(0.3, 0.3),
-                    duration: 500.ms,
-                    curve: Curves.elasticOut)
+                    begin: reduced
+                        ? const Offset(1, 1)
+                        : const Offset(2.2, 2.2),
+                    duration: AppMotion.of(context, 380.ms),
+                    curve: AppMotion.exit)
+                .fade(duration: AppMotion.of(context, 200.ms))
                 .then()
-                .shimmer(duration: 700.ms),
-            const SizedBox(height: 16),
-            Text('¡ASCENDISTE!',
-                style: AppTextStyles.fredoka(22,
-                    color: AppColors.purple,
-                    weight: FontWeight.bold,
-                    letterSpacing: 1)),
-            const SizedBox(height: 8),
-            Text('${skill.label} Nv.${node.level} — «${node.name}»',
-                style: AppTextStyles.fredoka(14, color: AppColors.textPrimary),
-                textAlign: TextAlign.center),
-            const SizedBox(height: 6),
-            Text(node.perk,
-                style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.textSecondary),
-                textAlign: TextAlign.center),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: GameButton(
-                label: 'CONTINUAR',
-                gradient: AppGradients.purple,
-                shadowColor: const Color(0xFF2A0E55),
-                fontSize: 15,
-                onTap: () => Navigator.pop(context),
-              ),
-            ),
+                .shimmer(
+                    duration: AppMotion.of(context, 700.ms),
+                    color: AppColors.parchment),
           ]),
         ),
-      );
+        const SizedBox(height: AppSpacing.md),
+        Text('¡SUBISTE DE NIVEL!',
+            style: AppTextStyles.fredoka(22,
+                color: AppColors.gold,
+                weight: FontWeight.bold,
+                letterSpacing: 1)),
+        const SizedBox(height: AppSpacing.sm),
+        Text('${skill.label} Nv.${node.level} — «${node.name}»',
+            style: AppTextStyles.fredoka(15, weight: FontWeight.bold),
+            textAlign: TextAlign.center),
+        const SizedBox(height: 6),
+        Text(node.perk,
+            style:
+                AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+            textAlign: TextAlign.center),
+      ]),
+    );
+  }
 }

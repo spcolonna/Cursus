@@ -363,6 +363,7 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
       final title = completion.endingTitle;
       if (title != null && title.isNotEmpty) {
         await ref.read(playerProgressProvider).unlockTitle(title);
+        ref.invalidate(titlesProvider);
       }
     }
     await refresh();
@@ -555,6 +556,35 @@ final missionProgressProvider =
 NotifierProvider<MissionProgressNotifier, MissionProgressState>(
   MissionProgressNotifier.new,
 );
+
+// ─── Títulos ──────────────────────────────────────────────────────────────────
+/// Títulos ganados y el que el jugador lleva puesto (se ve bajo su nombre).
+typedef TitlesState = ({List<String> unlocked, String? equipped});
+
+final titlesProvider =
+    AsyncNotifierProvider<TitlesNotifier, TitlesState>(TitlesNotifier.new);
+
+class TitlesNotifier extends AsyncNotifier<TitlesState> {
+  @override
+  Future<TitlesState> build() async {
+    final progress = ref.read(playerProgressProvider);
+    final unlocked = await progress.getUnlockedTitles();
+    final equipped = await progress.getEquippedTitle();
+    return (
+      unlocked: unlocked,
+      // Un título equipado que ya no existe no se muestra.
+      equipped: unlocked.contains(equipped) ? equipped : null,
+    );
+  }
+
+  /// Equipa [title] (o lo saca, si es null o ya estaba puesto).
+  Future<void> toggle(String? title) async {
+    final current = state.valueOrNull;
+    final next = current?.equipped == title ? null : title;
+    await ref.read(playerProgressProvider).equipTitle(next);
+    ref.invalidateSelf();
+  }
+}
 
 // ─── Completed missions ───────────────────────────────────────────────────────
 final completedMissionsProvider = FutureProvider<List<Mission>>((ref) {

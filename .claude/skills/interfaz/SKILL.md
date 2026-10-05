@@ -11,9 +11,13 @@ Identidad: **navy profundo + oro/pergamino**, Fredoka (títulos) + Nunito (cuerp
 
 El design system vive en `lib/presentation/theme/app_theme.dart`. Antes de escribir un widget, buscá si ya existe:
 
-`GradientScaffold` · `GameButton` · `GameCard` · `StatBar` · `RiskChip` · `DeadlineChip` · `PackageBadge` · `SkillIcon` (todos en `app_theme.dart`) · `GradeBadge` · `PulsingDot` · `SectionHeader` (en `widgets/widgets.dart`).
+- `app_theme.dart`: `GradientScaffold` · `GameButton` (primary/secondary/danger; se hunde, suena y vibra solo) · `GameCard` (tocable con `onTap`) · `StatBar` · `RiskChip` · `DeadlineChip` · `PackageBadge`.
+- `widgets/components.dart`: `GameChip` (toda etiqueta) · `GameIconButton` / `GameBackButton` (44 px) · `showGameDialog` + `GameDialog` · `showGameSheet` · `LoadingState` / `EmptyState` / `ErrorState` · `showGameSnack` / `showErrorSnack` (nunca `Text('$e')`) · `LiveProgressBar` (progreso por tiempo, 60 fps sin rebuilds) · `PeriodicBuilder` (relojes) · `CountUpText` · `ParticleBurst`.
+- `widgets/widgets.dart`: `CurrencyChip` · `RewardAmount` · `showRewardToast` · `GradeBadge` · `SectionHeader`. `MessengerHero` (retrato con Hero) en `messenger_avatar.dart`.
 
-Tokens: `AppColors`, `AppGradients`, `AppTextStyles`. **Nunca escribas un `Color(0x…)` ni un `TextStyle` crudo en una pantalla.** Si falta un token, agregalo al theme.
+Tokens: `AppColors`, `AppGradients`, `AppTextStyles`, `AppSpacing`, `AppRadii`, `AppMotion`. **Nunca escribas un `Color(0x…)`, un `Colors.xxx` ni un `TextStyle` crudo en una pantalla** (lo verifica `test/design_system_test.dart`). Si falta un token, agregalo al theme.
+
+Movimiento: duraciones y curvas de `AppMotion` (`fast/base/slow/celebrate`, `enter/exit/standard/pop`). Envolvé duraciones con `AppMotion.of(context, d)` y salteá loops/sacudidas si `AppMotion.reduced(context)`. Feedback físico: `AppFeedback.tap/reward/success/partial/fail/delivery/impact/denied`, nunca `HapticFeedback` ni el SFX directo. Texto mínimo 12 pt (lo fuerza `AppTextStyles.fredoka`).
 
 Detalles de tokens y ratios de contraste medidos: `references/tokens.md`.
 Patrones de pantalla, jerarquía y animación: `references/patrones.md`.

@@ -1,6 +1,5 @@
-// Trinquete del design system: los colores sueltos en pantallas solo pueden
-// bajar. Si este test falla porque agregaste uno, usá un token de AppColors
-// (o agregalo al theme). Si falla porque migraste y bajó, actualizá el tope.
+// Design system: las pantallas no definen colores propios. Si este test
+// falla, usá un token de AppColors (o agregalo al theme).
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
@@ -8,14 +7,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:the_messenger/presentation/theme/motion.dart';
 import 'package:the_messenger/presentation/widgets/components.dart';
 
-const _maxRawColors = 69; // `Color(0x…)` en lib/presentation/screens
-const _maxMaterialColors = 48; // `Colors.xxx` de Material en pantallas
+const _maxRawColors = 0; // `Color(0x…)` en lib/presentation/screens
+const _maxMaterialColors = 0; // `Colors.xxx` de Material en pantallas
 
 /// Pantallas ya migradas: cero colores sueltos.
 const _clean = [
   'event/event_screen.dart',
   'mission/mission_screen.dart',
   'mission/mission_result_screen.dart',
+  'home/home_screen.dart',
+  'home/parts/slot.dart',
+  'home/parts/guild.dart',
+  'home/parts/hire.dart',
+  'home/parts/story.dart',
+  'home/parts/nav.dart',
 ];
 
 void main() {

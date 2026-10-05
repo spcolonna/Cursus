@@ -307,6 +307,13 @@ void main() {
       expect(f.reason, isNotEmpty);
     });
 
+    test('la opción prudente sin habilidad no se pinta como temeraria', () {
+      // Riesgo 1 sin oficio: casi siempre sale parcial. Antes el pronóstico
+      // solo contaba el éxito redondo y decía "tirarse al vacío".
+      final f = forecastFor(_option(risk: 1), _messenger());
+      expect(f.band.index, lessThanOrEqualTo(ForecastBand.uncertain.index));
+    });
+
     test('el perk de Sigilo 10 baja el riesgo efectivo', () {
       final option = _option(risk: 5, skills: {SkillType.stealth: 3});
       final f =

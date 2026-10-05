@@ -45,24 +45,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.bgDeep,
       body: Stack(fit: StackFit.expand, children: [
         Image.asset(
           'assets/images/bg_login.jpg',
           fit: BoxFit.cover,
           cacheWidth: 1080,
           errorBuilder: (_, __, ___) =>
-              Container(color: const Color(0xFF0A1220)),
+              const ColoredBox(color: AppColors.bgDeep),
         ),
-        Container(
-          decoration: const BoxDecoration(
-            gradient: RadialGradient(
-              center: Alignment.topCenter,
-              radius: 1.5,
-              colors: [Color(0x441A2E5E), Color(0x770A1220)],
-            ),
-          ),
-        ),
+        const DecoratedBox(
+            decoration: BoxDecoration(gradient: AppGradients.coverScrim)),
         SafeArea(
           bottom: false,
           child: SingleChildScrollView(
@@ -95,7 +88,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 6),
                   Text(
                     'Roma, 50 a.C. El correo te espera.',
-                    style: AppTextStyles.bodyMedium,
+                    style: AppTextStyles.bodyLarge
+                        .copyWith(color: AppColors.parchment),
                     textAlign: TextAlign.center,
                   ).animate(delay: 300.ms).fadeIn(duration: 500.ms),
                   const SizedBox(height: 48),
@@ -109,7 +103,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         border: Border.all(color: AppColors.red.withValues(alpha: 0.5)),
                       ),
                       child: Text(_error!,
-                          style: AppTextStyles.fredoka(13, color: AppColors.red),
+                          style: AppTextStyles.fredoka(13),
                           textAlign: TextAlign.center),
                     ),
                     const SizedBox(height: 16),
@@ -129,10 +123,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 14),
                   Text(
                     'Sin cuenta. Tus partidas se guardan en este dispositivo.\nMás adelante vas a poder sincronizar en la nube.',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textMuted,
-                      fontSize: 12,
-                    ),
+                    style: AppTextStyles.bodyMedium
+                        .copyWith(color: AppColors.textSecondary),
                     textAlign: TextAlign.center,
                   ).animate(delay: 500.ms).fadeIn(duration: 500.ms),
                   const SizedBox(height: 48),
