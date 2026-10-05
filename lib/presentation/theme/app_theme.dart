@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/entities.dart';
+import '../feedback/feedback.dart';
+import 'motion.dart';
+
+export 'motion.dart';
 
 // ─── Paleta principal: Navy · Oro · Marrón/Ámbar · Rojo (solo peligro)
 // Máx. 4 colores. Sin neón, sin gradientes locos.
@@ -58,10 +62,100 @@ class AppColors {
   static const greenDark   = Color(0xFF226633);
   static const greenShadow = Color(0xFF113322);
   static const purple      = Color(0xFF7744BB);
+
+  // Deshabilitado: el texto usa textSecondary (5.2:1 sobre disabledTop).
+  static const disabledTop    = Color(0xFF2A3644);
+  static const disabledBottom = Color(0xFF1E2A38);
+
+  // Nota S: naranja propio (antes vivía suelto en GradeBadge y en resultado).
+  static const gradeS = Color(0xFFFF8C00);
+
+  // Pergamino claro: prosa sobre fondos rojos/oscuros (9.6:1 sobre eventTop).
+  static const parchment = Color(0xFFF7EFDC);
+
+  // Evento: vino oscuro, no rojo chillón — el rojo puro queda para urgencia.
+  static const eventTop    = Color(0xFF7F0000);
+  static const eventBottom = Color(0xFF4A0E0E);
+
+  // Superficies con tinte
+  static const topBar    = Color(0xCC060E1A);  // barra superior translúcida
+  static const amberCard = Color(0xDD1A0800);  // panel de evento en ruta
+  static const trackDark = Color(0xFF0A1020);  // fondo de barras de progreso
+
+  // Sombras y velos
+  static const shadowSoft = Color(0x66000000);
+  static const shadowHard = Color(0x88000000);
+  static const scrim      = Color(0xB3060E1A);
+}
+
+// ─── Notas de misión (S/A/B/C/F) — un solo lugar para color y fondo
+Color gradeColor(String grade) => switch (grade) {
+      'S' => AppColors.gradeS,
+      'A' => AppColors.gold,
+      'B' => AppColors.green,
+      'C' => AppColors.sky,
+      'F' => AppColors.red,
+      _ => AppColors.textMuted,
+    };
+
+/// Fondo tintado por nota para la pantalla de resultado.
+Color gradeBackground(String grade) => switch (grade) {
+      'S' => const Color(0xFF1A1400),
+      'A' => const Color(0xFF16140A),
+      'B' => const Color(0xFF0A1A0E),
+      'C' => const Color(0xFF0A1220),
+      'F' => const Color(0xFF1A0808),
+      _ => AppColors.bgDeep,
+    };
+
+// ─── Espaciado y radios — múltiplos de 4, nada de números sueltos
+class AppSpacing {
+  static const xs = 4.0;
+  static const sm = 8.0;
+  static const md = 12.0;
+  static const lg = 16.0;
+  static const xl = 24.0;
+  static const xxl = 32.0;
+}
+
+class AppRadii {
+  static const sm = 8.0;
+  static const md = 14.0;
+  static const lg = 20.0;
 }
 
 // ─── Gradients — solo 2-3 colores, sin locuras
 class AppGradients {
+  static const event = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [AppColors.eventTop, AppColors.eventBottom],
+  );
+
+  // Opciones de evento: normal, seleccionada y secreta (callback de historia).
+  static const option = LinearGradient(
+    colors: [Color(0xFF1A2A4A), Color(0xFF111E36)],
+  );
+  static const optionSelected = LinearGradient(
+    colors: [Color(0xFF1A4E9A), Color(0xFF103060)],
+  );
+  static const optionSecret = LinearGradient(
+    colors: [Color(0xFF2A1A4A), Color(0xFF1A1136)],
+  );
+
+  // Epílogo de historia: tinta violeta, el color de lo narrativo.
+  static const story = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF241A38), Color(0xFF16101F)],
+  );
+
+  static const disabled = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [AppColors.disabledTop, AppColors.disabledBottom],
+  );
+
   static const background = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -133,6 +227,10 @@ class AppGradients {
 
 // ─── Tipografía — Fredoka + Nunito, sin locura de tamaños
 class AppTextStyles {
+  /// Piso de legibilidad: ningún texto del juego baja de 12 pt. Los tamaños
+  /// menores que quedaron en pantallas viejas se suben acá, en un solo lugar.
+  static const double minSize = 12;
+
   static TextStyle fredoka(
       double size, {
         Color color = AppColors.textPrimary,
@@ -140,7 +238,7 @@ class AppTextStyles {
         FontWeight weight = FontWeight.normal,
       }) {
     return GoogleFonts.fredoka(
-      fontSize: size,
+      fontSize: size < minSize ? minSize : size,
       color: color,
       letterSpacing: letterSpacing,
       fontWeight: weight,
@@ -165,7 +263,7 @@ class AppTextStyles {
     fontWeight: FontWeight.w500,
   );
   static TextStyle get bodySmall => GoogleFonts.nunito(
-    fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w600,
+    fontSize: 12, color: AppColors.textMuted, fontWeight: FontWeight.w600,
   );
 }
 
@@ -250,7 +348,12 @@ class GradientScaffold extends StatelessWidget {
 }
 
 // ─── GameButton — SIEMPRE dorado (el color del juego), grueso y con sombra offset
-class GameButton extends StatelessWidget {
+// Se hunde al tocarlo (la sombra dura se achica y el botón baja), suena y
+// vibra. Deshabilitado: gris legible, y si se toca igual vibra suave para que
+// el jugador sepa que el toque llegó.
+enum GameButtonVariant { primary, secondary, danger }
+
+class GameButton extends StatefulWidget {
   final String label;
   final VoidCallback? onTap;
   final LinearGradient gradient;
@@ -258,6 +361,7 @@ class GameButton extends StatelessWidget {
   final double fontSize;
   final bool isLoading;
   final IconData? icon;
+  final GameButtonVariant variant;
 
   const GameButton({
     super.key,
@@ -268,54 +372,107 @@ class GameButton extends StatelessWidget {
     this.fontSize = 16,
     this.isLoading = false,
     this.icon,
+    this.variant = GameButtonVariant.primary,
   });
 
   @override
+  State<GameButton> createState() => _GameButtonState();
+}
+
+class _GameButtonState extends State<GameButton> {
+  static const _depth = 5.0;
+  bool _pressed = false;
+
+  bool get _enabled => widget.onTap != null && !widget.isLoading;
+
+  (LinearGradient, Color, Color) get _palette {
+    if (!_enabled) {
+      return (AppGradients.disabled, AppColors.outline, AppColors.textSecondary);
+    }
+    return switch (widget.variant) {
+      GameButtonVariant.primary =>
+        (widget.gradient, widget.shadowColor, AppColors.outline),
+      GameButtonVariant.secondary =>
+        (AppGradients.card, AppColors.outline, AppColors.gold),
+      GameButtonVariant.danger =>
+        (AppGradients.red, AppColors.redShadow, AppColors.textPrimary),
+    };
+  }
+
+  void _setPressed(bool v) {
+    if (_pressed != v) setState(() => _pressed = v);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final enabled = onTap != null && !isLoading;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-        decoration: BoxDecoration(
-          gradient: enabled
-              ? gradient
-              : const LinearGradient(
-              colors: [Color(0xFF334455), Color(0xFF223344)]),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.outline, width: 3),
-          boxShadow: [
-            BoxShadow(
-              color: enabled ? shadowColor : Colors.black54,
-              offset: const Offset(0, 5),
-              blurRadius: 0,
-            ),
-          ],
-        ),
-        child: Center(
-          child: isLoading
-              ? const SizedBox(
-              width: 22, height: 22,
-              child: CircularProgressIndicator(
-                  color: Colors.white, strokeWidth: 2.5))
-              : Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[
-                Icon(icon,
-                    size: fontSize + 2,
-                    color: enabled
-                        ? AppColors.outline
-                        : Colors.white38),
-                const SizedBox(width: 8),
+    final (gradient, shadow, fg) = _palette;
+    final down = _pressed && _enabled;
+    final duration = AppMotion.of(context, AppMotion.fast);
+
+    return Semantics(
+      button: true,
+      enabled: _enabled,
+      label: widget.label,
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) => _setPressed(true),
+        onTapCancel: () => _setPressed(false),
+        onTapUp: (_) => _setPressed(false),
+        onTap: () {
+          if (!_enabled) {
+            if (!widget.isLoading) AppFeedback.denied();
+            return;
+          }
+          AppFeedback.tap();
+          widget.onTap!();
+        },
+        // El hueco de la sombra se reserva siempre: al hundirse, el botón
+        // baja sin empujar el layout.
+        child: Padding(
+          padding: EdgeInsets.only(bottom: down ? 0 : _depth),
+          child: AnimatedContainer(
+            duration: duration,
+            curve: AppMotion.enter,
+            margin: EdgeInsets.only(top: down ? _depth - 1 : 0),
+            constraints: const BoxConstraints(minHeight: 48),
+            padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 20),
+            decoration: BoxDecoration(
+              gradient: gradient,
+              borderRadius: BorderRadius.circular(AppRadii.md),
+              border: Border.all(color: AppColors.outline, width: 3),
+              boxShadow: [
+                BoxShadow(
+                  color: shadow,
+                  offset: Offset(0, down ? 1 : _depth),
+                  blurRadius: 0,
+                ),
               ],
-              Text(label,
-                  style: AppTextStyles.fredoka(fontSize,
-                      color: enabled
-                          ? AppColors.outline
-                          : Colors.white38,
-                      weight: FontWeight.bold)),
-            ],
+            ),
+            child: Center(
+              child: widget.isLoading
+                  ? SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                          color: fg, strokeWidth: 2.5))
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (widget.icon != null) ...[
+                          Icon(widget.icon,
+                              size: widget.fontSize + 2, color: fg),
+                          const SizedBox(width: AppSpacing.sm),
+                        ],
+                        Flexible(
+                          child: Text(widget.label,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.fredoka(widget.fontSize,
+                                  color: fg, weight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
@@ -324,12 +481,14 @@ class GameButton extends StatelessWidget {
 }
 
 // ─── GameCard
-class GameCard extends StatelessWidget {
+// Si es tocable, se achica apenas al presionar: el jugador siente el toque.
+class GameCard extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
   final Color? borderColor;
   final LinearGradient? gradient;
   final EdgeInsets? padding;
+  final String? semanticLabel;
 
   const GameCard({
     super.key,
@@ -338,31 +497,62 @@ class GameCard extends StatelessWidget {
     this.borderColor,
     this.gradient,
     this.padding,
+    this.semanticLabel,
   });
 
   @override
+  State<GameCard> createState() => _GameCardState();
+}
+
+class _GameCardState extends State<GameCard> {
+  bool _pressed = false;
+
+  void _setPressed(bool v) {
+    if (_pressed != v) setState(() => _pressed = v);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: padding ?? const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: gradient ?? AppGradients.card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: borderColor ?? AppColors.bgLine,
-            width: 2.5,
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x66000000),
-              blurRadius: 8,
-              offset: Offset(0, 4),
-            ),
-          ],
+    final card = Container(
+      width: double.infinity,
+      padding: widget.padding ?? const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        gradient: widget.gradient ?? AppGradients.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: widget.borderColor ?? AppColors.bgLine,
+          width: 2.5,
         ),
-        child: child,
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.shadowSoft,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: widget.child,
+    );
+    if (widget.onTap == null) return card;
+
+    return Semantics(
+      button: true,
+      label: widget.semanticLabel,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) => _setPressed(true),
+        onTapCancel: () => _setPressed(false),
+        onTapUp: (_) => _setPressed(false),
+        onTap: () {
+          AppFeedback.tap();
+          widget.onTap!();
+        },
+        child: AnimatedScale(
+          scale: _pressed ? 0.98 : 1,
+          duration: AppMotion.of(context, AppMotion.fast),
+          curve: AppMotion.enter,
+          child: card,
+        ),
       ),
     );
   }

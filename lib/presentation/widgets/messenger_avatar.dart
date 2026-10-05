@@ -308,3 +308,24 @@ class MessengerPainter extends CustomPainter {
       old.injured != injured ||
       old.weary != weary;
 }
+
+/// Retrato que "vuela" entre pantallas (home → misión → perfil): el mismo
+/// mensajero se mueve en vez de aparecer de golpe.
+class MessengerHero extends StatelessWidget {
+  final Messenger messenger;
+  final double size;
+  final bool highlighted;
+  const MessengerHero(this.messenger,
+      {super.key, required this.size, this.highlighted = false});
+
+  static String tagFor(String messengerId) => 'avatar-$messengerId';
+
+  @override
+  Widget build(BuildContext context) => Hero(
+        tag: tagFor(messenger.id),
+        // Durante el vuelo el retrato se dibuja sin halo, en el tamaño del
+        // destino escalado: evita que el halo "salte".
+        child: MessengerAvatar.from(messenger,
+            size: size, highlighted: highlighted),
+      );
+}

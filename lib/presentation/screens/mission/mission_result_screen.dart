@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../feedback/feedback.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/widgets.dart';
@@ -40,28 +40,16 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
     super.initState();
     final grade = result?.grade ?? 'B';
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final sfx = ref.read(sfxServiceProvider);
       switch (grade) {
         case 'S' || 'A':
-          HapticFeedback.heavyImpact();
-          sfx.playDelivery();
+          AppFeedback.success();
         case 'B' || 'C':
-          HapticFeedback.mediumImpact();
-          sfx.playSuccess();
+          AppFeedback.partial();
         default:
-          HapticFeedback.vibrate();
-          sfx.playPartial();
+          AppFeedback.fail();
       }
     });
   }
-
-  static const _gradeColors = {
-    'S': Color(0xFFFFD700),
-    'A': Color(0xFF44BB66),
-    'B': Color(0xFF4A9EBF),
-    'C': Color(0xFFCC8800),
-    'F': Color(0xFFCC2200),
-  };
 
   static const _gradeLabels = {
     'S': '¡LEGENDARIO!',
@@ -72,33 +60,33 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
   };
 
   static const _denarioReward = {
-    'S': 150, 'A': 100, 'B': 60, 'C': 30, 'F': 10,
-  };
-
-  static const _gradeBg = {
-    'S': Color(0xFF1A1400),
-    'A': Color(0xFF0A1A0E),
-    'B': Color(0xFF0A1220),
-    'C': Color(0xFF1A1000),
-    'F': Color(0xFF1A0808),
+    'S': 150,
+    'A': 100,
+    'B': 60,
+    'C': 30,
+    'F': 10,
   };
 
   @override
   Widget build(BuildContext context) {
-    final grade      = result?.grade ?? 'B';
-    final gradeColor = _gradeColors[grade] ?? AppColors.gold;
+    final grade = result?.grade ?? 'B';
+    final color = gradeColor(grade);
     final gradeLabel = _gradeLabels[grade] ?? '';
     // La recompensa real viene del resultado (incluye bonus de perks);
     // el mapa es solo fallback para resultados guardados con el schema viejo.
     final reward = (result?.denarios ?? 0) > 0
         ? result!.denarios
         : (_denarioReward[grade] ?? 30);
-    final bgColor    = _gradeBg[grade] ?? const Color(0xFF0A1220);
+    final bgColor = gradeBackground(grade);
+    final reduced = AppMotion.reduced(context);
+    Duration at(int ms) => reduced ? Duration.zero : Duration(milliseconds: ms);
+    Duration d(int ms) => AppMotion.of(context, Duration(milliseconds: ms));
+    final celebrate = grade == 'S' || grade == 'A';
 
-    final timeScore     = result?.timeScore ?? 0;
-    final packageScore  = result?.packageScore ?? 0;
+    final timeScore = result?.timeScore ?? 0;
+    final packageScore = result?.packageScore ?? 0;
     final decisionScore = result?.decisionScore ?? 0;
-    final total         = timeScore * 0.30 + packageScore * 0.35 + decisionScore * 0.35;
+    final total = timeScore * 0.30 + packageScore * 0.35 + decisionScore * 0.35;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -123,23 +111,17 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
                   child: MessengerAvatar.from(m, size: 30),
                 );
               }),
-              Text(
-                '${mission.origin} → ${mission.destination}',
-                style: AppTextStyles.fredoka(13, color: AppColors.textSecondary),
-              ),
-              const Spacer(),
-              if (mission.isTutorial)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.amber.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(7),
-                    border: Border.all(color: AppColors.amber, width: 1.5),
-                  ),
-                  child: Text('PRUEBA DE VARUS',
-                      style: AppTextStyles.fredoka(10,
-                          color: AppColors.amber, weight: FontWeight.bold)),
+              Expanded(
+                child: Text(
+                  '${mission.origin} → ${mission.destination}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style:
+                      AppTextStyles.fredoka(13, color: AppColors.textSecondary),
                 ),
+              ),
+              if (mission.isTutorial)
+                const GameChip('PRUEBA DE VARUS', color: AppColors.amber),
             ]),
           ),
 
@@ -150,55 +132,82 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
               child: Column(children: [
                 const SizedBox(height: 12),
 
-                // Grade grande — cae como un sello; brilla si es S/A,
-                // tiembla si es F.
-                grade == 'F'
-                    ? _GradeBig(grade: grade, color: gradeColor)
-                        .animate()
-                        .scale(
-                            begin: const Offset(2.2, 2.2),
-                            duration: 380.ms,
-                            curve: Curves.easeInCubic)
-                        .fade(duration: 250.ms)
-                        .then()
-                        .shake(hz: 5, duration: 500.ms)
-                    : _GradeBig(grade: grade, color: gradeColor)
-                        .animate()
-                        .scale(
-                            begin: const Offset(0.3, 0.3),
-                            duration: 700.ms,
-                            curve: Curves.elasticOut)
-                        .fade(duration: 300.ms)
-                        .then()
-                        .shimmer(
-                            duration: 900.ms,
-                            color: grade == 'S' || grade == 'A'
-                                ? Colors.white70
-                                : Colors.white24),
+                // La nota cae como un sello de cera; con S/A estalla polvo
+                // dorado, con F tiembla.
+                SizedBox(
+                  height: 170,
+                  child: Stack(alignment: Alignment.center, children: [
+                    if (celebrate)
+                      Positioned.fill(
+                        child: ParticleBurst(
+                          delay: const Duration(milliseconds: 380),
+                          spread: grade == 'S' ? 200 : 150,
+                          count: grade == 'S' ? 48 : 30,
+                        ),
+                      ),
+                    reduced
+                        ? _GradeSeal(grade: grade, color: color)
+                            .animate()
+                            .fadeIn(duration: d(200))
+                        : grade == 'F'
+                            ? _GradeSeal(grade: grade, color: color)
+                                .animate(
+                                    onComplete: (_) => AppFeedback.impact())
+                                .scale(
+                                    begin: const Offset(2.2, 2.2),
+                                    duration: 380.ms,
+                                    curve: AppMotion.exit)
+                                .fade(duration: 250.ms)
+                                .then()
+                                .shake(hz: 5, duration: 500.ms)
+                            : _GradeSeal(grade: grade, color: color)
+                                .animate()
+                                .scale(
+                                    begin: const Offset(2.4, 2.4),
+                                    duration: 380.ms,
+                                    curve: AppMotion.exit)
+                                .fade(duration: 200.ms)
+                                .callback(callback: (_) => AppFeedback.impact())
+                                .then()
+                                .shimmer(
+                                    duration: 900.ms,
+                                    color: celebrate
+                                        ? AppColors.parchment
+                                        : AppColors.textMuted),
+                  ]),
+                ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
 
-                Text(gradeLabel,
+                Text(
+                  gradeLabel,
                   style: AppTextStyles.fredoka(22,
-                      color: gradeColor,
+                      color: GameChip.legibleText(color),
                       weight: FontWeight.bold,
                       letterSpacing: 2),
-                ).animate(delay: 300.ms).fadeIn().slideY(begin: 0.1),
+                )
+                    .animate(delay: at(300))
+                    .fadeIn(duration: d(250))
+                    .slideY(begin: 0.1),
 
                 const SizedBox(height: 6),
 
-                Text(
-                  '${total.round()}% de eficacia',
-                  style: AppTextStyles.fredoka(14,
-                      color: gradeColor.withValues(alpha: 0.7)),
-                ).animate(delay: 400.ms).fadeIn(),
+                CountUpText(
+                  total.round(),
+                  suffix: '% de eficacia',
+                  duration: const Duration(milliseconds: 900),
+                  style:
+                      AppTextStyles.fredoka(14, color: AppColors.textSecondary),
+                ).animate(delay: at(400)).fadeIn(duration: d(250)),
 
                 const SizedBox(height: 28),
 
                 // Epílogo narrativo — el cierre del capítulo de historia.
                 if (mission.epilogue != null) ...[
                   _EpilogueCard(text: mission.epilogue!)
-                      .animate(delay: 450.ms).fadeIn().slideY(begin: 0.08),
+                      .animate(delay: at(450))
+                      .fadeIn(duration: d(300))
+                      .slideY(begin: 0.08),
                   const SizedBox(height: 16),
                 ],
 
@@ -206,21 +215,29 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
                   timeScore: timeScore,
                   packageScore: packageScore,
                   decisionScore: decisionScore,
-                  gradeColor: gradeColor,
-                ).animate(delay: 500.ms).fadeIn().slideY(begin: 0.08),
+                  gradeColor: color,
+                )
+                    .animate(delay: at(500))
+                    .fadeIn(duration: d(300))
+                    .slideY(begin: 0.08),
 
                 const SizedBox(height: 16),
 
                 _RewardCard(
                   denarios: reward,
-                  gradeColor: gradeColor,
-                ).animate(delay: 650.ms).fadeIn().slideY(begin: 0.08),
+                  gradeColor: color,
+                )
+                    .animate(delay: at(650))
+                    .fadeIn(duration: d(300))
+                    .slideY(begin: 0.08),
 
                 const SizedBox(height: 16),
 
                 if (mission.events.isNotEmpty)
                   _EventsSummary(mission: mission)
-                      .animate(delay: 750.ms).fadeIn().slideY(begin: 0.08),
+                      .animate(delay: at(750))
+                      .fadeIn(duration: d(300))
+                      .slideY(begin: 0.08),
 
                 // ── Lo que cambió ─────────────────────────────────────────
                 // Antes esto se aplicaba en silencio: reputación, diario,
@@ -228,7 +245,9 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
                 if (completion != null) ...[
                   const SizedBox(height: 16),
                   _WhatChanged(completion: completion!)
-                      .animate(delay: 850.ms).fadeIn().slideY(begin: 0.08),
+                      .animate(delay: at(850))
+                      .fadeIn(duration: d(300))
+                      .slideY(begin: 0.08),
                 ],
               ]),
             ),
@@ -241,19 +260,8 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
             child: GameButton(
               label: 'VOLVER AL CUARTEL',
               icon: Icons.home_rounded,
-              gradient: LinearGradient(
-                colors: [gradeColor, gradeColor.withValues(alpha: 0.7)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-              shadowColor: Color.from(
-                alpha: gradeColor.a,
-                red: gradeColor.r * 0.4,
-                green: gradeColor.g * 0.4,
-                blue: gradeColor.b * 0.4,
-              ),
               onTap: () => context.go('/home'),
-            ).animate(delay: 950.ms).fadeIn(),
+            ).animate(delay: at(950)).fadeIn(duration: d(300)),
           ),
         ]),
       ),
@@ -272,21 +280,17 @@ class _EpilogueCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF241A38), Color(0xFF16101F)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppGradients.story,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.purple.withValues(alpha: 0.5), width: 2),
+        border: Border.all(color: AppColors.purple, width: 2),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           const Icon(Icons.auto_stories, color: AppColors.purple, size: 16),
           const SizedBox(width: 8),
           Text('LA HISTORIA CONTINÚA',
-              style: AppTextStyles.fredoka(11,
-                  color: AppColors.purple,
+              style: AppTextStyles.fredoka(12,
+                  color: AppColors.textPrimary,
                   weight: FontWeight.bold,
                   letterSpacing: 1.5)),
         ]),
@@ -295,36 +299,87 @@ class _EpilogueCard extends StatelessWidget {
             style: AppTextStyles.bodyLarge.copyWith(
               fontSize: 14,
               height: 1.6,
-              color: const Color(0xFFF3EEDC),
+              color: AppColors.parchment,
             )),
       ]),
     );
   }
 }
 
-class _GradeBig extends StatelessWidget {
+/// La nota como sello de cera: borde ondulado, letra grabada.
+class _GradeSeal extends StatelessWidget {
   final String grade;
   final Color color;
-  const _GradeBig({required this.grade, required this.color});
+  const _GradeSeal({required this.grade, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 130,
-      child: Stack(alignment: Alignment.center, children: [
-        Transform.translate(
-          offset: const Offset(6, 8),
-          child: Text(grade,
-              style: AppTextStyles.fredoka(120,
-                  color: Colors.black.withValues(alpha: 0.4),
-                  weight: FontWeight.bold)),
+    return Semantics(
+      label: 'Nota $grade',
+      child: SizedBox(
+        width: 140,
+        height: 140,
+        child: CustomPaint(
+          painter: _WaxSealPainter(color),
+          child: Center(
+            child: Text(grade,
+                style: AppTextStyles.fredoka(78,
+                    color: AppColors.parchment, weight: FontWeight.bold)),
+          ),
         ),
-        Text(grade,
-            style: AppTextStyles.fredoka(120,
-                color: color, weight: FontWeight.bold)),
-      ]),
+      ),
     );
   }
+}
+
+class _WaxSealPainter extends CustomPainter {
+  final Color color;
+  _WaxSealPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = size.center(Offset.zero);
+    final r = size.width / 2 - 6;
+    // Borde ondulado de cera derramada.
+    final blob = Path();
+    const lobes = 14;
+    for (var i = 0; i <= lobes * 4; i++) {
+      final a = i / (lobes * 4) * 6.28318;
+      final wobble =
+          1 + 0.06 * (i.isEven ? 1 : -1) * ((i ~/ 2).isEven ? 1 : 0.5);
+      final p = c + Offset.fromDirection(a, r * wobble);
+      i == 0 ? blob.moveTo(p.dx, p.dy) : blob.lineTo(p.dx, p.dy);
+    }
+    blob.close();
+    canvas.drawPath(
+        blob.shift(const Offset(0, 6)), Paint()..color = AppColors.shadowHard);
+    final dark = Color.lerp(color, AppColors.outline, 0.45)!;
+    canvas.drawPath(
+        blob,
+        Paint()
+          ..shader = RadialGradient(
+            center: const Alignment(-0.3, -0.4),
+            colors: [color, dark],
+          ).createShader(Rect.fromCircle(center: c, radius: r)));
+    // Anillo grabado interior.
+    canvas.drawCircle(
+        c,
+        r * 0.72,
+        Paint()
+          ..color = dark
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3);
+    canvas.drawCircle(
+        c,
+        r * 0.72 - 3,
+        Paint()
+          ..color = AppColors.parchment.withValues(alpha: 0.25)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2);
+  }
+
+  @override
+  bool shouldRepaint(_WaxSealPainter old) => old.color != color;
 }
 
 // ── Desglose de scores ────────────────────────────────────────────────────────
@@ -345,13 +400,14 @@ class _ScoreCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.3),
+        color: AppColors.bgCard2,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: gradeColor.withValues(alpha: 0.3), width: 1.5),
+        border:
+            Border.all(color: gradeColor.withValues(alpha: 0.3), width: 1.5),
       ),
       child: Column(children: [
         Text('DESGLOSE',
-            style: AppTextStyles.fredoka(11,
+            style: AppTextStyles.fredoka(12,
                 color: AppColors.textMuted,
                 weight: FontWeight.bold,
                 letterSpacing: 1.5)),
@@ -385,9 +441,9 @@ class _ScoreCard extends StatelessWidget {
 
   String _packageLabel(double s) {
     if (s >= 100) return 'Intacto';
-    if (s >= 75)  return 'Humedad leve';
-    if (s >= 50)  return 'Dañado';
-    if (s >= 25)  return 'Comprometido';
+    if (s >= 75) return 'Humedad leve';
+    if (s >= 50) return 'Dañado';
+    if (s >= 25) return 'Comprometido';
     return 'Perdido';
   }
 
@@ -429,9 +485,7 @@ class _ScoreRow extends StatelessWidget {
           Text(label,
               style: AppTextStyles.fredoka(13,
                   color: AppColors.textPrimary, weight: FontWeight.bold)),
-          Text(sublabel,
-              style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textMuted, fontSize: 11)),
+          Text(sublabel, style: AppTextStyles.bodySmall),
         ]),
       ),
       const SizedBox(width: 8),
@@ -441,9 +495,16 @@ class _ScoreRow extends StatelessWidget {
           borderRadius: BorderRadius.circular(5),
           child: Stack(children: [
             Container(height: 10, color: AppColors.outline),
-            FractionallySizedBox(
-              widthFactor: (score / 100).clamp(0.0, 1.0),
-              child: Container(height: 10, color: _color),
+            // La barra se llena: el puntaje se "cuenta" frente al jugador.
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: (score / 100).clamp(0.0, 1.0)),
+              duration:
+                  AppMotion.of(context, const Duration(milliseconds: 900)),
+              curve: AppMotion.enter,
+              builder: (_, v, __) => FractionallySizedBox(
+                widthFactor: v,
+                child: Container(height: 10, color: _color),
+              ),
             ),
           ]),
         ),
@@ -451,15 +512,14 @@ class _ScoreRow extends StatelessWidget {
       const SizedBox(width: 8),
       SizedBox(
         width: 36,
-        child: Text('${score.round()}',
+        child: CountUpText(score.round(),
             style: AppTextStyles.fredoka(13,
-                color: _color, weight: FontWeight.bold),
-            textAlign: TextAlign.right),
+                color: GameChip.legibleText(_color), weight: FontWeight.bold)),
       ),
       SizedBox(
-        width: 30,
+        width: 38,
         child: Text('×$weight%',
-            style: AppTextStyles.fredoka(9, color: AppColors.textMuted),
+            style: AppTextStyles.fredoka(12, color: AppColors.textMuted),
             textAlign: TextAlign.right),
       ),
     ]);
@@ -475,10 +535,8 @@ class _WhatChanged extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final flagLines = completion.flagsSet
-        .map(flagDescription)
-        .whereType<String>()
-        .toList();
+    final flagLines =
+        completion.flagsSet.map(flagDescription).whereType<String>().toList();
 
     final hasBody = completion.fatigueDelta != 0 || completion.injured;
     final hasAnything = completion.xpGained.isNotEmpty ||
@@ -503,7 +561,7 @@ class _WhatChanged extends StatelessWidget {
               size: 15, color: AppColors.textSecondary),
           const SizedBox(width: 7),
           Text('LO QUE CAMBIÓ',
-              style: AppTextStyles.fredoka(11,
+              style: AppTextStyles.fredoka(12,
                   color: AppColors.textSecondary, letterSpacing: 1.2)),
         ]),
         const SizedBox(height: 12),
@@ -516,15 +574,16 @@ class _WhatChanged extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: AppGradients.gold,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.black38, width: 2),
+              border: Border.all(color: AppColors.outline, width: 2),
             ),
             child: Row(children: [
-              const Icon(Icons.military_tech, color: Colors.black87, size: 20),
+              const Icon(Icons.military_tech,
+                  color: AppColors.outline, size: 22),
               const SizedBox(width: 8),
               Expanded(
                 child: Text('Ganaste el título «${completion.endingTitle}»',
-                    style:
-                        AppTextStyles.fredoka(13, color: Colors.black87)),
+                    style: AppTextStyles.fredoka(14,
+                        color: AppColors.outline, weight: FontWeight.bold)),
               ),
             ]),
           ),
@@ -535,10 +594,11 @@ class _WhatChanged extends StatelessWidget {
         if (completion.xpGained.isNotEmpty) ...[
           Wrap(spacing: 8, runSpacing: 8, children: [
             for (final e in completion.xpGained.entries)
-              _ChangeChip(
+              GameChip(
+                '+${e.value} XP ${e.key.label}',
                 icon: Icons.school_outlined,
-                label: '+${e.value} XP ${e.key.label}',
                 color: AppColors.sky,
+                size: GameChipSize.medium,
               ),
           ]),
           const SizedBox(height: 10),
@@ -548,16 +608,18 @@ class _WhatChanged extends StatelessWidget {
         if (hasBody) ...[
           Wrap(spacing: 8, runSpacing: 8, children: [
             if (completion.fatigueDelta != 0)
-              _ChangeChip(
+              GameChip(
+                '${completion.fatigueDelta} de fatiga al llegar',
                 icon: Icons.self_improvement,
-                label: '${completion.fatigueDelta} de fatiga al llegar',
                 color: AppColors.green,
+                size: GameChipSize.medium,
               ),
             if (completion.injured)
-              const _ChangeChip(
+              const GameChip(
+                'Llegaste herido: descansá antes de salir',
                 icon: Icons.medical_services_outlined,
-                label: 'Llegaste herido: descansá antes de salir',
                 color: AppColors.red,
+                size: GameChipSize.medium,
               ),
           ]),
           const SizedBox(height: 10),
@@ -570,9 +632,7 @@ class _WhatChanged extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(children: [
                 Icon(
-                  e.value > 0
-                      ? Icons.trending_up
-                      : Icons.trending_down,
+                  e.value > 0 ? Icons.trending_up : Icons.trending_down,
                   size: 15,
                   color: e.value > 0 ? AppColors.riskLow : AppColors.riskMed,
                 ),
@@ -582,7 +642,7 @@ class _WhatChanged extends StatelessWidget {
                     e.value > 0
                         ? '${e.key.label} te tiene más en cuenta (+${e.value})'
                         : '${e.key.label} desconfía más de vos (${e.value})',
-                    style: AppTextStyles.bodyMedium.copyWith(fontSize: 12),
+                    style: AppTextStyles.bodyMedium,
                   ),
                 ),
               ]),
@@ -595,13 +655,11 @@ class _WhatChanged extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 6),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Icon(Icons.key_outlined,
-                  size: 15, color: AppColors.purple),
+              const Icon(Icons.key_outlined, size: 15, color: AppColors.purple),
               const SizedBox(width: 7),
               Expanded(
                 child: Text(line,
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(fontSize: 12, height: 1.35)),
+                    style: AppTextStyles.bodyMedium.copyWith(height: 1.35)),
               ),
             ]),
           ),
@@ -617,48 +675,21 @@ class _WhatChanged extends StatelessWidget {
               border: Border.all(
                   color: AppColors.purple.withValues(alpha: 0.45), width: 1.5),
             ),
-            child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.menu_book_outlined,
-                      size: 15, color: AppColors.purple),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text('«${completion.journalEntry}»',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                            fontSize: 12,
-                            height: 1.4,
-                            fontStyle: FontStyle.italic)),
-                  ),
-                ]),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Icon(Icons.menu_book_outlined,
+                  size: 15, color: AppColors.purple),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('«${completion.journalEntry}»',
+                    style: AppTextStyles.bodyMedium
+                        .copyWith(height: 1.4, fontStyle: FontStyle.italic)),
+              ),
+            ]),
           ),
         ],
       ]),
     );
   }
-}
-
-class _ChangeChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  const _ChangeChip(
-      {required this.icon, required this.label, required this.color});
-
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.13),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.45), width: 1.5),
-        ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 13, color: color),
-          const SizedBox(width: 6),
-          Text(label, style: AppTextStyles.fredoka(11.5, color: color)),
-        ]),
-      );
 }
 
 // ── Recompensa ────────────────────────────────────────────────────────────────
@@ -675,7 +706,8 @@ class _RewardCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.sky.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.sky.withValues(alpha: 0.4), width: 2),
+        border:
+            Border.all(color: AppColors.sky.withValues(alpha: 0.4), width: 2),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -683,23 +715,13 @@ class _RewardCard extends StatelessWidget {
           // Contador que sube de 0 al total — la recompensa se siente ganada.
           TweenAnimationBuilder<int>(
             tween: IntTween(begin: 0, end: denarios),
-            duration: const Duration(milliseconds: 900),
-            curve: Curves.easeOutCubic,
+            duration: AppMotion.of(context, const Duration(milliseconds: 900)),
+            curve: AppMotion.enter,
             builder: (_, value, __) => RewardAmount(
                 type: CurrencyType.denarios, amount: value, fontSize: 22),
           ),
           const SizedBox(width: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: AppColors.sky.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: AppColors.sky.withValues(alpha: 0.4)),
-            ),
-            child: Text('RECOMPENSA',
-                style: AppTextStyles.fredoka(9,
-                    color: AppColors.sky, letterSpacing: 1)),
-          ),
+          const GameChip('RECOMPENSA', color: AppColors.sky),
         ],
       ),
     );
@@ -713,20 +735,19 @@ class _EventsSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolved = mission.events
-        .where((e) => e.status == EventStatus.resolved)
-        .toList();
+    final resolved =
+        mission.events.where((e) => e.status == EventStatus.resolved).toList();
     if (resolved.isEmpty) return const SizedBox.shrink();
 
-    final successes = resolved
-        .where((e) => e.outcome?.type == OutcomeType.success).length;
+    final successes =
+        resolved.where((e) => e.outcome?.type == OutcomeType.success).length;
     final total = resolved.length;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.2),
+        color: AppColors.bgCard2,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.bgLine, width: 1.5),
       ),
@@ -735,16 +756,18 @@ class _EventsSummary extends StatelessWidget {
         children: [
           Row(children: [
             Text('EVENTOS RESUELTOS',
-                style: AppTextStyles.fredoka(11,
+                style: AppTextStyles.fredoka(12,
                     color: AppColors.textMuted,
                     weight: FontWeight.bold,
                     letterSpacing: 1.5)),
             const Spacer(),
             Text('$successes/$total exitosos',
-                style: AppTextStyles.fredoka(11,
+                style: AppTextStyles.fredoka(12,
                     color: successes == total
                         ? AppColors.green
-                        : successes > 0 ? AppColors.amber : AppColors.red,
+                        : successes > 0
+                            ? AppColors.amber
+                            : AppColors.textPrimary,
                     weight: FontWeight.bold)),
           ]),
           const SizedBox(height: 10),
@@ -753,10 +776,14 @@ class _EventsSummary extends StatelessWidget {
             final isPartial = e.outcome?.type == OutcomeType.partial;
             final color = isSuccess
                 ? AppColors.green
-                : isPartial ? AppColors.amber : AppColors.red;
+                : isPartial
+                    ? AppColors.amber
+                    : AppColors.red;
             final icon = isSuccess
                 ? Icons.check_circle
-                : isPartial ? Icons.warning_rounded : Icons.cancel;
+                : isPartial
+                    ? Icons.warning_rounded
+                    : Icons.cancel;
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(
@@ -774,8 +801,7 @@ class _EventsSummary extends StatelessWidget {
                                 weight: FontWeight.bold)),
                         if (e.outcome?.chosenOptionText != null)
                           Text('Decidiste: ${e.outcome!.chosenOptionText}',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textMuted, fontSize: 11)),
+                              style: AppTextStyles.bodySmall),
                       ],
                     ),
                   ),

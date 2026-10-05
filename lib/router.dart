@@ -13,6 +13,7 @@ import 'presentation/screens/profile/profile_screen.dart';
 import 'presentation/screens/skills/skill_tree_screen.dart';
 import 'presentation/screens/settings/settings_screen.dart';
 import 'domain/entities/entities.dart';
+import 'presentation/theme/motion.dart';
 import 'domain/usecases/usecases.dart';
 
 final appRouter = GoRouter(
@@ -20,7 +21,7 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (_, __) => const SplashScreen(),
+      pageBuilder: (_, state) => _fadePage(state, const SplashScreen()),
     ),
     GoRoute(
       path: '/login',
@@ -78,7 +79,18 @@ final appRouter = GoRouter(
   ],
 );
 
-// Slide from right (or bottom)
+// ─── Transiciones ─────────────────────────────────────────────────────────────
+// Duraciones y curvas de AppMotion. Con movimiento reducido (sistema o
+// Ajustes) todas se vuelven un fade corto.
+
+Duration _d(Duration d) =>
+    AppMotion.userPrefersReduced.value ? AppMotion.fast : d;
+
+Widget _reducedFade(Animation<double> animation, Widget child) =>
+    FadeTransition(opacity: animation, child: child);
+
+// Slide desde la derecha (o desde abajo). La pantalla de atrás se corre un
+// poco hacia el otro lado: da sensación de profundidad sin distraer.
 CustomTransitionPage<void> _slidePage(
     GoRouterState state,
     Widget child, {
@@ -87,17 +99,25 @@ CustomTransitionPage<void> _slidePage(
   return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
-    transitionDuration: const Duration(milliseconds: 320),
-    reverseTransitionDuration: const Duration(milliseconds: 280),
-    transitionsBuilder: (_, animation, secondaryAnimation, child) {
+    transitionDuration: _d(AppMotion.slow),
+    reverseTransitionDuration: _d(AppMotion.base + AppMotion.stagger),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      if (AppMotion.reduced(context)) return _reducedFade(animation, child);
       final begin = fromBottom ? const Offset(0, 1) : const Offset(1, 0);
-      final tween = Tween(begin: begin, end: Offset.zero)
-          .chain(CurveTween(curve: Curves.easeOutCubic));
+      final slideIn = Tween(begin: begin, end: Offset.zero).chain(
+          CurveTween(curve: AppMotion.enter));
       final fade = Tween<double>(begin: 0, end: 1)
-          .chain(CurveTween(curve: Curves.easeOut));
+          .chain(CurveTween(curve: const Interval(0, 0.6)));
+      final pushBack = Tween(
+              begin: Offset.zero,
+              end: fromBottom ? Offset.zero : const Offset(-0.25, 0))
+          .chain(CurveTween(curve: AppMotion.enter));
       return SlideTransition(
-        position: animation.drive(tween),
-        child: FadeTransition(opacity: animation.drive(fade), child: child),
+        position: secondaryAnimation.drive(pushBack),
+        child: SlideTransition(
+          position: animation.drive(slideIn),
+          child: FadeTransition(opacity: animation.drive(fade), child: child),
+        ),
       );
     },
   );
@@ -108,10 +128,10 @@ CustomTransitionPage<void> _fadePage(GoRouterState state, Widget child) {
   return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
-    transitionDuration: const Duration(milliseconds: 400),
+    transitionDuration: _d(AppMotion.slow),
     transitionsBuilder: (_, animation, __, child) {
       return FadeTransition(
-        opacity: animation.drive(CurveTween(curve: Curves.easeInOut)),
+        opacity: animation.drive(CurveTween(curve: AppMotion.standard)),
         child: child,
       );
     },
@@ -123,10 +143,11 @@ CustomTransitionPage<void> _fullScalePage(GoRouterState state, Widget child) {
   return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
-    transitionDuration: const Duration(milliseconds: 450),
-    transitionsBuilder: (_, animation, __, child) {
+    transitionDuration: _d(AppMotion.slow + AppMotion.stagger * 2),
+    transitionsBuilder: (context, animation, __, child) {
+      if (AppMotion.reduced(context)) return _reducedFade(animation, child);
       final scale = Tween<double>(begin: 0.92, end: 1.0)
-          .chain(CurveTween(curve: Curves.easeOutCubic));
+          .chain(CurveTween(curve: AppMotion.enter));
       final fade = Tween<double>(begin: 0.0, end: 1.0)
           .chain(CurveTween(curve: Curves.easeOut));
       return ScaleTransition(

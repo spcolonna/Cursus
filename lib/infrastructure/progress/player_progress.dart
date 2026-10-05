@@ -13,6 +13,8 @@ class PlayerProgress {
   static const _kAdsTravelCount = 'ads_travel_count_v1';
   static const _kAdsDoublePayDay = 'ads_double_pay_day_v1';
   static const _kSfxEnabled = 'sfx_enabled_v1';
+  static const _kHapticsEnabled = 'haptics_enabled_v1';
+  static const _kReduceMotion = 'reduce_motion_v1';
 
   // Checklist task ids (GDD §7)
   static const taskFirstRealRoute = 'first_real_route';
@@ -133,6 +135,26 @@ class PlayerProgress {
   Future<void> setSfxEnabled(bool enabled) async {
     final p = await SharedPreferences.getInstance();
     await p.setBool(_kSfxEnabled, enabled);
+  }
+
+  Future<bool> isHapticsEnabled() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getBool(_kHapticsEnabled) ?? true;
+  }
+
+  Future<void> setHapticsEnabled(bool enabled) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_kHapticsEnabled, enabled);
+  }
+
+  Future<bool> isReduceMotion() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getBool(_kReduceMotion) ?? false;
+  }
+
+  Future<void> setReduceMotion(bool reduce) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_kReduceMotion, reduce);
   }
 
   String _dayKey() {

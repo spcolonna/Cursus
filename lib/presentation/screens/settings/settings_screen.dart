@@ -6,6 +6,7 @@
 // "¿las notificaciones están llegando?". Muestra el permiso y todo lo que
 // hay programado con su hora, y permite disparar una de prueba.
 
+import '../../feedback/feedback.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -65,7 +66,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   data: (prefs) => _PrefsCard(prefs: prefs, onChanged: _reload),
                 ),
                 const SizedBox(height: 20),
-                SectionHeader(title: 'SONIDO'),
+                SectionHeader(title: 'SONIDO Y MOVIMIENTO'),
                 const _SfxToggleCard(),
                 const SizedBox(height: 20),
                 SectionHeader(title: 'DIAGNÓSTICO'),
@@ -293,6 +294,7 @@ class _DiagnosticsCard extends ConsumerWidget {
       };
 }
 
+/// Sonido, vibración y movimiento: lo sensorial del juego, en una card.
 class _SfxToggleCard extends ConsumerStatefulWidget {
   const _SfxToggleCard();
 
@@ -301,35 +303,82 @@ class _SfxToggleCard extends ConsumerStatefulWidget {
 }
 
 class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
-  bool? _enabled;
+  bool _sfx = true;
+  bool _haptics = true;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
     super.initState();
-    ref.read(playerProgressProvider).isSfxEnabled().then((v) {
-      if (mounted) setState(() => _enabled = v);
+    _load();
+  }
+
+  Future<void> _load() async {
+    final progress = ref.read(playerProgressProvider);
+    final sfx = await progress.isSfxEnabled();
+    final haptics = await progress.isHapticsEnabled();
+    final reduce = await progress.isReduceMotion();
+    if (!mounted) return;
+    setState(() {
+      _sfx = sfx;
+      _haptics = haptics;
+      _reduceMotion = reduce;
     });
   }
 
+  Widget _toggle({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) =>
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Text(title, style: AppTextStyles.fredoka(14)),
+        subtitle: Text(subtitle, style: AppTextStyles.bodyMedium),
+        value: value,
+        activeThumbColor: AppColors.gold,
+        onChanged: onChanged,
+      );
+
   @override
   Widget build(BuildContext context) {
-    final enabled = _enabled ?? true;
+    final progress = ref.read(playerProgressProvider);
     return GameCard(
-      child: SwitchListTile(
-        contentPadding: EdgeInsets.zero,
-        title: Text('Efectos de sonido',
-            style: AppTextStyles.fredoka(14, color: AppColors.white)),
-        subtitle: Text('Outcomes, entrega y feedback de sesión',
-            style: AppTextStyles.bodyMedium.copyWith(fontSize: 12)),
-        value: enabled,
-        activeThumbColor: AppColors.gold,
-        onChanged: (v) async {
-          await ref.read(playerProgressProvider).setSfxEnabled(v);
-          ref.read(sfxServiceProvider).setEnabled(v);
-          setState(() => _enabled = v);
-          if (v) ref.read(sfxServiceProvider).playTap();
-        },
-      ),
+      child: Column(children: [
+        _toggle(
+          title: 'Efectos de sonido',
+          subtitle: 'Botones, resultados, entregas y cobros',
+          value: _sfx,
+          onChanged: (v) async {
+            await progress.setSfxEnabled(v);
+            ref.read(sfxServiceProvider).setEnabled(v);
+            setState(() => _sfx = v);
+            if (v) AppFeedback.tap();
+          },
+        ),
+        _toggle(
+          title: 'Vibración',
+          subtitle: 'Un golpe suave al tocar y al cobrar',
+          value: _haptics,
+          onChanged: (v) async {
+            await progress.setHapticsEnabled(v);
+            AppFeedback.hapticsEnabled = v;
+            setState(() => _haptics = v);
+            if (v) AppFeedback.tap();
+          },
+        ),
+        _toggle(
+          title: 'Animaciones reducidas',
+          subtitle: 'Menos movimiento: transiciones cortas y sin sacudidas',
+          value: _reduceMotion,
+          onChanged: (v) async {
+            await progress.setReduceMotion(v);
+            AppMotion.userPrefersReduced.value = v;
+            setState(() => _reduceMotion = v);
+          },
+        ),
+      ]),
     );
   }
 }

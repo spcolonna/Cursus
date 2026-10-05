@@ -1,11 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../feedback/feedback.dart';
 import '../../providers/providers.dart';
+import '../../widgets/widgets.dart';
 import '../../theme/app_theme.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/entities/skill_tree.dart';
@@ -63,63 +62,70 @@ class _EventScreenState extends ConsumerState<EventScreen> {
     return homeAsync.when(
       loading: () => const Scaffold(
         backgroundColor: AppColors.bgDeep,
-        body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
+        body: LoadingState(),
       ),
-      error: (e, _) => Scaffold(body: Center(child: Text('Error: $e'))),
+      error: (e, _) => Scaffold(
+        backgroundColor: AppColors.bgDeep,
+        body: ErrorState(
+            error: e, onRetry: () => ref.read(homeProvider.notifier).refresh()),
+      ),
       data: (state) {
         // El resultado se muestra aunque la misión ya no tenga eventos
         // pendientes (o haya cambiado tras recargar el Home).
-        if (_resolution != null) {
-          return GradientScaffold(
-            useEventBg: true,
-            body: _OutcomeView(
-              resolution: _resolution!,
-              isTutorial: _resolvedTutorial,
-              onContinue: () => _leaveEventScreen(context),
-            ),
-          );
-        }
-
         final slot = state.slotFor(widget.messengerId);
         final event = slot?.pendingEvent;
         final mission = slot?.activeMission;
 
-        if (event == null || mission == null) {
-          return Scaffold(
-            backgroundColor: AppColors.bgDeep,
-            body: Center(
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.check_circle_outline,
-                        color: AppColors.green, size: 56),
-                    const SizedBox(height: 12),
-                    Text('No hay eventos pendientes',
-                        style: AppTextStyles.titleLarge),
-                    const SizedBox(height: 20),
-                    GameButton(
-                        label: 'Volver',
-                        onTap: () => _leaveEventScreen(context),
-                        fontSize: 16),
-                  ]),
+        final Widget body;
+        if (_resolution != null) {
+          body = _OutcomeView(
+            key: const ValueKey('outcome'),
+            resolution: _resolution!,
+            isTutorial: _resolvedTutorial,
+            onContinue: () => _leaveEventScreen(context),
+          );
+        } else if (event == null || mission == null) {
+          body = SafeArea(
+            key: const ValueKey('empty'),
+            child: Center(
+              child: EmptyState(
+                icon: Icons.check_circle_outline,
+                title: 'No hay eventos pendientes',
+                body: 'El camino está tranquilo por ahora.',
+                action: GameButton(
+                    label: 'VOLVER', onTap: () => _leaveEventScreen(context)),
+              ),
             ),
+          );
+        } else {
+          body = _DecisionView(
+            key: ValueKey('decision-${event.id}'),
+            event: event,
+            mission: mission,
+            messenger: slot?.messenger,
+            world: world,
+            selected: _selected,
+            resolving: _resolving,
+            onSelect: (opt) => setState(() => _selected = opt),
+            onConfirm: () => _confirm(mission, event),
           );
         }
 
+        // Decisión → resultado: la decisión se va y el sello entra. Sin
+        // corte en seco.
         return GradientScaffold(
           useEventBg: true,
-          body: Container(
-            color: Colors.transparent,
-            child: _DecisionView(
-                    event: event,
-                    mission: mission,
-                    messenger: slot?.messenger,
-                    world: world,
-                    selected: _selected,
-                    resolving: _resolving,
-                    onSelect: (opt) => setState(() => _selected = opt),
-                    onConfirm: () => _confirm(mission, event),
-                  ),
+          body: AnimatedSwitcher(
+            duration: AppMotion.of(context, AppMotion.slow),
+            switchInCurve: AppMotion.enter,
+            switchOutCurve: AppMotion.exit,
+            transitionBuilder: (child, anim) => FadeTransition(
+              opacity: anim,
+              child: ScaleTransition(
+                  scale: Tween(begin: 0.97, end: 1.0).animate(anim),
+                  child: child),
+            ),
+            child: body,
           ),
         );
       },
@@ -140,24 +146,19 @@ class _EventScreenState extends ConsumerState<EventScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _resolving = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(e.toString().replaceFirst('Exception: ', ''))));
+        showErrorSnack(context, e);
       }
       return;
     }
 
     // Feedback físico + SFX: que el resultado se SIENTA.
-    final sfx = ref.read(sfxServiceProvider);
     switch (result.outcome.type) {
       case OutcomeType.success:
-        HapticFeedback.heavyImpact();
-        sfx.playSuccess();
+        AppFeedback.success();
       case OutcomeType.partial:
-        HapticFeedback.mediumImpact();
-        sfx.playPartial();
+        AppFeedback.partial();
       case OutcomeType.fail:
-        HapticFeedback.vibrate();
-        sfx.playFail();
+        AppFeedback.fail();
     }
 
     if (mounted) {
@@ -182,6 +183,7 @@ class _DecisionView extends StatelessWidget {
   final VoidCallback onConfirm;
 
   const _DecisionView({
+    super.key,
     required this.event,
     required this.mission,
     required this.messenger,
@@ -201,11 +203,16 @@ class _DecisionView extends StatelessWidget {
 
     return SafeArea(
       child: Column(children: [
-        _buildHeader(context),
+        _buildTopRow(context),
         Expanded(
+          // La narrativa scrollea junto con las opciones: con textos largos
+          // en pantallas chicas, antes el encabezado se comía las opciones.
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.lg),
             children: [
+              _buildHeader(context),
+              const SizedBox(height: AppSpacing.lg),
               Text('¿QUÉ HACÉS?',
                   style: AppTextStyles.fredoka(13,
                       color: AppColors.textSecondary,
@@ -225,9 +232,10 @@ class _DecisionView extends StatelessWidget {
                         onTap: () => onSelect(e.value),
                       )
                           .animate(
-                              delay: Duration(milliseconds: 80 + e.key * 70))
-                          .fadeIn()
-                          .slideX(begin: 0.08, end: 0),
+                              delay: AppMotion.stagger * (2 + e.key))
+                          .fadeIn(
+                              duration: AppMotion.of(context, AppMotion.base))
+                          .slideX(begin: 0.06, end: 0, curve: AppMotion.enter),
                     ),
                   ),
             ],
@@ -238,86 +246,67 @@ class _DecisionView extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF7F0000), Color(0xFFB71C1C)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border:
-            Border(bottom: BorderSide(color: AppColors.red.withValues(alpha: 0.4))),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          GestureDetector(
-            onTap: () => _leaveEventScreen(context),
-            child: Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                  color: Colors.black26,
-                  borderRadius: BorderRadius.circular(10)),
-              child: const Icon(Icons.arrow_back_ios_new,
-                  color: Colors.white60, size: 14),
-            ),
-          ),
+  Widget _buildTopRow(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.xs),
+        child: Row(children: [
+          GameBackButton(onTap: () => _leaveEventScreen(context)),
           const SizedBox(width: 10),
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.black26,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white24),
-              ),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                const Icon(Icons.warning_amber_rounded,
-                    color: Colors.white70, size: 13),
-                const SizedBox(width: 4),
-                Text(
-                  mission.isTutorial ? 'PRUEBA DE VARUS' : 'EVENTO CRÍTICO',
-                  style: AppTextStyles.fredoka(10,
-                      color: Colors.red[100]!, letterSpacing: 1),
-                ),
-              ]),
+          Flexible(
+            child: GameChip(
+              mission.isTutorial ? 'PRUEBA DE VARUS' : 'EVENTO CRÍTICO',
+              icon: Icons.warning_amber_rounded,
+              color: AppColors.amber,
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              gradient: AppGradients.gold,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.black38, width: 2),
-              boxShadow: const [
-                BoxShadow(color: AppColors.goldShadow, offset: Offset(0, 3))
-              ],
-            ),
-            child: _DecisionCountdown(deadline: event.deadlineAt),
-          ),
+          const Spacer(),
+          PeriodicBuilder(
+              builder: (_) => _DecisionCountdown(deadline: event.deadlineAt)),
         ]),
-        const SizedBox(height: 12),
-        Text(event.title,
-            style: AppTextStyles.fredoka(22, color: Colors.white)),
-        const SizedBox(height: 6),
-        // La narrativa es el corazón del juego: texto grande y claro,
-        // siempre casi-blanco sobre el header rojo.
-        Text(event.description,
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontSize: 15,
-              height: 1.55,
-              color: const Color(0xFFF7EFDC),
-            )),
-      ]),
+      );
+
+  Widget _buildHeader(BuildContext context) {
+    return Hero(
+      tag: eventHeroTag(event.id),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            gradient: AppGradients.event,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.red, width: 2.5),
+            boxShadow: const [
+              BoxShadow(
+                  color: AppColors.shadowSoft,
+                  offset: Offset(0, 4),
+                  blurRadius: 8),
+            ],
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(event.title,
+                style: AppTextStyles.fredoka(22,
+                    color: AppColors.parchment, weight: FontWeight.bold)),
+            const SizedBox(height: AppSpacing.sm),
+            // La narrativa es el corazón del juego: texto grande y claro.
+            Text(event.description,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  fontSize: 15,
+                  height: 1.55,
+                  color: AppColors.parchment,
+                )),
+          ]),
+        ),
+      ),
     );
   }
 
   Widget _buildConfirmArea() {
     final canConfirm = selected != null && !resolving;
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xl),
       decoration: const BoxDecoration(
         color: AppColors.bgCard,
         border: Border(top: BorderSide(color: AppColors.bgLine)),
@@ -325,13 +314,11 @@ class _DecisionView extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         child: GameButton(
-          label: resolving ? 'Resolviendo...' : 'CONFIRMAR DECISIÓN',
-          gradient: canConfirm
-              ? AppGradients.green
-              : const LinearGradient(
-                  colors: [Color(0xFF546E7A), Color(0xFF37474F)]),
-          shadowColor:
-              canConfirm ? AppColors.greenShadow : const Color(0xFF1A2A30),
+          label: resolving
+              ? 'Resolviendo...'
+              : selected == null
+                  ? 'ELEGÍ UNA OPCIÓN'
+                  : 'CONFIRMAR DECISIÓN',
           fontSize: 18,
           isLoading: resolving,
           onTap: canConfirm ? onConfirm : null,
@@ -343,33 +330,13 @@ class _DecisionView extends StatelessWidget {
 
 // ─── Cuenta regresiva de la decisión ──────────────────────────────────────────
 // Antes decía '45m' fijo, sin relación con el evento real.
-class _DecisionCountdown extends StatefulWidget {
+class _DecisionCountdown extends StatelessWidget {
   final DateTime deadline;
   const _DecisionCountdown({required this.deadline});
 
   @override
-  State<_DecisionCountdown> createState() => _DecisionCountdownState();
-}
-
-class _DecisionCountdownState extends State<_DecisionCountdown> {
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(
-        const Duration(seconds: 1), (_) => setState(() {}));
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final left = widget.deadline.difference(DateTime.now());
+    final left = deadline.difference(DateTime.now());
     final label = left.isNegative
         ? 'SE TE PASÓ'
         : left.inHours > 0
@@ -377,11 +344,29 @@ class _DecisionCountdownState extends State<_DecisionCountdown> {
             : left.inMinutes > 0
                 ? '${left.inMinutes}m ${left.inSeconds % 60}s'
                 : '${left.inSeconds}s';
-    return Row(mainAxisSize: MainAxisSize.min, children: [
-      const Icon(Icons.timer_outlined, color: Colors.black87, size: 13),
-      const SizedBox(width: 4),
-      Text(label, style: AppTextStyles.fredoka(13, color: Colors.black87)),
-    ]);
+    final urgent = left.inMinutes < 10;
+    return Semantics(
+      label: 'Tiempo para decidir: $label',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          gradient: AppGradients.gold,
+          borderRadius: BorderRadius.circular(AppRadii.sm + 2),
+          border: Border.all(color: AppColors.outline, width: 2),
+          boxShadow: const [
+            BoxShadow(color: AppColors.goldShadow, offset: Offset(0, 3))
+          ],
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(urgent ? Icons.alarm : Icons.timer_outlined,
+              color: AppColors.outline, size: 14),
+          const SizedBox(width: AppSpacing.xs),
+          Text(label,
+              style: AppTextStyles.fredoka(13,
+                  color: AppColors.outline, weight: FontWeight.bold)),
+        ]),
+      ),
+    );
   }
 }
 
@@ -426,182 +411,152 @@ class _OptionCard extends StatelessWidget {
     final meetsReqs = _meetsRequirements();
     final forecast = forecastFor(option, messenger);
 
-    return GestureDetector(
-      onTap: meetsReqs ? onTap : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? const LinearGradient(
-                  colors: [Color(0xFF1A4E9A), Color(0xFF103060)])
-              : isSecret
-                  ? const LinearGradient(
-                      colors: [Color(0xFF2A1A4A), Color(0xFF1A1136)])
-                  : const LinearGradient(
-                      colors: [Color(0xFF1A2A4A), Color(0xFF111E36)]),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.gold
-                : isSecret
-                    ? AppColors.purple.withValues(alpha: 0.7)
-                    : meetsReqs
-                        ? AppColors.bgLine
-                        : AppColors.bgLine.withValues(alpha: 0.4),
-            width: isSelected ? 3 : 2,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                      color: AppColors.gold.withValues(alpha: 0.25), blurRadius: 16)
-                ]
-              : [],
-        ),
-        child: Opacity(
-          opacity: meetsReqs ? 1.0 : 0.5,
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isSelected ? AppColors.gold : Colors.transparent,
-                  border: Border.all(
-                      color: isSelected ? AppColors.gold : Colors.white30,
-                      width: 2.5),
-                ),
-                child: isSelected
-                    ? const Icon(Icons.check, color: Colors.black, size: 13)
-                    : null,
+    final textColor = meetsReqs ? AppColors.textPrimary : AppColors.textMuted;
+
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      enabled: meetsReqs,
+      child: GestureDetector(
+        onTap: () {
+          if (!meetsReqs) {
+            showGameSnack(
+                context, option.lockedHint ?? 'Te falta habilidad para esto.',
+                isError: true);
+            return;
+          }
+          AppFeedback.tap();
+          onTap();
+        },
+        child: AnimatedScale(
+          scale: isSelected ? 1.0 : 0.985,
+          duration: AppMotion.of(context, AppMotion.base),
+          curve: AppMotion.pop,
+          child: AnimatedContainer(
+            duration: AppMotion.of(context, AppMotion.base),
+            curve: AppMotion.enter,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: !meetsReqs
+                  ? AppGradients.disabled
+                  : isSelected
+                      ? AppGradients.optionSelected
+                      : isSecret
+                          ? AppGradients.optionSecret
+                          : AppGradients.option,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.gold
+                    : isSecret
+                        ? AppColors.purple
+                        : AppColors.bgLine,
+                width: isSelected ? 3 : 2,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                  child: Text(option.text,
-                      style: AppTextStyles.bodyLarge
-                          .copyWith(fontSize: 14, height: 1.45))),
-            ]),
-            const SizedBox(height: 10),
-            Wrap(spacing: 6, runSpacing: 6, children: [
-              // El riesgo existía en el dominio pero nunca se mostraba:
-              // sin esto el jugador elige a ciegas.
-              RiskChip(level: forecast.effectiveRisk),
-              if (option.timeCostMinutes > 0)
-                _TimeTag(minutes: option.timeCostMinutes),
-              ...option.requiredSkills.entries.map((e) => _SkillTag(
-                    skill: e.key,
-                    level: e.value,
-                    met: messenger != null &&
-                        messenger!.skillLevel(e.key) >=
-                            e.value -
-                                SkillPerks.gatingDiscount(e.key, messenger!),
-                  )),
-            ]),
-            if (meetsReqs) ...[
-              const SizedBox(height: 8),
-              // Pronóstico: traduce la fórmula a algo que se pueda leer.
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                          color: AppColors.gold.withValues(alpha: 0.25),
+                          blurRadius: 16)
+                    ]
+                  : const [],
+            ),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Icon(_forecastIcon(forecast.band),
-                    size: 13, color: _forecastColor(forecast.band)),
-                const SizedBox(width: 5),
-                Expanded(
-                  child: Text(forecast.reason,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                          fontSize: 11.5,
-                          height: 1.35,
-                          color: _forecastColor(forecast.band))),
+                AnimatedContainer(
+                  duration: AppMotion.of(context, AppMotion.base),
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isSelected ? AppColors.gold : AppColors.outline,
+                    border: Border.all(
+                        color: isSelected
+                            ? AppColors.gold
+                            : meetsReqs
+                                ? AppColors.textMuted
+                                : AppColors.bgLine,
+                        width: 2.5),
+                  ),
+                  child: isSelected
+                      ? const Icon(Icons.check,
+                          color: AppColors.outline, size: 15)
+                      : meetsReqs
+                          ? null
+                          : const Icon(Icons.lock,
+                              color: AppColors.textMuted, size: 12),
                 ),
-              ]),
-            ],
-            if (isSecret && meetsReqs) ...[
-              const SizedBox(height: 8),
-              Row(children: [
-                const Icon(Icons.auto_awesome,
-                    color: AppColors.purple, size: 13),
-                const SizedBox(width: 5),
-                Text('Tu historia abrió este camino',
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(fontSize: 11, color: AppColors.purple)),
-              ]),
-            ],
-            if (!meetsReqs) ...[
-              const SizedBox(height: 8),
-              Row(children: [
-                const Icon(Icons.lock, color: Colors.white38, size: 13),
-                const SizedBox(width: 5),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
-                      // Candado narrativo si es por reputación.
-                      option.lockedHint ?? 'Habilidad insuficiente',
+                    child: Text(option.text,
+                        style: AppTextStyles.bodyLarge.copyWith(
+                            fontSize: 14, height: 1.45, color: textColor))),
+              ]),
+              const SizedBox(height: 10),
+              Wrap(spacing: 6, runSpacing: 6, children: [
+                // El riesgo existía en el dominio pero nunca se mostraba:
+                // sin esto el jugador elige a ciegas.
+                RiskChip(level: forecast.effectiveRisk),
+                if (option.timeCostMinutes > 0)
+                  GameChip(_timeLabel(option.timeCostMinutes),
+                      icon: Icons.schedule, color: AppColors.amber),
+                ...option.requiredSkills.entries.map((e) {
+                  final met = messenger != null &&
+                      messenger!.skillLevel(e.key) >=
+                          e.value - SkillPerks.gatingDiscount(e.key, messenger!);
+                  return GameChip('${e.key.label} Nv.${e.value}',
+                      icon: skillIconData(e.key),
+                      trailingIcon: met ? Icons.check : null,
+                      color: met ? AppColors.green : AppColors.purple);
+                }),
+              ]),
+              if (meetsReqs) ...[
+                const SizedBox(height: AppSpacing.sm),
+                // Pronóstico: traduce la fórmula a algo que se pueda leer.
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Icon(_forecastIcon(forecast.band),
+                      size: 14, color: _forecastColor(forecast.band)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(forecast.reason,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                            height: 1.35,
+                            color: _forecastColor(forecast.band))),
+                  ),
+                ]),
+              ],
+              if (isSecret && meetsReqs) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Row(children: [
+                  const Icon(Icons.auto_awesome,
+                      color: AppColors.purple, size: 14),
+                  const SizedBox(width: 6),
+                  Text('Tu historia abrió este camino',
                       style: AppTextStyles.bodyMedium
-                          .copyWith(fontSize: 11, color: Colors.white38)),
-                ),
-              ]),
-            ],
-          ]),
+                          .copyWith(color: AppColors.textPrimary)),
+                ]),
+              ],
+              if (!meetsReqs) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                    // Candado narrativo si es por reputación.
+                    option.lockedHint ?? 'Te falta habilidad para esto.',
+                    style: AppTextStyles.bodyMedium
+                        .copyWith(color: AppColors.textSecondary)),
+              ],
+            ]),
+          ),
         ),
       ),
     );
   }
-}
 
-class _TimeTag extends StatelessWidget {
-  final int minutes;
-  const _TimeTag({required this.minutes});
-
-  String get _label {
+  static String _timeLabel(int minutes) {
     if (minutes < 60) return '+${minutes}m';
     final h = minutes ~/ 60;
     final m = minutes % 60;
     return m == 0 ? '+${h}h' : '+${h}h${m}m';
-  }
-
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          color: AppColors.amber.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.amber.withValues(alpha: 0.5), width: 2),
-        ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.schedule, size: 11, color: AppColors.amber),
-          const SizedBox(width: 3),
-          Text(_label,
-              style: AppTextStyles.fredoka(10, color: AppColors.amber)),
-        ]),
-      );
-}
-
-class _SkillTag extends StatelessWidget {
-  final SkillType skill;
-  final int level;
-  final bool met;
-  const _SkillTag(
-      {required this.skill, required this.level, required this.met});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = met ? AppColors.green : AppColors.purple;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.5), width: 2),
-      ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Text('${skill.label} Nv.$level',
-            style: AppTextStyles.fredoka(10, color: color)),
-        if (met) ...[
-          const SizedBox(width: 3),
-          Icon(Icons.check, size: 11, color: color),
-        ],
-      ]),
-    );
   }
 }
 
@@ -612,6 +567,7 @@ class _OutcomeView extends StatelessWidget {
   final VoidCallback onContinue;
 
   const _OutcomeView({
+    super.key,
     required this.resolution,
     required this.isTutorial,
     required this.onContinue,
@@ -646,6 +602,11 @@ class _OutcomeView extends StatelessWidget {
         ),
     };
 
+    final reduced = AppMotion.reduced(context);
+    Duration d(int ms) => AppMotion.of(context, Duration(milliseconds: ms));
+    // Escalonado de la revelación: sello → título → relato → detalles.
+    Duration at(int ms) => reduced ? Duration.zero : Duration(milliseconds: ms);
+
     // Sello grande — entra con elasticidad; brilla si ganaste, tiembla si no.
     Widget stamp = Container(
       width: 118,
@@ -653,7 +614,7 @@ class _OutcomeView extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: grad,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.black38, width: 4),
+        border: Border.all(color: AppColors.outline, width: 4),
         boxShadow: [
           BoxShadow(
               color: color.withValues(alpha: 0.55),
@@ -661,35 +622,37 @@ class _OutcomeView extends StatelessWidget {
               spreadRadius: 8)
         ],
       ),
-      child: Center(child: Icon(icon, size: 58, color: Colors.white)),
+      child: Center(child: Icon(icon, size: 58, color: AppColors.parchment)),
     );
-    stamp = isFail
-        ? stamp
-            .animate()
-            .scale(
-                begin: const Offset(1.6, 1.6),
-                duration: 350.ms,
-                curve: Curves.easeInCubic)
-            .fade(duration: 200.ms)
-            .then()
-            .shake(hz: 6, duration: 500.ms)
-        : stamp
-            .animate()
-            .scale(
-                begin: const Offset(0.3, 0.3),
-                duration: 600.ms,
-                curve: Curves.elasticOut)
-            .fade(duration: 300.ms)
-            .then()
-            .shimmer(duration: 800.ms, color: Colors.white54);
+    stamp = reduced
+        ? stamp.animate().fadeIn(duration: d(200))
+        : isFail
+            ? stamp
+                .animate(onComplete: (_) => AppFeedback.impact())
+                .scale(
+                    begin: const Offset(1.6, 1.6),
+                    duration: 350.ms,
+                    curve: AppMotion.exit)
+                .fade(duration: 200.ms)
+                .then()
+                .shake(hz: 6, duration: 500.ms)
+            : stamp
+                .animate()
+                .scale(
+                    begin: const Offset(0.3, 0.3),
+                    duration: 600.ms,
+                    curve: Curves.elasticOut)
+                .fade(duration: 300.ms)
+                .then()
+                .shimmer(duration: 800.ms, color: AppColors.parchment);
 
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             stamp,
 
             const SizedBox(height: 26),
@@ -699,14 +662,14 @@ class _OutcomeView extends StatelessWidget {
                         color: color,
                         weight: FontWeight.bold,
                         letterSpacing: 1.5))
-                .animate(delay: 250.ms)
-                .fadeIn()
+                .animate(delay: at(250))
+                .fadeIn(duration: d(200))
                 .scale(
-                    begin: const Offset(1.5, 1.5),
-                    duration: 350.ms,
-                    curve: Curves.easeOutBack),
+                    begin: reduced ? const Offset(1, 1) : const Offset(1.5, 1.5),
+                    duration: d(350),
+                    curve: AppMotion.pop),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
 
             // La narrativa del resultado: texto grande, alto contraste.
             GameCard(
@@ -715,29 +678,45 @@ class _OutcomeView extends StatelessWidget {
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontSize: 15,
                     height: 1.65,
-                    color: const Color(0xFFF7EFDC),
+                    color: AppColors.parchment,
                   ),
                   textAlign: TextAlign.center),
-            ).animate(delay: 450.ms).fadeIn().slideY(begin: 0.2, end: 0),
+            )
+                .animate(delay: at(450))
+                .fadeIn(duration: d(300))
+                .slideY(begin: 0.2, end: 0, curve: AppMotion.enter),
+
+            // Level-up de skills: el momento más festejado de la pantalla.
+            if (leveledUpSkills.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.lg),
+              ...leveledUpSkills.toSet().map((skill) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    child: _LevelUpBanner(skill: skill)
+                        .animate(
+                            delay: at(650),
+                            onPlay: (_) => AppFeedback.impact())
+                        .fadeIn(duration: d(200))
+                        .scale(
+                            begin: reduced
+                                ? const Offset(1, 1)
+                                : const Offset(0.6, 0.6),
+                            duration: d(450),
+                            curve: Curves.elasticOut)
+                        .then()
+                        .shimmer(
+                            duration: d(900), color: AppColors.parchment),
+                  )),
+            ],
 
             // Mission complete banner
             if (missionComplete) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: isTutorial
-                      ? const LinearGradient(
-                          colors: [Color(0xFF2E1E00), Color(0xFF1E1400)])
-                      : AppGradients.blue,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isTutorial
-                        ? AppColors.amber.withValues(alpha: 0.4)
-                        : AppColors.gold.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
+              const SizedBox(height: AppSpacing.lg),
+              GameCard(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                gradient: isTutorial ? AppGradients.tutorialCard : AppGradients.blue,
+                borderColor: isTutorial
+                    ? AppColors.amber.withValues(alpha: 0.5)
+                    : AppColors.gold.withValues(alpha: 0.4),
                 child: Row(children: [
                   Icon(isTutorial ? Icons.emoji_events : Icons.auto_awesome,
                       color: isTutorial ? AppColors.amber : AppColors.gold,
@@ -752,126 +731,146 @@ class _OutcomeView extends StatelessWidget {
                         color: isTutorial ? AppColors.amber : AppColors.gold),
                   )),
                 ]),
-              ).animate(delay: 700.ms).fadeIn().slideY(begin: 0.2, end: 0),
+              )
+                  .animate(delay: at(700))
+                  .fadeIn(duration: d(300))
+                  .slideY(begin: 0.2, end: 0),
             ],
 
             if (outcome.healthDelta != 0 ||
                 outcome.timeDeltaMinutes != 0 ||
-                (repDelta?.isNotEmpty ?? false)) ...[
-              const SizedBox(height: 16),
+                (repDelta?.isNotEmpty ?? false) ||
+                (outcome.xpGained > 0 && outcome.usedSkill != null) ||
+                resolution.journalNote != null ||
+                resolution.flagsSet.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.lg),
               Wrap(
-                spacing: 10,
-                runSpacing: 8,
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
                 alignment: WrapAlignment.center,
                 children: [
                   if (outcome.healthDelta != 0)
-                    _ConsequenceChip(
+                    GameChip(
+                      '${outcome.healthDelta > 0 ? '+' : ''}${outcome.healthDelta} salud',
                       icon: Icons.favorite,
-                      label:
-                          '${outcome.healthDelta > 0 ? '+' : ''}${outcome.healthDelta} salud',
+                      size: GameChipSize.medium,
                       color: outcome.healthDelta > 0
                           ? AppColors.green
                           : AppColors.red,
                     ),
                   if (outcome.timeDeltaMinutes != 0)
-                    _ConsequenceChip(
+                    GameChip(
+                      '+${outcome.timeDeltaMinutes}m de viaje',
                       icon: Icons.timer_outlined,
-                      label: '-${outcome.timeDeltaMinutes}m del plazo',
+                      size: GameChipSize.medium,
                       color: AppColors.riskMed,
                     ),
                   // El mundo recuerda: cambios de reputación de la decisión.
-                  ...?repDelta?.entries.map((e) => _ConsequenceChip(
+                  ...?repDelta?.entries.map((e) => GameChip(
+                        '${e.value > 0 ? '+' : ''}${e.value} ${e.key.label}',
                         icon: e.value > 0
                             ? Icons.thumb_up_alt_outlined
                             : Icons.thumb_down_alt_outlined,
-                        label:
-                            '${e.value > 0 ? '+' : ''}${e.value} ${e.key.label}',
-                        color:
-                            e.value > 0 ? AppColors.sky : AppColors.riskMed,
+                        size: GameChipSize.medium,
+                        color: e.value > 0 ? AppColors.sky : AppColors.riskMed,
                       )),
-                ],
-              ).animate(delay: 700.ms).fadeIn(),
+                  // XP ganado (antes solo se veía si justo subías de nivel)
+                  if (outcome.xpGained > 0 && outcome.usedSkill != null)
+                    GameChip(
+                      '+${outcome.xpGained} XP de ${outcome.usedSkill!.label}',
+                      icon: Icons.school_outlined,
+                      size: GameChipSize.medium,
+                      color: AppColors.sky,
+                    ),
+                  // El mundo tomó nota: flags y diario dejaban de ser invisibles.
+                  if (resolution.journalNote != null ||
+                      resolution.flagsSet.isNotEmpty)
+                    GameChip(
+                      resolution.journalNote != null
+                          ? 'Quedó anotado en tu diario'
+                          : 'Roma no se olvida de esto',
+                      icon: Icons.menu_book_outlined,
+                      size: GameChipSize.medium,
+                      color: AppColors.purple,
+                    ),
+                ]
+                    .animate(interval: AppMotion.stagger, delay: at(700))
+                    .fadeIn(duration: d(250))
+                    .slideY(begin: 0.3, end: 0, curve: AppMotion.enter),
+              ),
             ],
 
             // ── Por qué pasó ──────────────────────────────────────────────
             // El desglose de la tirada. Es lo que le enseña al jugador qué
             // mirar la próxima vez: la habilidad suma, el riesgo resta,
             // la fatiga castiga y el camino siempre mete la cola.
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             _WhyItHappened(resolution: resolution)
-                .animate(delay: 750.ms)
-                .fadeIn()
+                .animate(delay: at(850))
+                .fadeIn(duration: d(300))
                 .slideY(begin: 0.15, end: 0),
 
-            // XP ganado (antes solo se veía si justo subías de nivel)
-            if (outcome.xpGained > 0 && outcome.usedSkill != null) ...[
-              const SizedBox(height: 12),
-              _ConsequenceChip(
-                icon: Icons.school_outlined,
-                label:
-                    '+${outcome.xpGained} XP de ${outcome.usedSkill!.label}',
-                color: AppColors.sky,
-              ).animate(delay: 780.ms).fadeIn(),
-            ],
-
-            // El mundo tomó nota: flags y diario dejaban de ser invisibles.
-            if (resolution.journalNote != null ||
-                resolution.flagsSet.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              _ConsequenceChip(
-                icon: Icons.menu_book_outlined,
-                label: resolution.journalNote != null
-                    ? 'Quedó anotado en tu diario'
-                    : 'Roma no se olvida de esto',
-                color: AppColors.purple,
-              ).animate(delay: 800.ms).fadeIn(),
-            ],
-
-            // Level-up de skills
-            if (leveledUpSkills.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              ...leveledUpSkills.toSet().map((skill) => Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      gradient: AppGradients.gold,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.black38, width: 2),
-                      boxShadow: const [
-                        BoxShadow(
-                            color: AppColors.goldShadow, offset: Offset(0, 3))
-                      ],
-                    ),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      const Icon(Icons.arrow_upward_rounded,
-                          color: Colors.black87, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        '¡${skill.label} subió de nivel!',
-                        style: AppTextStyles.fredoka(15, color: Colors.black87),
-                      ),
-                    ]),
-                  ).animate(delay: 800.ms).fadeIn().slideY(begin: 0.2, end: 0)),
-            ],
-
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxl),
 
             SizedBox(
               width: double.infinity,
               child: GameButton(
                 label: missionComplete ? 'IR AL HOME' : 'CONTINUAR',
-                gradient: grad,
-                shadowColor: color.withValues(alpha: 0.5),
                 fontSize: 20,
                 onTap: onContinue,
               ),
-            ).animate(delay: 900.ms).fadeIn().slideY(begin: 0.2, end: 0),
+            )
+                .animate(delay: at(950))
+                .fadeIn(duration: d(300))
+                .slideY(begin: 0.2, end: 0),
           ],
         ),
       ),
     );
   }
+}
+
+/// "¡Velocidad subió de nivel!" — un sello dorado con el ícono de la skill.
+class _LevelUpBanner extends StatelessWidget {
+  final SkillType skill;
+  const _LevelUpBanner({required this.skill});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+        decoration: BoxDecoration(
+          gradient: AppGradients.gold,
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          border: Border.all(color: AppColors.outline, width: 2.5),
+          boxShadow: const [
+            BoxShadow(color: AppColors.goldShadow, offset: Offset(0, 4)),
+          ],
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: const BoxDecoration(
+                color: AppColors.outline, shape: BoxShape.circle),
+            child: Icon(skillIconData(skill), color: AppColors.gold, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('¡SUBISTE DE NIVEL!',
+                style: AppTextStyles.fredoka(12,
+                    color: AppColors.outline,
+                    weight: FontWeight.bold,
+                    letterSpacing: 1)),
+            Text(skill.label,
+                style: AppTextStyles.fredoka(17,
+                    color: AppColors.outline, weight: FontWeight.bold)),
+          ]),
+          const SizedBox(width: AppSpacing.sm),
+          const Icon(Icons.arrow_upward_rounded,
+              color: AppColors.outline, size: 22),
+        ]),
+      );
 }
 
 // ─── Por qué pasó ─────────────────────────────────────────────────────────────
@@ -893,7 +892,7 @@ class _WhyItHappened extends StatelessWidget {
           const Icon(Icons.balance, size: 15, color: AppColors.textSecondary),
           const SizedBox(width: 7),
           Text('POR QUÉ PASÓ',
-              style: AppTextStyles.fredoka(11,
+              style: AppTextStyles.fredoka(12,
                   color: AppColors.textSecondary, letterSpacing: 1.2)),
         ]),
         const SizedBox(height: 10),
@@ -902,7 +901,7 @@ class _WhyItHappened extends StatelessWidget {
               child: Row(children: [
                 Expanded(
                   child: Text(f.label,
-                      style: AppTextStyles.bodyMedium.copyWith(fontSize: 12)),
+                      style: AppTextStyles.bodyMedium),
                 ),
                 Text(
                   f.value >= 0 ? '+${f.value}' : '−${f.value.abs()}',
@@ -942,29 +941,6 @@ class _WhyItHappened extends StatelessWidget {
     }
     return 'Desde 30 era un éxito parcial: te faltaron ${30 - score}.';
   }
-}
-
-class _ConsequenceChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  const _ConsequenceChip(
-      {required this.icon, required this.label, required this.color});
-
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withValues(alpha: 0.4), width: 2),
-        ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
-          Text(label, style: AppTextStyles.fredoka(13, color: color)),
-        ]),
-      );
 }
 
 /// Vuelve a donde estaba el jugador (Home o la pantalla de misión).

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'router.dart';
 import 'presentation/theme/app_theme.dart';
 import 'presentation/providers/providers.dart';
+import 'presentation/feedback/feedback.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,9 +33,12 @@ void main() async {
   }
   scheduler.onTap = openFromNotification;
   openFromNotification(await scheduler.launchPayload());
-  await container.read(sfxServiceProvider).init();
-  final sfxOn = await container.read(playerProgressProvider).isSfxEnabled();
-  container.read(sfxServiceProvider).setEnabled(sfxOn);
+  final sfx = container.read(sfxServiceProvider);
+  final progress = container.read(playerProgressProvider);
+  await sfx.init();
+  sfx.setEnabled(await progress.isSfxEnabled());
+  AppFeedback.configure(sfx: sfx, haptics: await progress.isHapticsEnabled());
+  AppMotion.userPrefersReduced.value = await progress.isReduceMotion();
   await container.read(iapServiceProvider).init();
 
   runApp(UncontrolledProviderScope(

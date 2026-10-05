@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/app_theme.dart';
 
+export 'components.dart';
+
 // ─── Monedas ──────────────────────────────────────────────────────────────────
 // Una moneda, un trabajo (GDD §6.1). Ícono y color viven acá y en ningún otro
 // lado: antes estaban copiados a mano en home, tienda, misión y perfil.
@@ -169,7 +171,7 @@ class _RewardToastBody extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.gold, width: 2),
           boxShadow: const [
-            BoxShadow(color: Color(0x88000000), blurRadius: 12, offset: Offset(0, 4)),
+            BoxShadow(color: AppColors.shadowHard, blurRadius: 12, offset: Offset(0, 4)),
           ],
         ),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -206,18 +208,9 @@ class GradeBadge extends StatelessWidget {
 
   const GradeBadge({super.key, required this.grade, this.size = 40});
 
-  Color _gradeColor(String g) => switch (g) {
-    'S' => const Color(0xFFFF8C00),
-    'A' => AppColors.gold,
-    'B' => AppColors.green,
-    'C' => AppColors.sky,
-    'F' => AppColors.red,
-    _   => AppColors.textMuted,
-  };
-
   @override
   Widget build(BuildContext context) {
-    final color = _gradeColor(grade);
+    final color = gradeColor(grade);
     return Container(
       width: size,
       height: size,

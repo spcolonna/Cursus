@@ -1,9 +1,15 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../feedback/feedback.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/messenger_avatar.dart';
+import '../../widgets/widgets.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/usecases/usecases.dart';
 import '../../../infrastructure/monetization/rewarded_ads_service.dart';
@@ -51,39 +57,63 @@ class _MissionScreenState extends ConsumerState<MissionScreen> {
   @override
   Widget build(BuildContext context) {
     final homeAsync = ref.watch(homeProvider);
-    final progress = ref.watch(missionProgressProvider);
+    // Solo lo que cambia la estructura de la pantalla: el progreso continuo
+    // lo pintan la barra y la ruta por su cuenta, sin rebuilds por segundo.
+    final (blockedId, readyToDeliver) = ref.watch(missionProgressProvider
+        .select((s) => (s.blockedByEvent?.id, s.readyToDeliver)));
 
     return homeAsync.when(
       loading: () => const _Loading(),
       error: (e, _) => Scaffold(
         backgroundColor: AppColors.bgDeep,
-        body: Center(child: Text('$e')),
+        body: ErrorState(
+            error: e, onRetry: () => ref.read(homeProvider.notifier).refresh()),
       ),
       data: (state) {
-        final mission = state.slotFor(widget.messengerId)?.activeMission;
+        final slot = state.slotFor(widget.messengerId);
+        final mission = slot?.activeMission;
         // Si no hay misión activa, el usuario ya navegó a mission-result o home.
         // NO auto-navegar desde acá — eso causa el flash.
-        if (mission == null) return const _Loading();
+        if (slot == null || mission == null) return const _Loading();
+
+        final blocked = blockedId == null
+            ? null
+            : ref.read(missionProgressProvider).blockedByEvent;
 
         return GradientScaffold(
           useEventBg: true,
           body: Column(children: [
             SafeArea(
               bottom: false,
-              child: _TopBar(mission: mission),
+              child: _TopBar(mission: mission, messenger: slot.messenger),
             ),
             Expanded(
-              child: progress.blockedByEvent != null
-              // ── Panel de evento: timer congelado
-                  ? _EventPanel(
-                mission: mission,
-                event: progress.blockedByEvent!,
-              ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05)
-              // ── Vista de viaje normal
-                  : _TravelView(
-                mission: mission,
-                progress: progress.progress,
-                readyToDeliver: progress.readyToDeliver,
+              child: AnimatedSwitcher(
+                duration: AppMotion.of(context, AppMotion.slow),
+                switchInCurve: AppMotion.enter,
+                switchOutCurve: AppMotion.exit,
+                transitionBuilder: (child, anim) => FadeTransition(
+                  opacity: anim,
+                  child: SlideTransition(
+                    position: Tween(
+                            begin: const Offset(0, 0.04), end: Offset.zero)
+                        .animate(anim),
+                    child: child,
+                  ),
+                ),
+                child: blocked != null
+                    // ── Panel de evento: timer congelado
+                    ? _EventPanel(
+                        key: ValueKey('event-${blocked.id}'),
+                        mission: mission,
+                        event: blocked,
+                      )
+                    // ── Vista de viaje normal
+                    : _TravelView(
+                        key: const ValueKey('travel'),
+                        mission: mission,
+                        readyToDeliver: readyToDeliver,
+                      ),
               ),
             ),
           ]),
@@ -91,69 +121,62 @@ class _MissionScreenState extends ConsumerState<MissionScreen> {
       },
     );
   }
-
 }
 
 class _Loading extends StatelessWidget {
   const _Loading();
   @override
   Widget build(BuildContext context) => const Scaffold(
-    backgroundColor: AppColors.bgDeep,
-    body: Center(
-      child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 3),
-    ),
-  );
+        backgroundColor: AppColors.bgDeep,
+        body: LoadingState(),
+      );
 }
 
 // ─── Top Bar ──────────────────────────────────────────────────────────────────
 class _TopBar extends StatelessWidget {
   final Mission mission;
-  const _TopBar({required this.mission});
+  final Messenger messenger;
+  const _TopBar({required this.mission, required this.messenger});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm),
       decoration: BoxDecoration(
-        color: const Color(0xCC060E1A),
+        color: AppColors.topBar,
         border: Border(
           bottom: BorderSide(
               color: AppColors.gold.withValues(alpha: 0.3), width: 1.5),
         ),
       ),
       child: Row(children: [
-        // Botón atrás
-        GestureDetector(
-          onTap: () => context.pop(),
-          child: Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(
-              color: AppColors.bgCard2,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.bgLine, width: 1.5),
-            ),
-            child: const Center(
-                child: Icon(Icons.arrow_back_ios_new,
-                    color: AppColors.gold, size: 16)),
-          ),
-        ),
-        const SizedBox(width: 12),
+        GameBackButton(onTap: () => context.pop()),
+        const SizedBox(width: AppSpacing.md),
+        MessengerHero(messenger, size: 34),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(
               '${mission.origin} → ${mission.destination}',
               style: AppTextStyles.fredoka(15,
                   color: AppColors.gold, weight: FontWeight.bold),
-              maxLines: 1, overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             Text(
-              mission.isTutorial ? 'Prueba de Varus' : 'Misión activa',
-              style: AppTextStyles.fredoka(10,
-                  color: AppColors.textSecondary),
+              mission.isTutorial
+                  ? 'Prueba de Varus · ${messenger.name}'
+                  : 'En camino · ${messenger.name}',
+              style: AppTextStyles.fredoka(12, color: AppColors.textSecondary),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ]),
         ),
-        DeadlineChip(mission: mission),
+        const SizedBox(width: AppSpacing.sm),
+        PeriodicBuilder(builder: (_) => DeadlineChip(mission: mission)),
       ]),
     );
   }
@@ -162,17 +185,15 @@ class _TopBar extends StatelessWidget {
 // ─── Vista de viaje ───────────────────────────────────────────────────────────
 class _TravelView extends ConsumerWidget {
   final Mission mission;
-  final double progress;
   final bool readyToDeliver;
   const _TravelView({
+    super.key,
     required this.mission,
-    required this.progress,
     required this.readyToDeliver,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pct = (progress * 100).round();
     final resolved = mission.events
         .where((e) => e.status == EventStatus.resolved)
         .toList();
@@ -180,29 +201,54 @@ class _TravelView extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
       children: [
-        // Ruta visual: origen → mensajero → destino
-        _RouteVisual(progress: progress, mission: mission),
+        // Ruta visual: origen → mensajero → destino, con los eventos marcados
+        _RouteVisual(mission: mission),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.xl),
 
-        // Barra de progreso grande
-        _ProgressBar(progress: progress),
+        // Barra de progreso grande: se mueve sola, a 60 fps
+        Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            color: AppColors.outline,
+            borderRadius: BorderRadius.circular(AppRadii.md),
+            border: Border.all(color: AppColors.bgLine, width: 2),
+            boxShadow: const [
+              BoxShadow(
+                  color: AppColors.outline, offset: Offset(0, 4), blurRadius: 0),
+            ],
+          ),
+          child: LiveProgressBar(
+            height: 18,
+            track: AppColors.trackDark,
+            progressAt: mission.progressAt,
+            marks: _eventMarks(mission),
+          ),
+        ),
 
         const SizedBox(height: 10),
 
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(readyToDeliver ? '¡Llegaste!' : '$pct% del camino',
-                style: AppTextStyles.fredoka(13,
-                    color: readyToDeliver ? AppColors.gold : AppColors.textSecondary,
-                    weight: readyToDeliver ? FontWeight.bold : FontWeight.normal)),
-            if (!readyToDeliver)
-              Text(_timeLeft(mission),
+        PeriodicBuilder(builder: (_) {
+          final now = DateTime.now();
+          final pct = (mission.progressAt(now) * 100).round();
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(readyToDeliver ? '¡Llegaste!' : '$pct% del camino',
                   style: AppTextStyles.fredoka(13,
-                      color: AppColors.gold, weight: FontWeight.bold)),
-          ],
-        ),
+                      color: readyToDeliver
+                          ? AppColors.gold
+                          : AppColors.textSecondary,
+                      weight: readyToDeliver
+                          ? FontWeight.bold
+                          : FontWeight.normal)),
+              if (!readyToDeliver)
+                Text(_timeLeft(mission, now),
+                    style: AppTextStyles.fredoka(13,
+                        color: AppColors.gold, weight: FontWeight.bold)),
+            ],
+          );
+        }),
 
         const SizedBox(height: 20),
 
@@ -210,18 +256,19 @@ class _TravelView extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: const Color(0xBB0D1830),
-            borderRadius: BorderRadius.circular(12),
+            color: AppColors.bgCard2,
+            borderRadius: BorderRadius.circular(AppRadii.md - 2),
             border: Border.all(color: AppColors.bgLine, width: 1.5),
           ),
           child: Row(children: [
             const Icon(Icons.inventory_2,
-                color: AppColors.textSecondary, size: 15),
-            const SizedBox(width: 8),
+                color: AppColors.textSecondary, size: 16),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
                 child: Text(mission.packageDescription,
                     style: AppTextStyles.bodyMedium,
-                    maxLines: 1, overflow: TextOverflow.ellipsis)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis)),
             const SizedBox(width: 10),
             PackageBadge(state: mission.packageState),
           ]),
@@ -229,54 +276,75 @@ class _TravelView extends ConsumerWidget {
 
         // ── Revelado por "Mapa del explorador"
         if (mission.revealEvents) ...[
-          const SizedBox(height: 12),
-          _RevealedNextEvent(mission: mission),
+          const SizedBox(height: AppSpacing.md),
+          PeriodicBuilder(
+            period: const Duration(seconds: 30),
+            builder: (_) => _RevealedNextEvent(mission: mission),
+          ),
         ],
 
-        const SizedBox(height: 12),
-
-        // ── Skip al próximo evento
-        _SkipButton(mission: mission),
-
-        // ── Rewarded ad: −30 min de viaje (cap 4/día)
-        const SizedBox(height: 10),
-        _TravelAdButton(mission: mission),
-
-        // ── Botón ENTREGAR — solo cuando llegó al destino
+        // ── Botón ENTREGAR — solo cuando llegó al destino. Va arriba de las
+        // acciones de pago: es LA acción de la pantalla.
         if (readyToDeliver) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           _DeliverButton(mission: mission)
-              .animate().fadeIn(duration: 400.ms).slideY(begin: 0.06),
+              .animate()
+              .fadeIn(duration: AppMotion.of(context, AppMotion.slow))
+              .scale(
+                  begin: const Offset(0.94, 0.94),
+                  curve: AppMotion.pop,
+                  duration: AppMotion.of(context, AppMotion.slow)),
+        ] else ...[
+          const SizedBox(height: AppSpacing.md),
+          // ── Skip al próximo evento
+          _SkipButton(mission: mission),
+          // ── Rewarded ad: −30 min de viaje (cap 4/día)
+          const SizedBox(height: 10),
+          _TravelAdButton(mission: mission),
         ],
 
         // ── Historial de eventos resueltos
         if (resolved.isNotEmpty) ...[
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl),
           Text('EVENTOS RESUELTOS',
-              style: AppTextStyles.fredoka(11,
+              style: AppTextStyles.fredoka(12,
                   color: AppColors.textMuted,
                   weight: FontWeight.bold,
                   letterSpacing: 1.5)),
           const SizedBox(height: 10),
-          ...resolved.asMap().entries.map((entry) =>
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+          ...resolved.asMap().entries.map((entry) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: _ResolvedEventTile(event: entry.value)
-                    .animate(delay: Duration(milliseconds: entry.key * 60))
-                    .fadeIn().slideY(begin: 0.04),
+                    .animate(delay: AppMotion.stagger * entry.key)
+                    .fadeIn(duration: AppMotion.of(context, AppMotion.base))
+                    .slideY(begin: 0.04),
               )),
         ],
       ],
     );
   }
 
-  String _timeLeft(Mission mission) {
-    final left = mission.deadlineAt.difference(DateTime.now());
+  String _timeLeft(Mission mission, DateTime now) {
+    final left = mission.deadlineAt.difference(now);
     if (left.isNegative) return '¡Llegaste!';
     if (left.inSeconds < 60) return '${left.inSeconds}s';
-    if (left.inMinutes < 60) return '${left.inMinutes}m ${left.inSeconds % 60}s';
+    if (left.inMinutes < 60) {
+      return '${left.inMinutes}m ${left.inSeconds % 60}s';
+    }
     return '${left.inHours}h ${left.inMinutes % 60}m';
   }
+}
+
+/// Posición (0..1) de cada evento sobre el camino, para marcarlos.
+List<double> _eventMarks(Mission mission) {
+  final total =
+      mission.deadlineAt.difference(mission.startedAt).inSeconds.toDouble();
+  if (total <= 0) return const [];
+  return [
+    for (final e in mission.events)
+      (e.triggersAt.difference(mission.startedAt).inSeconds / total)
+          .clamp(0.0, 1.0),
+  ];
 }
 
 // ─── Próximo evento revelado (Mapa del explorador) ────────────────────────────
@@ -301,35 +369,33 @@ class _RevealedNextEvent extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.gold.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.gold.withValues(alpha: 0.45), width: 1.5),
+        borderRadius: BorderRadius.circular(AppRadii.md - 2),
+        border: Border.all(
+            color: AppColors.gold.withValues(alpha: 0.45), width: 1.5),
       ),
       child: Row(children: [
         const Icon(Icons.map, color: AppColors.gold, size: 16),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppSpacing.sm),
         Expanded(
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('PRÓXIMO EVENTO REVELADO',
-                    style: AppTextStyles.fredoka(9,
-                        color: AppColors.gold, letterSpacing: 1)),
-                const SizedBox(height: 2),
-                Text(next.title,
-                    style: AppTextStyles.fredoka(13, color: AppColors.white),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-              ]),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('PRÓXIMO EVENTO REVELADO',
+                style: AppTextStyles.fredoka(12,
+                    color: AppColors.gold, letterSpacing: 1)),
+            const SizedBox(height: 2),
+            Text(next.title,
+                style: AppTextStyles.fredoka(13),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+          ]),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppSpacing.sm),
         Text(etaLabel,
-            style: AppTextStyles.fredoka(11, color: AppColors.textSecondary)),
+            style: AppTextStyles.fredoka(12, color: AppColors.textSecondary)),
       ]),
     );
   }
 }
 
-// ─── Tile de evento resuelto ──────────────────────────────────────────────────
 // ─── Botón entregar mensaje ───────────────────────────────────────────────────
 class _DeliverButton extends ConsumerStatefulWidget {
   final Mission mission;
@@ -345,70 +411,41 @@ class _DeliverButtonState extends ConsumerState<_DeliverButton> {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      // Sello / comprobante visual
+      // Comprobante: llegaste, falta el sello
       Container(
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.green.withValues(alpha: 0.20),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.green.withValues(alpha: 0.9), width: 2),
+          color: AppColors.green.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          border: Border.all(color: AppColors.green, width: 2),
         ),
         child: Row(children: [
-          const Icon(Icons.verified, color: AppColors.green, size: 22),
+          const Icon(Icons.flag_rounded, color: AppColors.green, size: 24),
           const SizedBox(width: 10),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Mensaje entregado',
-                  style: AppTextStyles.fredoka(14,
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Llegaste a ${widget.mission.destination}',
+                  style: AppTextStyles.fredoka(15,
                       color: AppColors.green, weight: FontWeight.bold)),
-              Text('${widget.mission.origin} → ${widget.mission.destination}',
-                  style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.green.withValues(alpha: 1.0))),
+              Text('Entregá el mensaje para cobrar.',
+                  style: AppTextStyles.bodyMedium),
             ]),
           ),
         ]),
       ),
 
-      const SizedBox(height: 12),
+      const SizedBox(height: AppSpacing.md),
 
-      // Botón principal de entrega
       SizedBox(
         width: double.infinity,
-        child: GestureDetector(
-          onTap: _loading ? null : _deliver,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              gradient: _loading ? const LinearGradient(
-                  colors: [Color(0xFF334455), Color(0xFF223344)])
-                  : AppGradients.gold,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.outline, width: 3),
-              boxShadow: [
-                BoxShadow(
-                    color: _loading ? Colors.black45 : AppColors.goldShadow,
-                    offset: const Offset(0, 5),
-                    blurRadius: 0),
-              ],
-            ),
-            child: Center(
-              child: _loading
-                  ? const SizedBox(
-                  width: 22, height: 22,
-                  child: CircularProgressIndicator(
-                      color: Colors.white, strokeWidth: 2.5))
-                  : Row(mainAxisSize: MainAxisSize.min, children: [
-                const Icon(Icons.assignment_turned_in,
-                    color: AppColors.outline, size: 20),
-                const SizedBox(width: 8),
-                Text('ENTREGAR MENSAJE',
-                    style: AppTextStyles.fredoka(17,
-                        color: AppColors.outline,
-                        weight: FontWeight.bold)),
-              ]),
-            ),
-          ),
+        child: GameButton(
+          label: 'ENTREGAR MENSAJE',
+          icon: Icons.assignment_turned_in,
+          fontSize: 17,
+          isLoading: _loading,
+          onTap: _deliver,
         ),
       ),
     ]);
@@ -422,17 +459,20 @@ class _DeliverButtonState extends ConsumerState<_DeliverButton> {
           .completeMissionByTime(widget.mission.messengerId);
 
       if (!mounted) return;
+      AppFeedback.delivery();
 
       context.go('/mission-result', extra: {
         'mission': widget.mission,
         'completion': completion,
       });
     } catch (e) {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+        showErrorSnack(context, e);
+      }
     }
   }
 }
-
 
 // ─── Botón skip al próximo evento ─────────────────────────────────────────────
 class _SkipButton extends ConsumerStatefulWidget {
@@ -448,62 +488,59 @@ class _SkipButtonState extends ConsumerState<_SkipButton> {
 
   @override
   Widget build(BuildContext context) {
-    final cost = SkipToNextEventUseCase.costFor(widget.mission);
-    if (cost == 0) return const SizedBox.shrink();
+    // El costo baja con el tiempo: se recalcula cada 30 s, no en cada frame.
+    return PeriodicBuilder(
+      period: const Duration(seconds: 30),
+      builder: (context) {
+        final cost = SkipToNextEventUseCase.costFor(widget.mission);
+        if (cost == 0) return const SizedBox.shrink();
 
-    final hasNextEvent =
-        widget.mission.nextUpcomingEventAt(DateTime.now()) != null;
-    final skipLabel = hasNextEvent ? 'Adelantar al próximo evento' : 'Adelantar al final de la misión';
+        final hasNextEvent =
+            widget.mission.nextUpcomingEventAt(DateTime.now()) != null;
+        final skipLabel = hasNextEvent
+            ? 'Adelantar al próximo evento'
+            : 'Adelantar al final de la misión';
 
-    // Paga la billetera común (la del principal).
-    final wallet = ref.watch(homeProvider).valueOrNull?.messenger;
-    final canAfford = (wallet?.denarios ?? 0) >= cost;
+        // Paga la billetera común (la del principal).
+        final wallet = ref.watch(homeProvider).valueOrNull?.messenger;
+        final canAfford = (wallet?.denarios ?? 0) >= cost;
+        final color = canAfford ? AppColors.sky : AppColors.textMuted;
 
-    return GestureDetector(
-      onTap: canAfford && !_loading ? _skip : null,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
-        decoration: BoxDecoration(
-          color: canAfford
-              ? AppColors.sky.withValues(alpha: 0.08)
-              : const Color(0xBB0D1830),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: canAfford
-                  ? AppColors.sky.withValues(alpha: 0.5)
-                  : AppColors.bgLine,
-              width: 1.5),
-        ),
-        child: Row(children: [
-          Icon(Icons.fast_forward_rounded,
-              color: canAfford ? AppColors.sky : AppColors.textMuted,
-              size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-              child: Text(
-                  canAfford ? skipLabel : 'Sin denarios suficientes para adelantar',
-                  style: AppTextStyles.fredoka(13,
-                      color: canAfford ? AppColors.sky : AppColors.textMuted))),
-          const SizedBox(width: 8),
-          if (_loading)
-            const SizedBox(
-                width: 16, height: 16,
-                child: CircularProgressIndicator(
-                    color: AppColors.sky, strokeWidth: 2))
-          else
-            Row(mainAxisSize: MainAxisSize.min, children: [
-              Icon(Icons.toll,
-                  size: 13,
-                  color: canAfford ? AppColors.sky : AppColors.textMuted),
-              const SizedBox(width: 4),
-              Text('$cost',
-                  style: AppTextStyles.fredoka(13,
-                      color: canAfford ? AppColors.sky : AppColors.textMuted,
-                      weight: FontWeight.bold)),
-            ]),
-        ]),
-      ),
+        return GameCard(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+          borderColor:
+              canAfford ? AppColors.sky.withValues(alpha: 0.5) : AppColors.bgLine,
+          semanticLabel: '$skipLabel por $cost denarios',
+          onTap: canAfford && !_loading
+              ? _skip
+              : () => showGameSnack(
+                  context, 'Te faltan denarios para adelantar.',
+                  isError: true),
+          child: Row(children: [
+            Icon(Icons.fast_forward_rounded, color: color, size: 20),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+                child: Text(
+                    canAfford
+                        ? skipLabel
+                        : 'Sin denarios suficientes para adelantar',
+                    style: AppTextStyles.fredoka(13, color: color))),
+            const SizedBox(width: AppSpacing.sm),
+            if (_loading)
+              const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                      color: AppColors.sky, strokeWidth: 2))
+            else
+              RewardAmount(
+                  type: CurrencyType.denarios,
+                  amount: -cost,
+                  fontSize: 13,
+                  withLabel: false),
+          ]),
+        );
+      },
     );
   }
 
@@ -511,9 +548,9 @@ class _SkipButtonState extends ConsumerState<_SkipButton> {
     setState(() => _loading = true);
     try {
       final result = await ref.read(homeProvider.notifier).skipToNextEvent(
-        mission: widget.mission,
-        messengerId: widget.mission.messengerId,
-      );
+            mission: widget.mission,
+            messengerId: widget.mission.messengerId,
+          );
       if (!mounted) return;
       // Reiniciar el timer con la misión actualizada
       ref.read(missionProgressProvider.notifier).start(result.mission);
@@ -525,18 +562,10 @@ class _SkipButtonState extends ConsumerState<_SkipButton> {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Adelantaste el tiempo (-${result.cost} denarios)',
-            style: AppTextStyles.fredoka(13, color: Colors.white)),
-        backgroundColor: AppColors.bgCard,
-        duration: const Duration(seconds: 2),
-      ));
+      showGameSnack(
+          context, 'Adelantaste el tiempo (−${result.cost} denarios)');
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: AppColors.redDark));
-      }
+      if (mounted) showErrorSnack(context, e);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -566,33 +595,19 @@ class _TravelAdButtonState extends ConsumerState<_TravelAdButton> {
 
   @override
   Widget build(BuildContext context) {
-    final remaining =
-        RewardedAdsService.travelSkipCapPerDay - _usedToday;
+    final remaining = RewardedAdsService.travelSkipCapPerDay - _usedToday;
     if (remaining <= 0) {
       return Text('Ya usaste los 4 adelantos de hoy',
-          style: AppTextStyles.bodyMedium
-              .copyWith(fontSize: 11, color: AppColors.textMuted),
-          textAlign: TextAlign.center);
+          style: AppTextStyles.bodySmall, textAlign: TextAlign.center);
     }
 
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: _loading ? null : _watch,
-        icon: const Icon(Icons.play_circle_outline, size: 18),
-        label: Text(
-          _loading
-              ? 'Cargando…'
-              : 'Ver anuncio · −30 min ($remaining hoy)',
-          style: AppTextStyles.fredoka(13, color: AppColors.sky),
-        ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.sky,
-          side: BorderSide(color: AppColors.sky.withValues(alpha: 0.5), width: 2),
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      ),
+    return GameButton(
+      label: _loading ? 'Cargando…' : 'Ver anuncio · −30 min ($remaining hoy)',
+      icon: Icons.play_circle_outline,
+      fontSize: 13,
+      variant: GameButtonVariant.secondary,
+      isLoading: _loading,
+      onTap: _watch,
     );
   }
 
@@ -612,18 +627,15 @@ class _TravelAdButtonState extends ConsumerState<_TravelAdButton> {
       final used = await ref.read(playerProgressProvider).travelAdsUsedToday();
       if (mounted) {
         setState(() => _usedToday = used);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          backgroundColor: AppColors.bgCard,
-          content: Text('Adelantaste 30 minutos de camino',
-              style: AppTextStyles.fredoka(13, color: AppColors.sky)),
-        ));
+        showGameSnack(context, 'Adelantaste 30 minutos de camino');
       }
+    } catch (e) {
+      if (mounted) showErrorSnack(context, e);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 }
-
 
 class _ResolvedEventTile extends StatelessWidget {
   final MissionEvent event;
@@ -638,20 +650,20 @@ class _ResolvedEventTile extends StatelessWidget {
     final (borderColor, icon) = isSuccess
         ? (AppColors.green, Icons.check_circle)
         : isPartial
-        ? (AppColors.amber, Icons.warning_rounded)
-        : (AppColors.red, Icons.cancel);
+            ? (AppColors.amber, Icons.warning_rounded)
+            : (AppColors.red, Icons.cancel);
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: borderColor.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(12),
+        color: borderColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadii.md - 2),
         border: Border.all(color: borderColor.withValues(alpha: 0.7), width: 1.5),
       ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Padding(
           padding: const EdgeInsets.only(top: 2),
-          child: Icon(icon, size: 16, color: borderColor),
+          child: Icon(icon, size: 18, color: borderColor),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -659,23 +671,23 @@ class _ResolvedEventTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(event.title,
-                  style: AppTextStyles.fredoka(13,
-                      color: AppColors.textPrimary,
-                      weight: FontWeight.bold)),
+                  style: AppTextStyles.fredoka(13, weight: FontWeight.bold)),
               if (outcome?.chosenOptionText != null) ...[
                 const SizedBox(height: 3),
                 Text('Decidiste: ${outcome!.chosenOptionText}',
-                    style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary, fontSize: 11)),
+                    style: AppTextStyles.bodySmall
+                        .copyWith(color: AppColors.textSecondary)),
               ],
               if (outcome?.narrative != null) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
+                // El rojo no es legible como texto: la prosa va en pergamino
+                // y el color del resultado queda en el ícono y el borde.
                 Text(outcome!.narrative,
                     style: AppTextStyles.bodySmall.copyWith(
-                        color: borderColor,
-                        fontStyle: FontStyle.italic,
-                        fontSize: 11),
-                    maxLines: 2, overflow: TextOverflow.ellipsis),
+                        color: GameChip.legibleText(borderColor),
+                        fontStyle: FontStyle.italic),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis),
               ],
             ],
           ),
@@ -684,166 +696,247 @@ class _ResolvedEventTile extends StatelessWidget {
     );
   }
 }
-// ─── Route visual: puntos de origen y destino con ícono del mensajero
-class _RouteVisual extends StatelessWidget {
-  final double progress;
+
+// ─── Ruta visual ──────────────────────────────────────────────────────────────
+// Un camino serpenteante de origen a destino: lo recorrido en oro, lo que
+// falta punteado, los eventos como hitos y el mensajero avanzando suave.
+class _RouteVisual extends StatefulWidget {
   final Mission mission;
-  const _RouteVisual({required this.progress, required this.mission});
+  const _RouteVisual({required this.mission});
+
+  @override
+  State<_RouteVisual> createState() => _RouteVisualState();
+}
+
+class _RouteVisualState extends State<_RouteVisual>
+    with SingleTickerProviderStateMixin {
+  late final Ticker _ticker;
+  final _clock = ValueNotifier<double>(0); // segundos desde que se abrió
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = createTicker((elapsed) {
+      if (AppMotion.userPrefersReduced.value &&
+          (elapsed.inMilliseconds - _clock.value * 1000).abs() < 1000) {
+        return;
+      }
+      _clock.value = elapsed.inMilliseconds / 1000;
+    })
+      ..start();
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    _clock.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final mission = widget.mission;
     return Column(children: [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _CityDot(label: mission.origin, isOrigin: true),
-          _CityDot(label: mission.destination, isOrigin: false),
+          _CityLabel(label: mission.origin, isOrigin: true),
+          _CityLabel(label: mission.destination, isOrigin: false),
         ],
       ),
-      const SizedBox(height: 8),
-      LayoutBuilder(builder: (context, constraints) {
-        final w = constraints.maxWidth;
-        // El mensajero se mueve de izquierda a derecha
-        final messengerX = (w * progress).clamp(18.0, w - 18.0);
-        return SizedBox(
-          height: 44,  // más alto para que el círculo no se corte
-          child: Stack(clipBehavior: Clip.none, children: [
-            // Línea del camino
-            Positioned(
-              top: 21, left: 0, right: 0,
-              child: Container(
-                height: 3,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.gold,
-                      AppColors.gold.withValues(alpha: 0.3),
-                    ],
-                    stops: [progress, progress],
-                  ),
-                ),
-              ),
+      const SizedBox(height: AppSpacing.sm),
+      RepaintBoundary(
+        child: SizedBox(
+          height: 96,
+          width: double.infinity,
+          child: CustomPaint(
+            painter: _RoadPainter(
+              mission: mission,
+              clock: _clock,
+              animate: !AppMotion.reduced(context),
             ),
-            // Ícono del mensajero
-            Positioned(
-              left: messengerX - 18,
-              top: 3,
-              child: Container(
-                width: 36, height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.gold,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.outline, width: 2.5),
-                  boxShadow: const [
-                    BoxShadow(
-                        color: AppColors.goldShadow,
-                        offset: Offset(0, 3), blurRadius: 0),
-                  ],
-                ),
-                child: const Center(
-                    child: Icon(Icons.directions_run,
-                        color: AppColors.outline, size: 18)),
-              ),
-            ),
-          ]),
-        );
-      }),
+          ),
+        ),
+      ),
     ]);
   }
 }
 
-class _CityDot extends StatelessWidget {
+class _CityLabel extends StatelessWidget {
   final String label;
   final bool isOrigin;
-  const _CityDot({required this.label, required this.isOrigin});
+  const _CityLabel({required this.label, required this.isOrigin});
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Container(
-        width: 12, height: 12,
-        decoration: BoxDecoration(
-          color: isOrigin
-              ? AppColors.textMuted
-              : AppColors.gold,
-          shape: BoxShape.circle,
-          border: Border.all(
-              color: isOrigin ? AppColors.bgLine : AppColors.goldDark,
-              width: 2),
-        ),
-      ),
-      const SizedBox(height: 4),
-      Text(label,
-          style: AppTextStyles.fredoka(10,
-              color: isOrigin ? AppColors.textMuted : AppColors.gold,
-              weight: FontWeight.bold)),
-    ],
-  );
+  Widget build(BuildContext context) => Flexible(
+        child: Text(label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: isOrigin ? TextAlign.left : TextAlign.right,
+            style: AppTextStyles.fredoka(12,
+                color: isOrigin ? AppColors.textMuted : AppColors.gold,
+                weight: FontWeight.bold)),
+      );
 }
 
-// ─── Barra de progreso grande con efecto 3D
-class _ProgressBar extends StatelessWidget {
-  final double progress;
-  const _ProgressBar({required this.progress});
+class _RoadPainter extends CustomPainter {
+  final Mission mission;
+  final ValueNotifier<double> clock;
+  final bool animate;
+
+  _RoadPainter({
+    required this.mission,
+    required this.clock,
+    required this.animate,
+  }) : super(repaint: clock);
+
+  Path _road(Size size) {
+    final h = size.height;
+    final w = size.width;
+    const pad = 14.0;
+    return Path()
+      ..moveTo(pad, h * 0.62)
+      ..cubicTo(w * 0.25, h * 0.05, w * 0.42, h * 0.95, w * 0.6, h * 0.5)
+      ..cubicTo(w * 0.72, h * 0.2, w * 0.86, h * 0.25, w - pad, h * 0.4);
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 28,
-      decoration: BoxDecoration(
-        color: AppColors.outline,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.bgLine, width: 2),
-        // Sombra inferior → efecto caja 3D
-        boxShadow: const [
-          BoxShadow(
-              color: Color(0xFF000000),
-              offset: Offset(0, 4), blurRadius: 0),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(children: [
-          // Fondo oscuro
-          Container(color: const Color(0xFF0A1020)),
-          // Barra dorada animada
-          FractionallySizedBox(
-            widthFactor: progress,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFFFE066),
-                    Color(0xFFCC8800),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // Brillo interior (línea top)
-          Positioned(
-            top: 3, left: 0, right: 0,
-            child: FractionallySizedBox(
-              widthFactor: progress,
-              child: Container(
-                height: 4,
-                color: Colors.white.withValues(alpha: 0.25),
-              ),
-            ),
-          ),
-        ]),
-      ),
-    );
+  void paint(Canvas canvas, Size size) {
+    final now = DateTime.now();
+    final progress = mission.progressAt(now).clamp(0.0, 1.0);
+    final path = _road(size);
+    final metric = path.computeMetrics().first;
+    final len = metric.length;
+
+    // Base del camino: tierra oscura con borde.
+    canvas.drawPath(
+        path,
+        Paint()
+          ..color = AppColors.outline
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 10
+          ..strokeCap = StrokeCap.round);
+
+    // Lo que falta: punteado tenue.
+    final dash = Paint()
+      ..color = AppColors.bgLine
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    for (var d = len * progress; d < len; d += 12) {
+      canvas.drawPath(metric.extractPath(d, math.min(d + 6, len)), dash);
+    }
+
+    // Lo recorrido: oro.
+    if (progress > 0) {
+      canvas.drawPath(
+          metric.extractPath(0, len * progress),
+          Paint()
+            ..color = AppColors.gold
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 4
+            ..strokeCap = StrokeCap.round);
+    }
+
+    // Origen y destino.
+    final start = metric.getTangentForOffset(0)!.position;
+    final end = metric.getTangentForOffset(len)!.position;
+    _dot(canvas, start, 7, AppColors.textMuted, AppColors.bgLine);
+    _flag(canvas, end, progress >= 1);
+
+    // Eventos: hitos sobre el camino.
+    for (final (i, m) in _eventMarks(mission).indexed) {
+      final e = mission.events[i];
+      final pos = metric.getTangentForOffset(len * m)!.position;
+      final resolved = e.status == EventStatus.resolved;
+      final blocking = e.isUnresolved && !now.isBefore(e.triggersAt);
+      final pulse = animate && blocking
+          ? 1 + 0.18 * math.sin(clock.value * 5)
+          : 1.0;
+      _dot(
+        canvas,
+        pos,
+        6.5 * pulse,
+        resolved
+            ? AppColors.green
+            : blocking
+                ? AppColors.amber
+                : AppColors.bgCard2,
+        resolved ? AppColors.greenDark : AppColors.outline,
+      );
+    }
+
+    // El mensajero: un medallón dorado que avanza y "trota" levemente.
+    final tangent = metric.getTangentForOffset(len * progress)!;
+    final bob = animate && progress < 1 ? math.sin(clock.value * 7) * 1.6 : 0.0;
+    final c = tangent.position.translate(0, -14 + bob);
+    canvas.drawCircle(
+        c.translate(0, 3), 15, Paint()..color = AppColors.goldShadow);
+    canvas.drawCircle(c, 15, Paint()..color = AppColors.gold);
+    canvas.drawCircle(
+        c,
+        15,
+        Paint()
+          ..color = AppColors.outline
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5);
+    _icon(canvas, c, Icons.directions_run, 18, AppColors.outline);
   }
+
+  void _dot(Canvas canvas, Offset c, double r, Color fill, Color border) {
+    canvas.drawCircle(c, r, Paint()..color = fill);
+    canvas.drawCircle(
+        c,
+        r,
+        Paint()
+          ..color = border
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2);
+  }
+
+  void _flag(Canvas canvas, Offset base, bool reached) {
+    final pole = Paint()
+      ..color = AppColors.goldDark
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+    final top = base.translate(0, -26);
+    canvas.drawLine(base, top, pole);
+    final cloth = Path()
+      ..moveTo(top.dx, top.dy)
+      ..lineTo(top.dx + 16, top.dy + 5)
+      ..lineTo(top.dx, top.dy + 11)
+      ..close();
+    canvas.drawPath(
+        cloth, Paint()..color = reached ? AppColors.gold : AppColors.amber);
+    _dot(canvas, base, 5, AppColors.gold, AppColors.goldDark);
+  }
+
+  void _icon(Canvas canvas, Offset c, IconData icon, double size, Color color) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: String.fromCharCode(icon.codePoint),
+        style: TextStyle(
+          fontFamily: icon.fontFamily,
+          package: icon.fontPackage,
+          fontSize: size,
+          color: color,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    tp.paint(canvas, c - Offset(tp.width / 2, tp.height / 2));
+  }
+
+  @override
+  bool shouldRepaint(_RoadPainter old) =>
+      old.mission != mission || old.animate != animate;
 }
 
 // ─── Panel de evento bloqueante ───────────────────────────────────────────────
 class _EventPanel extends StatelessWidget {
   final Mission mission;
   final MissionEvent event;
-  const _EventPanel({required this.mission, required this.event});
+  const _EventPanel({super.key, required this.mission, required this.event});
 
   @override
   Widget build(BuildContext context) {
@@ -854,61 +947,43 @@ class _EventPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabecera del evento
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xDD1A0800),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.amber, width: 2.5),
-              boxShadow: const [
-                BoxShadow(
-                    color: Color(0x55000000),
-                    offset: Offset(0, 4), blurRadius: 8),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 9, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.amber.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(7),
-                      border: Border.all(
-                          color: AppColors.amber, width: 1.5),
-                    ),
-                    child: Text('EVENTO',
-                        style: AppTextStyles.fredoka(11,
-                            color: AppColors.amber,
-                            weight: FontWeight.bold,
-                            letterSpacing: 0.5)),
-                  ),
-                  const Spacer(),
-                  // Ícono de pausa — el progreso está congelado
-                  Row(children: [
-                    const Icon(Icons.pause_circle,
-                        color: AppColors.amber, size: 14),
-                    const SizedBox(width: 4),
-                    Text('Progreso pausado',
-                        style: AppTextStyles.fredoka(10,
-                            color: AppColors.amber)),
-                  ]),
-                ]),
-                const SizedBox(height: 12),
-                Text(event.title,
-                    style: AppTextStyles.fredoka(20,
-                        color: AppColors.gold, weight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Text(event.description,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.textPrimary.withValues(alpha: 0.85),
-                      height: 1.5,
-                    )),
-              ],
+          // Cabecera del evento: vuela hasta la pantalla de decisión.
+          Hero(
+            tag: eventHeroTag(event.id),
+            child: Material(
+              type: MaterialType.transparency,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: AppColors.amberCard,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.amber, width: 2.5),
+                  boxShadow: const [
+                    BoxShadow(
+                        color: AppColors.shadowSoft,
+                        offset: Offset(0, 4),
+                        blurRadius: 8),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(children: [
+                      GameChip('EVENTO', color: AppColors.amber),
+                      Spacer(),
+                      GameChip('Progreso pausado',
+                          icon: Icons.pause_circle, color: AppColors.amber),
+                    ]),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(event.title,
+                        style: AppTextStyles.fredoka(20,
+                            color: AppColors.gold, weight: FontWeight.bold)),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(event.description, style: AppTextStyles.bodyLarge),
+                  ],
+                ),
+              ),
             ),
           ),
 
