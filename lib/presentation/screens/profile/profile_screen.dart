@@ -17,7 +17,9 @@ import '../../../domain/entities/progression.dart';
 //   Historial (tus entregas).
 // ─────────────────────────────────────────────────────────────────────────────
 class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key});
+  /// Pestaña inicial: 0 Mensajero, 1 Mundo, 2 Historial.
+  final int initialTab;
+  const ProfileScreen({super.key, this.initialTab = 0});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,7 +36,7 @@ class ProfileScreen extends ConsumerWidget {
             return const EmptyState(
                 icon: Icons.person_off_outlined, title: 'Sin mensajero');
           }
-          return _ProfileBody(messenger: messenger);
+          return _ProfileBody(messenger: messenger, initialTab: initialTab);
         },
       ),
     );
@@ -43,12 +45,14 @@ class ProfileScreen extends ConsumerWidget {
 
 class _ProfileBody extends StatelessWidget {
   final Messenger messenger;
-  const _ProfileBody({required this.messenger});
+  final int initialTab;
+  const _ProfileBody({required this.messenger, this.initialTab = 0});
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
+      initialIndex: initialTab,
       child: SafeArea(
         child: Column(children: [
           _Header(),
@@ -445,7 +449,9 @@ class _WorldTab extends ConsumerWidget {
           AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.xxl),
       children: [
         SectionHeader(title: 'Reputación'),
-        _ReputationCard(world: world)
+        _ReputationCard(
+                world: world,
+                unlocks: ref.read(gameContentProvider).factionUnlocks)
             .animate()
             .fadeIn(duration: AppMotion.of(context, AppMotion.base)),
         const SizedBox(height: 20),
@@ -469,60 +475,118 @@ class _WorldTab extends ConsumerWidget {
 
 class _ReputationCard extends StatelessWidget {
   final WorldState world;
-  const _ReputationCard({required this.world});
-
-  Color _colorFor(int v) {
-    if (v >= 10) return AppColors.green;
-    if (v > -10) return AppColors.sky;
-    return AppColors.red;
-  }
+  final List<FactionUnlock> unlocks;
+  const _ReputationCard({required this.world, required this.unlocks});
 
   @override
   Widget build(BuildContext context) {
+    return Column(children: [
+      for (final f in Faction.values)
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+          child: _FactionRow(faction: f, world: world, unlocks: unlocks),
+        ),
+    ]);
+  }
+}
+
+/// Una facción: escalón, avance hasta el siguiente y el próximo favor.
+/// Tocarla abre la escalera completa.
+class _FactionRow extends StatelessWidget {
+  final Faction faction;
+  final WorldState world;
+  final List<FactionUnlock> unlocks;
+  const _FactionRow(
+      {required this.faction, required this.world, required this.unlocks});
+
+  @override
+  Widget build(BuildContext context) {
+    final v = world.repOf(faction);
+    final tier = factionTier(v);
+    final next = nextTier(tier);
+    final color = factionColor(faction);
+    final lo = tier.threshold;
+    final hi = next?.threshold ?? 100;
+    final fill = next == null ? 1.0 : ((v - lo) / (hi - lo)).clamp(0.0, 1.0);
+    final nextUnlock = next == null
+        ? null
+        : unlocks
+            .where((u) => u.faction == faction && u.tier == next)
+            .firstOrNull;
+    final open = unlocks.where((u) => u.faction == faction && u.isOpen(world));
+
+    final String hint;
+    if (next == null) {
+      hint = 'Te abrieron todas las puertas.';
+    } else if (nextUnlock != null) {
+      hint = 'Faltan ${hi - v} para ${next.label}: ${nextUnlock.name}';
+    } else {
+      hint = 'Faltan ${hi - v} para ${next.label}';
+    }
+
     return GameCard(
-      child: Column(
-        children: Faction.values.map((f) {
-          final v = world.repOf(f);
-          final color = _colorFor(v);
-          // Barra centrada en 0: -100..100 mapeado a 0..1.
-          final fill = ((v + 100) / 200).clamp(0.0, 1.0);
-          return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.md),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [
-                Expanded(
-                  child: Text(f.label,
-                      style:
-                          AppTextStyles.fredoka(13, weight: FontWeight.bold)),
-                ),
-                GameChip('${reputationTitle(v)} · $v', color: color),
-              ]),
-              const SizedBox(height: AppSpacing.xs),
-              Text(f.lore, style: AppTextStyles.bodySmall),
-              const SizedBox(height: 6),
-              Stack(alignment: Alignment.center, children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: Stack(children: [
-                    Container(height: 8, color: AppColors.outline),
-                    TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.5, end: fill),
-                      duration: AppMotion.of(context, AppMotion.slow * 2),
-                      curve: AppMotion.enter,
-                      builder: (_, w, __) => FractionallySizedBox(
-                        widthFactor: w,
-                        child: Container(height: 8, color: color),
-                      ),
-                    ),
-                  ]),
-                ),
-                // Marca del neutro.
-                Container(width: 2, height: 12, color: AppColors.textMuted),
-              ]),
-            ]),
-          );
-        }).toList(),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      borderColor: open.isNotEmpty ? color.withValues(alpha: 0.7) : null,
+      semanticLabel: '${faction.label}: ${tier.label}, $v. $hint',
+      onTap: () => _openFaction(context),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          FactionBadge(faction: faction, size: 36),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(faction.label,
+                style: AppTextStyles.fredoka(15, weight: FontWeight.bold)),
+          ),
+          GameChip('${tier.label} · $v', color: color),
+          const Icon(Icons.chevron_right_rounded,
+              color: AppColors.textMuted, size: 24),
+        ]),
+        const SizedBox(height: AppSpacing.sm),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Stack(children: [
+            Container(height: 8, color: AppColors.outline),
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: fill),
+              duration: AppMotion.of(context, AppMotion.slow * 2),
+              curve: AppMotion.enter,
+              builder: (_, w, __) => FractionallySizedBox(
+                widthFactor: w,
+                child: Container(height: 8, color: color),
+              ),
+            ),
+          ]),
+        ),
+        const SizedBox(height: 6),
+        Text(hint, style: AppTextStyles.bodySmall),
+      ]),
+    );
+  }
+
+  void _openFaction(BuildContext context) {
+    AppFeedback.tap();
+    showGameSheet(
+      context,
+      title: faction.label,
+      builder: (_) => ListView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        children: [
+          Row(children: [
+            FactionBadge(faction: faction, size: 52),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Text(faction.lore, style: AppTextStyles.bodyMedium),
+            ),
+          ]),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+              'Se gana entregando bien en sus rutas (una vez por día: +1, '
+              'o +2 con nota S), cumpliendo encargos y con lo que elegís '
+              'en el camino.',
+              style: AppTextStyles.bodySmall),
+          const SizedBox(height: AppSpacing.lg),
+          FactionUnlockList(faction: faction, world: world, unlocks: unlocks),
+        ],
       ),
     );
   }

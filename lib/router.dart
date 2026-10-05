@@ -57,7 +57,11 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/profile',
-      pageBuilder: (_, state) => _slidePage(state, const ProfileScreen()),
+      pageBuilder: (_, state) => _slidePage(
+          state,
+          // ?tab=world abre directo en reputación y diario.
+          ProfileScreen(
+              initialTab: state.uri.queryParameters['tab'] == 'world' ? 1 : 0)),
     ),
     GoRoute(
       path: '/skills',

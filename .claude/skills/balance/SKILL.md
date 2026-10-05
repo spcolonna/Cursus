@@ -59,6 +59,13 @@ Catálogo y precios: `shopCatalogue` en `lib/presentation/screens/shop/shop_scre
 
 3 contratos diarios elegidos de `_easyPool` / `_mediumPool` / `_sealPool` por `contractIdsForDate` (determinístico por fecha). Recompensas 50-90 Denarios; el del pool de sellos da 1 Sello. Racha de 7 días cíclica: 30 → 50 → 70 → 100 Denarios → 1 Aureo → 150 Denarios → 2 Aureos + 1 Sello.
 
+## Facciones y encargos semanales
+
+- **Reputación** −100..100, escalones en 10 / 30 / 60 (`FactionTier`, `lib/domain/entities/world.dart`). Entregar en una ruta de su patrón con B+ suma +1 (+2 con S), **una vez por día y por facción**. Encargos: +1 a +3. Eventos: ±1-2 (±3 solo en arcos).
+- **Favores** (`data/faction_content.dart`): solo `contractReroll` y `patronPay` (+10% de paga en las rutas del patrón, `kPatronPayBonus`). **Nunca** un favor que sume al score o baje el riesgo: eso lo hace el árbol, con su cap de +25%.
+- **Encargos semanales** (`weeklyCommissionPool`): 3 por semana ISO; el de Varus (1.ª S → 1 Sello) siempre, los otros dos pagan 75-100 Denarios (~25/día). El test de presupuesto lee el promedio real del pool: si subís un encargo, revisalo.
+- Una ruta nueva de facción necesita `patron`, `minReputation` = umbral del escalón y su entrada en `factionUnlocks` (lo verifica `test/faction_weekly_test.dart`).
+
 ## Ritmo de misión
 
 - Mínimo **1 evento cada 8 h** de duración: una misión de 72 h con pocos eventos se siente muerta.

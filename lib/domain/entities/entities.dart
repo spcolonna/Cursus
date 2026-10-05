@@ -200,6 +200,10 @@ class GameRoute {
   final int requiredRank;
   final int eventCount;
   final String lore;
+  /// Facción que la encarga (null = cliente cualquiera).
+  final Faction? patron;
+  /// Multiplicador de paga por favores de facción (1,0 sin bonus).
+  final double payBonus;
 
   const GameRoute({
     required this.id,
@@ -211,7 +215,23 @@ class GameRoute {
     required this.requiredRank,
     required this.eventCount,
     required this.lore,
+    this.patron,
+    this.payBonus = 1.0,
   });
+
+  GameRoute copyWith({int? durationMinutes, double? payBonus}) => GameRoute(
+        id: id,
+        origin: origin,
+        destination: destination,
+        distanceKm: distanceKm,
+        durationMinutes: durationMinutes ?? this.durationMinutes,
+        danger: danger,
+        requiredRank: requiredRank,
+        eventCount: eventCount,
+        lore: lore,
+        patron: patron,
+        payBonus: payBonus ?? this.payBonus,
+      );
 
   String get durationLabel {
     if (durationMinutes < 60) return '${durationMinutes}m';

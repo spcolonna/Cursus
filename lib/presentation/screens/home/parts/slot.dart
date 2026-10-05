@@ -453,10 +453,16 @@ class _RouteCard extends ConsumerWidget {
           RiskChip(level: route.dangerLevel),
           // Lo que paga con nota A: rutas más largas y peligrosas, más paga.
           GameChip(
-            'Paga ~${(gradeBaseReward('A') * routePayFactor(route.durationMinutes, route.danger)).round()}',
+            'Paga ~${(gradeBaseReward('A') * routePayFactor(route.durationMinutes, route.danger) * route.payBonus).round()}',
             icon: CurrencyType.denarios.icon,
             color: AppColors.sky,
+            trailingIcon: route.payBonus > 1 ? Icons.arrow_upward : null,
           ),
+          // Quién la encarga: entregarle bien suma reputación con esa facción.
+          if (route.patron != null)
+            GameChip(route.patron!.label,
+                icon: factionIcon(route.patron!),
+                color: factionColor(route.patron!)),
         ]),
         const SizedBox(height: AppSpacing.md),
         SizedBox(

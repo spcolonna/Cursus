@@ -121,6 +121,21 @@ List<String> contractIdsForDate(DateTime date) {
   ];
 }
 
+/// Reemplazo para el contrato [currentId] (perk del Gremio): el siguiente de
+/// su mismo pool que no esté ya en el tablón. Null si no hay otro.
+String? rerollContractId(String currentId, Iterable<String> onBoard) {
+  for (final pool in [_easyPool, _mediumPool, _sealPool]) {
+    final i = pool.indexWhere((t) => t.id == currentId);
+    if (i < 0) continue;
+    for (var k = 1; k < pool.length; k++) {
+      final candidate = pool[(i + k) % pool.length].id;
+      if (!onBoard.contains(candidate)) return candidate;
+    }
+    return null;
+  }
+  return null;
+}
+
 // ── Estado de un contrato del día ─────────────────────────────────────────────
 class DailyContract {
   final String templateId;
@@ -171,12 +186,14 @@ class GuildState {
   final List<DailyContract> contracts;
   final int streakDay;                 // 1-7, último día cobrado
   final String? lastPayDate;           // yyyy-MM-dd del último cobro
+  final bool rerollUsed;               // ya cambió un contrato hoy
 
   const GuildState({
     required this.contractsDate,
     required this.contracts,
     this.streakDay = 0,
     this.lastPayDate,
+    this.rerollUsed = false,
   });
 
   bool get canClaimDailyPay => lastPayDate != dateKey(DateTime.now());
@@ -196,12 +213,14 @@ class GuildState {
     List<DailyContract>? contracts,
     int? streakDay,
     String? lastPayDate,
+    bool? rerollUsed,
   }) =>
       GuildState(
         contractsDate: contractsDate ?? this.contractsDate,
         contracts: contracts ?? this.contracts,
         streakDay: streakDay ?? this.streakDay,
         lastPayDate: lastPayDate ?? this.lastPayDate,
+        rerollUsed: rerollUsed ?? this.rerollUsed,
       );
 
   /// Tablón nuevo para hoy.

@@ -72,6 +72,14 @@ PlayerStats withSnapshot(
   );
 }
 
+/// Títulos de facción que el jugador ya alcanzó (escalón Leyenda).
+Iterable<String> openFactionTitles(
+        List<FactionUnlock> unlocks, WorldState world) =>
+    unlocks
+        .where((u) =>
+            u.kind == FactionUnlockKind.title && u.ref != null && u.isOpen(world))
+        .map((u) => u.ref!);
+
 // ─── Leer (y migrar) ─────────────────────────────────────────────────────────
 /// Devuelve la progresión. La primera vez la reconstruye desde lo que ya
 /// existe: misiones entregadas, mensajeros, mundo y títulos del esquema v1.
@@ -99,10 +107,14 @@ class GetProgressionUseCase {
               m.events.where((e) => e.status == EventStatus.resolved).length);
     }
     final messengers = await _messengers.getAllMessengers();
-    stats = withSnapshot(stats, messengers, await _world.getState());
+    final world = await _world.getState();
+    stats = withSnapshot(stats, messengers, world);
 
     final legacy = await _progression.legacyTitles();
-    var state = ProgressionState(stats: stats).addTitles(legacy.titles);
+    var state = ProgressionState(stats: stats).addTitles([
+      ...legacy.titles,
+      ...openFactionTitles(_content.factionUnlocks, world),
+    ]);
     state = state.copyWith(
         equippedTitle:
             legacy.titles.contains(legacy.equipped) ? legacy.equipped : null);
@@ -134,11 +146,12 @@ class RecordProgressUseCase {
   }) async {
     final before = await _get.execute();
     var stats = change?.call(before.stats) ?? before.stats;
-    stats = withSnapshot(
-        stats, await _messengers.getAllMessengers(), await _world.getState());
+    final world = await _world.getState();
+    stats = withSnapshot(stats, await _messengers.getAllMessengers(), world);
 
     final titlesBefore = before.titles.toSet();
-    var state = before.copyWith(stats: stats).addTitles(titles);
+    var state = before.copyWith(stats: stats).addTitles(
+        [...titles, ...openFactionTitles(_content.factionUnlocks, world)]);
     final earned = newlyUnlocked(_content.achievements, state);
     state = _grant(state, earned);
     final paid = await _payRewards(_messengers, earned);

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/entities/progression.dart';
+import '../../domain/entities/world.dart';
 import '../feedback/feedback.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
@@ -14,7 +15,7 @@ import 'widgets.dart';
 // CELEBRACIONES — vive sobre toda la app (MaterialApp.router → builder) y
 // muestra de a una lo que encola la progresión:
 //   · Rango nuevo: laurel a pantalla completa, se cierra con un toque.
-//   · Logro: cinta que baja desde arriba y se va sola.
+//   · Logro o escalón de facción: cinta que baja desde arriba y se va sola.
 // Nunca tapa una decisión: mientras el jugador está en /event, espera.
 // ─────────────────────────────────────────────────────────────────────────────
 class CelebrationHost extends ConsumerStatefulWidget {
@@ -32,25 +33,30 @@ class _CelebrationHostState extends ConsumerState<CelebrationHost> {
   @override
   void initState() {
     super.initState();
-    widget.router.routerDelegate.addListener(_onRoute);
+    widget.router.routerDelegate.addListener(_recheck);
+    rewardToastsVisible.addListener(_recheck);
     _blocked = _isBlocked();
   }
 
   @override
   void dispose() {
-    widget.router.routerDelegate.removeListener(_onRoute);
+    widget.router.routerDelegate.removeListener(_recheck);
+    rewardToastsVisible.removeListener(_recheck);
     super.dispose();
   }
 
   bool _isBlocked() {
+    // Un aviso de recompensa en pantalla: la celebración espera su turno.
+    if (rewardToastsVisible.value > 0) return true;
     final path = widget.router.routerDelegate.currentConfiguration.uri.path;
     // Pantallas donde una celebración estorba: decidir y el arranque.
     return path == '/event' || path == '/' || path == '/login';
   }
 
-  // El router avisa en medio de un build: el cambio se aplica al frame
-  // siguiente para no marcar el árbol como sucio mientras se construye.
-  void _onRoute() {
+  // Cambió la ruta o los avisos en pantalla. El router avisa en medio de un
+  // build: el cambio se aplica al frame siguiente para no marcar el árbol
+  // como sucio mientras se construye.
+  void _recheck() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final blocked = _isBlocked();
@@ -73,45 +79,98 @@ class _CelebrationHostState extends ConsumerState<CelebrationHost> {
             onDone: _pop,
           ),
         ),
-      if (current?.achievement != null)
+      if (current?.achievement != null || current?.faction != null)
         Positioned(
           top: 0,
           left: 0,
           right: 0,
-          child: _AchievementToast(
-            key: ValueKey(current!.achievement!.id),
-            achievement: current.achievement!,
-            onDone: _pop,
-            onOpen: () {
-              _pop();
-              widget.router.push('/achievements');
-            },
-          ),
+          child: current!.achievement != null
+              ? _achievementToast(current.achievement!)
+              : _factionToast(current.faction!, current.tier!),
         ),
     ]);
+  }
+
+  Widget _achievementToast(AchievementDef a) {
+    final r = a.reward;
+    return _Toast(
+      key: ValueKey(a.id),
+      header: 'LOGRO CONSEGUIDO',
+      title: a.name,
+      semanticLabel: 'Logro conseguido: ${a.name}. Tocá para ver tus logros.',
+      leading: AchievementMedal(kind: a.kind, unlocked: true, size: 52),
+      chips: [
+        if (r.denarios > 0)
+          GameChip('+${r.denarios} Denarios',
+              icon: CurrencyType.denarios.icon, color: AppColors.sky),
+        if (r.seals > 0)
+          GameChip('+${r.seals} Sello',
+              icon: CurrencyType.seals.icon, color: AppColors.purple),
+        if (r.title != null)
+          GameChip('«${r.title}»',
+              icon: Icons.military_tech, color: AppColors.amber),
+      ],
+      onDone: _pop,
+      onOpen: () {
+        _pop();
+        widget.router.push('/achievements');
+      },
+    );
+  }
+
+  Widget _factionToast(Faction f, FactionTier tier) {
+    final opened = ref
+        .read(gameContentProvider)
+        .factionUnlocks
+        .where((u) => u.faction == f && u.tier == tier);
+    return _Toast(
+      key: ValueKey('faction${f.name}${tier.name}'),
+      header: 'NUEVO ESCALÓN',
+      title: '${f.label}: ${tier.label}',
+      semanticLabel: '${f.label} ahora te tiene por ${tier.label}. '
+          'Tocá para ver tu reputación.',
+      leading: FactionBadge(faction: f, size: 52),
+      chips: [
+        for (final u in opened)
+          GameChip(u.name,
+              icon: unlockKindIcon(u.kind), color: factionColor(f)),
+      ],
+      onDone: _pop,
+      onOpen: () {
+        _pop();
+        widget.router.push('/profile?tab=world');
+      },
+    );
   }
 
   void _pop() => ref.read(celebrationQueueProvider.notifier).pop();
 }
 
-// ─── Logro: cinta desde arriba ────────────────────────────────────────────────
-class _AchievementToast extends StatefulWidget {
-  final AchievementDef achievement;
+// ─── Cinta desde arriba (logros, facciones) ───────────────────────────────────
+class _Toast extends StatefulWidget {
+  final String header;
+  final String title;
+  final String semanticLabel;
+  final Widget leading;
+  final List<Widget> chips;
   final VoidCallback onDone;
   final VoidCallback onOpen;
-  const _AchievementToast({
+  const _Toast({
     super.key,
-    required this.achievement,
+    required this.header,
+    required this.title,
+    required this.semanticLabel,
+    required this.leading,
+    required this.chips,
     required this.onDone,
     required this.onOpen,
   });
 
   @override
-  State<_AchievementToast> createState() => _AchievementToastState();
+  State<_Toast> createState() => _ToastState();
 }
 
-class _AchievementToastState extends State<_AchievementToast>
-    with SingleTickerProviderStateMixin {
+class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
   late final AnimationController _c;
   Timer? _timer;
   bool _leaving = false;
@@ -151,8 +210,6 @@ class _AchievementToastState extends State<_AchievementToast>
 
   @override
   Widget build(BuildContext context) {
-    final a = widget.achievement;
-    final r = a.reward;
     final top = MediaQuery.of(context).padding.top;
 
     return AnimatedBuilder(
@@ -177,7 +234,7 @@ class _AchievementToastState extends State<_AchievementToast>
             child: Semantics(
               liveRegion: true,
               button: true,
-              label: 'Logro conseguido: ${a.name}. Tocá para ver tus logros.',
+              label: widget.semanticLabel,
               excludeSemantics: true,
               child: Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
@@ -198,7 +255,7 @@ class _AchievementToastState extends State<_AchievementToast>
                     child: Stack(clipBehavior: Clip.none, children: [
                       const Positioned.fill(
                           child: ParticleBurst(count: 18, spread: 70)),
-                      AchievementMedal(kind: a.kind, unlocked: true, size: 52),
+                      widget.leading,
                     ]),
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -207,36 +264,24 @@ class _AchievementToastState extends State<_AchievementToast>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('LOGRO CONSEGUIDO',
+                        Text(widget.header,
                             style: AppTextStyles.fredoka(12,
                                 color: AppColors.gold,
                                 weight: FontWeight.bold,
                                 letterSpacing: 1.2)),
                         const SizedBox(height: 2),
-                        Text(a.name,
+                        Text(widget.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.fredoka(17,
                                 weight: FontWeight.bold)),
-                        if (r.denarios > 0 || r.seals > 0 || r.title != null)
+                        if (widget.chips.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Wrap(
                               spacing: 6,
                               runSpacing: 4,
-                              children: [
-                                if (r.denarios > 0)
-                                  GameChip('+${r.denarios} Denarios',
-                                      icon: CurrencyType.denarios.icon, color: AppColors.sky),
-                                if (r.seals > 0)
-                                  GameChip('+${r.seals} Sello',
-                                      icon: CurrencyType.seals.icon,
-                                      color: AppColors.purple),
-                                if (r.title != null)
-                                  GameChip('«${r.title}»',
-                                      icon: Icons.military_tech,
-                                      color: AppColors.amber),
-                              ],
+                              children: widget.chips,
                             ),
                           ),
                       ],
@@ -306,8 +351,8 @@ class _RankUpOverlayState extends State<_RankUpOverlay>
       animation: _c,
       builder: (context, child) {
         final fade = Curves.easeOut.transform((_c.value * 2).clamp(0.0, 1.0));
-        final pop = AppMotion.pop.transform(
-            ((_c.value - 0.15) / 0.85).clamp(0.0, 1.0));
+        final pop =
+            AppMotion.pop.transform(((_c.value - 0.15) / 0.85).clamp(0.0, 1.0));
         return Opacity(
           opacity: fade,
           child: Material(
@@ -327,21 +372,21 @@ class _RankUpOverlayState extends State<_RankUpOverlay>
                         alignment: Alignment.center,
                         clipBehavior: Clip.none,
                         children: [
-                      if (!reduced)
-                        const Positioned.fill(
-                          child: ParticleBurst(
-                              count: 48,
-                              spread: 220,
-                              delay: Duration(milliseconds: 250)),
-                        ),
-                      Transform.scale(
-                        scale: 0.6 + 0.4 * pop,
-                        child: Transform.rotate(
-                          angle: (1 - pop) * -0.25,
-                          child: RankLaurel(rank: widget.rank, size: 200),
-                        ),
-                      ),
-                    ]),
+                          if (!reduced)
+                            const Positioned.fill(
+                              child: ParticleBurst(
+                                  count: 48,
+                                  spread: 220,
+                                  delay: Duration(milliseconds: 250)),
+                            ),
+                          Transform.scale(
+                            scale: 0.6 + 0.4 * pop,
+                            child: Transform.rotate(
+                              angle: (1 - pop) * -0.25,
+                              child: RankLaurel(rank: widget.rank, size: 200),
+                            ),
+                          ),
+                        ]),
                     const SizedBox(height: AppSpacing.lg),
                     Text(title,
                         style: AppTextStyles.fredoka(34,
@@ -371,8 +416,10 @@ class _RankUpOverlayState extends State<_RankUpOverlay>
   }
 
   static String _blurb(int rank) => switch (rank) {
-        2 => 'En el correo ya saben tu nombre.\nSe abren rutas que antes no te daban.',
-        3 => 'Te confían lo que no se puede perder.\nYa nadie te manda a llevar recados.',
+        2 =>
+          'En el correo ya saben tu nombre.\nSe abren rutas que antes no te daban.',
+        3 =>
+          'Te confían lo que no se puede perder.\nYa nadie te manda a llevar recados.',
         4 => 'Los otros mensajeros te piden consejo.\nRoma empieza a notarte.',
         _ => 'Tu nombre se dice en las postas de todo el Imperio.',
       };

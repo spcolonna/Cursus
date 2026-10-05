@@ -10,11 +10,21 @@ class _GuildSummaryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final guild = ref.watch(guildProvider).valueOrNull;
     if (guild == null) return const SizedBox.shrink();
+    final weekly = ref.watch(weeklyProvider).valueOrNull;
+    final defs = _weeklyDefs(ref);
 
     final total = guild.contracts.length;
     final claimed = guild.contracts.where((c) => c.claimed).length;
+    final weeklyReady = weekly == null
+        ? 0
+        : weekly.entries
+            .where((e) =>
+                !e.claimed && e.progress >= (defs[e.id]?.target ?? 1 << 30))
+            .length;
     final ready =
-        guild.contracts.where((c) => c.completed && !c.claimed).length;
+        guild.contracts.where((c) => c.completed && !c.claimed).length +
+            weeklyReady;
+    final weeklyClaimed = weekly?.entries.where((e) => e.claimed).length ?? 0;
 
     return GameCard(
       padding: const EdgeInsets.all(14),
@@ -27,7 +37,8 @@ class _GuildSummaryCard extends ConsumerWidget {
         const Icon(Icons.push_pin, color: AppColors.brownBorder, size: 22),
         const SizedBox(width: AppSpacing.md),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('TABLÓN DEL GREMIO',
                 style: AppTextStyles.fredoka(13,
                     color: AppColors.amber,
@@ -55,16 +66,23 @@ class _GuildSummaryCard extends ConsumerWidget {
                   ),
                 ),
               const SizedBox(width: AppSpacing.xs),
-              Text('$claimed/$total hoy', style: AppTextStyles.bodySmall),
+              Flexible(
+                child: Text(
+                    weekly == null
+                        ? '$claimed/$total hoy'
+                        : '$claimed/$total hoy · semana $weeklyClaimed/${weekly.entries.length}',
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodySmall),
+              ),
             ]),
           ]),
         ),
         if (ready > 0)
-          GameChip('COBRAR $ready',
-                  icon: Icons.savings, color: AppColors.gold)
+          GameChip('COBRAR $ready', icon: Icons.savings, color: AppColors.gold)
               .animate(
-                  onPlay: (c) =>
-                      AppMotion.reduced(context) ? null : c.repeat(reverse: true))
+                  onPlay: (c) => AppMotion.reduced(context)
+                      ? null
+                      : c.repeat(reverse: true))
               .scaleXY(begin: 1.0, end: 1.06, duration: 600.ms)
         else
           const Icon(Icons.chevron_right_rounded,
@@ -74,14 +92,186 @@ class _GuildSummaryCard extends ConsumerWidget {
   }
 }
 
+Map<String, WeeklyCommissionDef> _weeklyDefs(WidgetRef ref) =>
+    {for (final d in ref.read(gameContentProvider).weeklyCommissions) d.id: d};
+
 void _openGuildBoard(BuildContext context, WidgetRef ref) {
   // Mirar el tablón es una tarea de "Primeros pasos".
-  ref.read(primerosPasosProvider.notifier).markTask(PlayerProgress.taskViewGuild);
+  ref
+      .read(primerosPasosProvider.notifier)
+      .markTask(PlayerProgress.taskViewGuild);
   showGameSheet(
     context,
     title: 'Tablón del gremio',
     builder: (_) => const _GuildBoard(),
   );
+}
+
+// ─── Botón de cobro (contratos y encargos) ────────────────────────────────────
+class _ClaimButton extends StatelessWidget {
+  final bool busy;
+  final VoidCallback onTap;
+  const _ClaimButton({super.key, required this.busy, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Cobrar',
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: busy ? null : onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 44, minWidth: 88),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            gradient: AppGradients.gold,
+            borderRadius: BorderRadius.circular(AppRadii.sm + 2),
+            border: Border.all(color: AppColors.outline, width: 2),
+            boxShadow: const [
+              BoxShadow(color: AppColors.goldShadow, offset: Offset(0, 3)),
+            ],
+          ),
+          child: busy
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: AppColors.outline))
+              : Text('COBRAR',
+                  style: AppTextStyles.fredoka(13,
+                      color: AppColors.outline, weight: FontWeight.bold)),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Encargo semanal ──────────────────────────────────────────────────────────
+// Quién lo pide, qué dice, cuánto falta y qué paga (incluida la reputación).
+class _WeeklyCard extends ConsumerStatefulWidget {
+  final WeeklyEntry entry;
+  final WeeklyCommissionDef def;
+  const _WeeklyCard({required this.entry, required this.def});
+
+  @override
+  ConsumerState<_WeeklyCard> createState() => _WeeklyCardState();
+}
+
+class _WeeklyCardState extends ConsumerState<_WeeklyCard> {
+  bool _claiming = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final e = widget.entry;
+    final d = widget.def;
+    final progress = e.progress.clamp(0, d.target);
+    final done = progress >= d.target;
+    final accent =
+        d.npcFaction == null ? AppColors.gold : factionColor(d.npcFaction!);
+
+    final Widget trailing = e.claimed
+        ? const GameChip('COBRADO',
+            key: ValueKey('claimed'), icon: Icons.check, color: AppColors.green)
+        : done
+            ? _ClaimButton(
+                key: const ValueKey('claim'), busy: _claiming, onTap: _claim)
+            : Text('$progress/${d.target}',
+                key: const ValueKey('progress'),
+                style: AppTextStyles.fredoka(14,
+                    color: AppColors.textSecondary, weight: FontWeight.bold));
+
+    return GameCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      borderColor:
+          done && !e.claimed ? AppColors.gold : accent.withValues(alpha: 0.5),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          NpcPortrait(name: d.npcName, faction: d.npcFaction, size: 44),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(d.npcName,
+                  style: AppTextStyles.fredoka(15, weight: FontWeight.bold)),
+              Text(d.npcRole, style: AppTextStyles.bodySmall),
+            ]),
+          ),
+          AnimatedSwitcher(
+            duration: AppMotion.of(context, AppMotion.base),
+            transitionBuilder: (child, anim) => ScaleTransition(
+                scale: CurvedAnimation(parent: anim, curve: AppMotion.pop),
+                child: FadeTransition(opacity: anim, child: child)),
+            child: trailing,
+          ),
+        ]),
+        if (!e.claimed) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Text('«${d.intro}»',
+              style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.parchment, fontStyle: FontStyle.italic)),
+        ],
+        const SizedBox(height: AppSpacing.sm),
+        Text(d.goalText,
+            style: AppTextStyles.fredoka(13,
+                color: e.claimed ? AppColors.textMuted : AppColors.textPrimary,
+                weight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Stack(children: [
+            Container(height: 6, color: AppColors.outline),
+            TweenAnimationBuilder<double>(
+              tween: Tween(end: (progress / d.target).clamp(0.0, 1.0)),
+              duration: AppMotion.of(context, AppMotion.slow),
+              curve: AppMotion.enter,
+              builder: (_, v, __) => FractionallySizedBox(
+                widthFactor: v,
+                child: Container(
+                    height: 6, color: e.claimed ? AppColors.green : accent),
+              ),
+            ),
+          ]),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Wrap(spacing: 6, runSpacing: 4, children: [
+          if (d.denarios > 0)
+            GameChip('+${d.denarios}',
+                icon: CurrencyType.denarios.icon, color: AppColors.sky),
+          if (d.seals > 0)
+            GameChip('+${d.seals} Sello',
+                icon: CurrencyType.seals.icon, color: AppColors.purple),
+          for (final r in d.rep.entries)
+            GameChip('+${r.value} ${r.key.label}',
+                icon: factionIcon(r.key), color: factionColor(r.key)),
+        ]),
+      ]),
+    );
+  }
+
+  Future<void> _claim() async {
+    setState(() => _claiming = true);
+    try {
+      final def =
+          await ref.read(weeklyProvider.notifier).claim(widget.entry.id);
+      AppFeedback.reward();
+      if (mounted) {
+        showRewardToast(
+          context,
+          [
+            (type: CurrencyType.denarios, amount: def.denarios),
+            (type: CurrencyType.seals, amount: def.seals),
+          ],
+          note: 'Encargo de ${def.npcName} cumplido',
+        );
+      }
+    } catch (e) {
+      if (mounted) showErrorSnack(context, e);
+    } finally {
+      if (mounted) setState(() => _claiming = false);
+    }
+  }
 }
 
 // ─── Tablón completo (dentro del panel) ───────────────────────────────────────
@@ -92,12 +282,30 @@ class _GuildBoard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final guild = ref.watch(guildProvider).valueOrNull;
     if (guild == null) return const LoadingState();
+    final weekly = ref.watch(weeklyProvider).valueOrNull;
+    final defs = _weeklyDefs(ref);
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
-        Text('Contratos del día. Se renuevan a medianoche.',
-            style: AppTextStyles.bodyMedium),
+        if (weekly != null) ...[
+          SectionHeader(title: 'Encargos de la semana'),
+          Text('Gente que confía en vos. Se renuevan el lunes.',
+              style: AppTextStyles.bodyMedium),
+          const SizedBox(height: AppSpacing.md),
+          for (final (i, e) in weekly.entries.indexed)
+            if (defs[e.id] != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _WeeklyCard(entry: e, def: defs[e.id]!)
+                    .animate(delay: AppMotion.stagger * i)
+                    .fadeIn(duration: AppMotion.of(context, AppMotion.base))
+                    .slideX(begin: 0.05, end: 0),
+              ),
+          const SizedBox(height: AppSpacing.md),
+        ],
+        SectionHeader(title: 'Contratos del día'),
+        Text('Se renuevan a medianoche.', style: AppTextStyles.bodyMedium),
         const SizedBox(height: AppSpacing.md),
         for (final (i, c) in guild.contracts.indexed)
           Padding(
@@ -135,32 +343,8 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
       trailing = const GameChip('COBRADO',
           key: ValueKey('claimed'), icon: Icons.check, color: AppColors.green);
     } else if (c.completed) {
-      final button = GestureDetector(
-        key: const ValueKey('claim'),
-        onTap: _claiming ? null : _claim,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 44, minWidth: 88),
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            gradient: AppGradients.gold,
-            borderRadius: BorderRadius.circular(AppRadii.sm + 2),
-            border: Border.all(color: AppColors.outline, width: 2),
-            boxShadow: const [
-              BoxShadow(color: AppColors.goldShadow, offset: Offset(0, 3)),
-            ],
-          ),
-          child: _claiming
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: AppColors.outline))
-              : Text('COBRAR',
-                  style: AppTextStyles.fredoka(13,
-                      color: AppColors.outline, weight: FontWeight.bold)),
-        ),
-      );
+      final button = _ClaimButton(
+          key: const ValueKey('claim'), busy: _claiming, onTap: _claim);
       trailing = AppMotion.reduced(context)
           ? button
           : button
@@ -175,6 +359,15 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
         withLabel: false,
       );
     }
+
+    // Favor del Gremio: cambiar un contrato por día.
+    final guild = ref.watch(guildProvider).valueOrNull;
+    final world = ref.watch(worldProvider).valueOrNull;
+    final canReroll = guild != null &&
+        world != null &&
+        !c.completed &&
+        RerollContractUseCase.canReroll(
+            guild, world, ref.read(gameContentProvider).factionUnlocks, c);
 
     return GameCard(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -207,12 +400,12 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(t.description,
                 style: AppTextStyles.fredoka(13,
-                    color: c.claimed
-                        ? AppColors.textMuted
-                        : AppColors.textPrimary,
+                    color:
+                        c.claimed ? AppColors.textMuted : AppColors.textPrimary,
                     weight: FontWeight.bold)),
             const SizedBox(height: AppSpacing.xs),
             Row(children: [
@@ -243,6 +436,13 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
           ]),
         ),
         const SizedBox(width: 10),
+        if (canReroll)
+          GameIconButton(
+            icon: Icons.autorenew,
+            semanticLabel: 'Cambiar este contrato por otro',
+            color: AppColors.textSecondary,
+            onTap: _reroll,
+          ),
         // Recompensa → botón de cobro → cobrado, sin saltos.
         AnimatedSwitcher(
           duration: AppMotion.of(context, AppMotion.base),
@@ -253,6 +453,18 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
         ),
       ]),
     );
+  }
+
+  Future<void> _reroll() async {
+    AppFeedback.tap();
+    try {
+      await ref.read(guildProvider.notifier).reroll(widget.contract.templateId);
+      if (mounted) {
+        showGameSnack(context, 'Contrato cambiado. Mañana podés de nuevo.');
+      }
+    } catch (e) {
+      if (mounted) showErrorSnack(context, e);
+    }
   }
 
   Future<void> _claim() async {
@@ -313,7 +525,9 @@ class _DailyPayDialogState extends ConsumerState<_DailyPayDialog> {
       child: Column(children: [
         Stack(alignment: Alignment.center, children: [
           const SizedBox(
-              width: 160, height: 90, child: ParticleBurst(count: 24, spread: 90)),
+              width: 160,
+              height: 90,
+              child: ParticleBurst(count: 24, spread: 90)),
           Container(
             width: 70,
             height: 70,
@@ -328,15 +542,14 @@ class _DailyPayDialogState extends ConsumerState<_DailyPayDialog> {
                     spreadRadius: 3),
               ],
             ),
-            child: const Icon(Icons.savings, color: AppColors.outline, size: 34),
-          )
-              .animate()
-              .scale(
-                  begin: AppMotion.reduced(context)
-                      ? const Offset(1, 1)
-                      : const Offset(0.3, 0.3),
-                  duration: AppMotion.of(context, 500.ms),
-                  curve: Curves.elasticOut),
+            child:
+                const Icon(Icons.savings, color: AppColors.outline, size: 34),
+          ).animate().scale(
+              begin: AppMotion.reduced(context)
+                  ? const Offset(1, 1)
+                  : const Offset(0.3, 0.3),
+              duration: AppMotion.of(context, 500.ms),
+              curve: Curves.elasticOut),
         ]),
         const SizedBox(height: AppSpacing.sm),
         Text('Varus premia tu constancia.',
@@ -373,9 +586,8 @@ class _DailyPayDialogState extends ConsumerState<_DailyPayDialog> {
                     ? const Icon(Icons.check, size: 14, color: AppColors.green)
                     : Text('$d',
                         style: AppTextStyles.fredoka(13,
-                            color: isToday
-                                ? AppColors.gold
-                                : AppColors.textMuted,
+                            color:
+                                isToday ? AppColors.gold : AppColors.textMuted,
                             weight: FontWeight.bold)),
               ),
             )

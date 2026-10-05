@@ -139,8 +139,15 @@ class GetHomeStateUseCase {
             nextTutorial = tutorials[idx];
           }
         } else {
-          availableRoutes =
-              await _mission.getAvailableRoutes(m.rank, flags: world.flags);
+          availableRoutes = [
+            for (final r in await _mission.getAvailableRoutes(m.rank, world))
+              r.patron != null &&
+                      hasFactionPerk(_content.factionUnlocks, world,
+                          FactionPerk.patronPay,
+                          faction: r.patron)
+                  ? r.copyWith(payBonus: kPatronPayBonus)
+                  : r
+          ];
         }
       }
 
@@ -361,13 +368,8 @@ class AcceptMissionUseCase {
     if (boosts.remove('boost_speed')) durationFactor *= 0.8;
     var effectiveRoute = route;
     if (durationFactor < 1.0) {
-      effectiveRoute = GameRoute(
-        id: route.id, origin: route.origin, destination: route.destination,
-        distanceKm: route.distanceKm,
-        durationMinutes: (route.durationMinutes * durationFactor).round(),
-        danger: route.danger, requiredRank: route.requiredRank,
-        eventCount: route.eventCount, lore: route.lore,
-      );
+      effectiveRoute = route.copyWith(
+          durationMinutes: (route.durationMinutes * durationFactor).round());
     }
     final revealEvents = boosts.remove('boost_events'); // Mapa del explorador
 
@@ -375,7 +377,8 @@ class AcceptMissionUseCase {
     final mission = await _mission.createMission(
       effectiveRoute, messenger.id,
       revealEvents: revealEvents,
-      payFactor: routePayFactor(route.durationMinutes, route.danger));
+      payFactor:
+          routePayFactor(route.durationMinutes, route.danger) * route.payBonus);
     await _messenger.saveMessenger(messenger.copyWith(
       status: MessengerStatus.onMission,
       activeBoosts: boosts,
@@ -874,6 +877,18 @@ class CompleteMissionUseCase {
           });
         }
         await _world.saveState(world);
+      }
+    } else if (!mission.isTutorial) {
+      // Ruta real: quien la encarga te tiene más en cuenta si llegó bien.
+      final patron = _content.routeById(mission.routeId)?.patron;
+      if (patron != null) {
+        final world = await _world.getState();
+        final gain =
+            world.applyPatronDelivery(patron, grade, dateKey(DateTime.now()));
+        if (gain.gained > 0) {
+          await _world.saveState(gain.world);
+          repDelta = {patron: gain.gained};
+        }
       }
     }
 
@@ -1381,5 +1396,40 @@ class ClaimContractUseCase {
     final newState = state.copyWith(contracts: updated);
     await _guild.saveState(newState);
     return (state: newState, reward: reward);
+  }
+}
+// ─── Cambiar un contrato (favor del Gremio) ──────────────────────────────────
+class RerollContractUseCase {
+  final GuildRepository _guild;
+  final WorldRepository _world;
+  final GameContentCatalog _content;
+  RerollContractUseCase(this._guild, this._world, this._content);
+
+  /// ¿Puede cambiar [templateId] ahora? (tiene el favor, no lo usó hoy y el
+  /// contrato no está cobrado).
+  static bool canReroll(GuildState guild, WorldState world,
+          List<FactionUnlock> unlocks, DailyContract contract) =>
+      !guild.rerollUsed &&
+      !contract.claimed &&
+      hasFactionPerk(unlocks, world, FactionPerk.contractReroll) &&
+      rerollContractId(
+              contract.templateId, guild.contracts.map((c) => c.templateId)) !=
+          null;
+
+  Future<GuildState> execute(String templateId) async {
+    final state = await _guild.getState();
+    final world = await _world.getState();
+    final idx = state.contracts.indexWhere((c) => c.templateId == templateId);
+    if (idx < 0) throw Exception('Contrato inexistente');
+    if (!canReroll(state, world, _content.factionUnlocks, state.contracts[idx])) {
+      throw Exception('Hoy no podés cambiar este contrato');
+    }
+    final next = rerollContractId(
+        templateId, state.contracts.map((c) => c.templateId))!;
+    final updated = [...state.contracts];
+    updated[idx] = DailyContract(templateId: next);
+    final newState = state.copyWith(contracts: updated, rerollUsed: true);
+    await _guild.saveState(newState);
+    return newState;
   }
 }

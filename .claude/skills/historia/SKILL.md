@@ -1,6 +1,6 @@
 ---
 name: historia
-description: Escribir o editar contenido narrativo de The Messenger — eventos del camino, opciones y su prosa de éxito/parcial/fallo, rutas nuevas, arcos de personaje multi-capítulo, entradas de diario, reputación y flags. Usar siempre que se toque lib/data/game_content.dart o lib/data/story_content.dart, o cuando se pida "un evento nuevo", "una ruta", "más historia", "un arco", "textos de resultado".
+description: Escribir o editar contenido narrativo de The Messenger — eventos del camino, opciones y su prosa de éxito/parcial/fallo, rutas nuevas, arcos de personaje multi-capítulo, entradas de diario, reputación y flags. Usar siempre que se toque lib/data/game_content.dart, lib/data/story_content.dart o lib/data/faction_content.dart (rutas de facción y encargos semanales con NPCs), o cuando se pida "un evento nuevo", "una ruta", "más historia", "un arco", "textos de resultado".
 ---
 
 # Escribir historia en The Messenger

@@ -68,8 +68,7 @@ class _FakeMissionRepo implements MissionRepository {
   @override
   Future<List<Mission>> getCompletedMissions() async => [];
   @override
-  Future<List<GameRoute>> getAvailableRoutes(int rank,
-          {Set<String> flags = const {}}) async =>
+  Future<List<GameRoute>> getAvailableRoutes(int rank, WorldState world) async =>
       [];
   @override
   Future<Mission> createMission(GameRoute r, String id,

@@ -1,5 +1,7 @@
 import '../entities/content.dart';
 import '../entities/progression.dart';
+import '../entities/weekly.dart';
+import '../entities/world.dart';
 
 /// Contenido del juego que necesitan los use cases. La implementación vive en
 /// `lib/data/` (contenido estático); el dominio solo conoce esta interfaz.
@@ -24,4 +26,13 @@ abstract class GameContentCatalog {
 
   /// Logros del juego, en el orden en que se muestran.
   List<AchievementDef> get achievements;
+
+  /// Ruta real por id (para saber su patrón y su duración nominal).
+  RealMissionConfig? routeById(String id);
+
+  /// Lo que abre cada facción al subir de escalón.
+  List<FactionUnlock> get factionUnlocks;
+
+  /// Pool de encargos semanales (incluye el del Sello, [kWeeklySealId]).
+  List<WeeklyCommissionDef> get weeklyCommissions;
 }

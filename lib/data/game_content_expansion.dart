@@ -5,6 +5,7 @@
 // Español rioplatense, sin emojis, sin anacronismos (ver .claude/skills/historia).
 // ═══════════════════════════════════════════════════════════════
 
+import 'faction_content.dart';
 import 'game_content.dart';
 import '../domain/entities/entities.dart';
 import '../domain/entities/world.dart';
@@ -13,9 +14,9 @@ import '../domain/entities/world.dart';
 // EXPANSION MISSIONS — real_04 .. real_15
 // ═══════════════════════════════════════════════════════════════
 
-/// Todas las rutas jugables: base + expansión.
+/// Todas las rutas jugables: base + expansión + las de facción.
 List<RealMissionConfig> get allRealMissions =>
-    [...phase1Missions, ...expansionMissions];
+    [...phase1Missions, ...expansionMissions, ...factionMissions];
 
 /// Todo el pool de eventos del camino: base + expansión.
 List<RealEventConfig> get allRealEvents =>
@@ -30,6 +31,7 @@ const List<RealMissionConfig> expansionMissions = [
     durationMinutes: 30,
     danger: 0.10,
     requiredRank: 1,
+    patron: Faction.guild,
     lore: 'Un recado breve a Tibur, entre villas de veraneo y el rumor fresco de las cascadas.',
     packageOptions: [
       'Una invitación para una cena de verano',
@@ -47,6 +49,7 @@ const List<RealMissionConfig> expansionMissions = [
     durationMinutes: 45,
     danger: 0.15,
     requiredRank: 1,
+    patron: Faction.patricians,
     lore: 'El Templo de la Fortuna en Praeneste espera un mensaje que no puede demorarse ni un día.',
     packageOptions: [
       'Una ofrenda sellada para el templo',
@@ -64,6 +67,7 @@ const List<RealMissionConfig> expansionMissions = [
     durationMinutes: 60,
     danger: 0.15,
     requiredRank: 1,
+    patron: Faction.guild,
     lore: 'La costa de Antium, villa de patricios, aguarda correspondencia que prefiere no viajar sola.',
     packageOptions: [
       'Cartas entre dos villas de la costa',
@@ -81,6 +85,7 @@ const List<RealMissionConfig> expansionMissions = [
     durationMinutes: 90,
     danger: 0.30,
     requiredRank: 1,
+    patron: Faction.underworld,
     lore: 'Un salto corto entre Neapolis y Pompeii, por caminos que huelen a mar y a azufre.',
     packageOptions: [
       'Un cargamento de pergaminos comerciales',
@@ -98,6 +103,7 @@ const List<RealMissionConfig> expansionMissions = [
     durationMinutes: 180,
     danger: 0.35,
     requiredRank: 2,
+    patron: Faction.patricians,
     lore: 'La cueva de la Sibila espera en Cumae. Dicen que ahí los caminos también hablan.',
     packageOptions: [
       'Una consulta escrita para la Sibila',
@@ -115,6 +121,7 @@ const List<RealMissionConfig> expansionMissions = [
     durationMinutes: 240,
     danger: 0.40,
     requiredRank: 2,
+    patron: Faction.legions,
     lore: 'Beneventum, cruce de caminos del sur, necesita noticias que no esperen la próxima caravana.',
     packageOptions: [
       'Órdenes administrativas para el cruce de caminos',
@@ -132,6 +139,7 @@ const List<RealMissionConfig> expansionMissions = [
     durationMinutes: 360,
     danger: 0.30,
     requiredRank: 2,
+    patron: Faction.legions,
     lore: 'Entre pantanos del norte, Ravenna y Aquileia se hablan por mensajeros, no por mapas confiables.',
     packageOptions: [
       'Registros de aduana entre puertos del norte',
@@ -149,6 +157,7 @@ const List<RealMissionConfig> expansionMissions = [
     durationMinutes: 480,
     danger: 0.40,
     requiredRank: 2,
+    patron: Faction.underworld,
     lore: 'La costa entre Pisae y Genua es hermosa y traicionera a partes iguales. Llevá abrigo.',
     packageOptions: [
       'Cartas entre astilleros de la costa',
@@ -166,6 +175,7 @@ const List<RealMissionConfig> expansionMissions = [
     durationMinutes: 480,
     danger: 0.50,
     requiredRank: 2,
+    patron: Faction.underworld,
     lore: 'Tarentum, puerto del sur, paga bien a quien llega antes que el rumor.',
     packageOptions: [
       'Correspondencia de un armador del sur',
@@ -183,6 +193,7 @@ const List<RealMissionConfig> expansionMissions = [
     durationMinutes: 720,
     danger: 0.55,
     requiredRank: 3,
+    patron: Faction.legions,
     lore: 'Brundisium embarca hacia Oriente. Lo que llega tarde, se queda en el muelle.',
     packageOptions: [
       'Órdenes de embarque para las legiones de Oriente',
@@ -200,6 +211,7 @@ const List<RealMissionConfig> expansionMissions = [
     durationMinutes: 1440,
     danger: 0.50,
     requiredRank: 3,
+    patron: Faction.guild,
     lore: 'Un día entero de camino hasta la frontera de Aquileia, donde Roma empieza a dudar de sus propios mapas.',
     packageOptions: [
       'Tratados fronterizos para el gobernador de la región',
@@ -217,6 +229,7 @@ const List<RealMissionConfig> expansionMissions = [
     durationMinutes: 2880,
     danger: 0.55,
     requiredRank: 3,
+    patron: Faction.patricians,
     lore: 'Dos días de camino hasta Massilia, en la Galia. La ruta más larga que un mensajero puede aceptar sin preguntar por qué.',
     packageOptions: [
       'Un tratado comercial con la Galia',

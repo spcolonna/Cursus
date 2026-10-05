@@ -365,6 +365,7 @@ const List<RealMissionConfig> phase1Missions = [
     durationMinutes: 120, // 2 horas — primera misión real corta
     danger: 0.2,
     requiredRank: 1,
+    patron: Faction.guild,
     lore: 'Tu primera misión oficial. El puerto de Ostia espera documentos mercantiles antes del cierre del día.',
     packageOptions: [
       'Documentos de aduana para el puerto',
@@ -383,6 +384,7 @@ const List<RealMissionConfig> phase1Missions = [
     durationMinutes: 480, // 8 horas
     danger: 0.4,
     requiredRank: 1,
+    patron: Faction.patricians,
     lore: 'La Via Appia te lleva al corazón de Campania. Cuidate de los bandidos en los tramos boscosos.',
     packageOptions: [
       'Órdenes del gobernador para Capua',
@@ -400,6 +402,7 @@ const List<RealMissionConfig> phase1Missions = [
     durationMinutes: 4320, // 72 horas — misión de largo aliento
     danger: 0.6,
     requiredRank: 2,
+    patron: Faction.legions,
     lore: 'Cruzás los Alpes para llegar a la Galia. Una ruta reservada para mensajeros con experiencia.',
     packageOptions: [
       'Tratado diplomático sellado',
@@ -418,6 +421,7 @@ const List<RealMissionConfig> phase1Missions = [
     durationMinutes: 300, // 5 horas — siempre de noche
     danger: 0.5,
     requiredRank: 2,
+    patron: Faction.underworld,
     requiredFlag: 'route_nocturna_unlocked',
     lore: 'El correo que no figura en ningún registro. Los Bajos Fondos pagan bien a quien sabe callar y caminar de noche.',
     packageOptions: [

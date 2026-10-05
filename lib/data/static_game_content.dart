@@ -1,6 +1,9 @@
 import '../domain/entities/content.dart';
 import '../domain/entities/progression.dart';
+import '../domain/entities/weekly.dart';
+import '../domain/entities/world.dart';
 import '../domain/repositories/content_catalog.dart';
+import 'faction_content.dart' as faction;
 import 'game_content.dart' as base;
 import 'game_content_expansion.dart';
 import 'progression_content.dart';
@@ -36,4 +39,15 @@ class StaticGameContent implements GameContentCatalog {
 
   @override
   List<AchievementDef> get achievements => allAchievements;
+
+  @override
+  RealMissionConfig? routeById(String id) =>
+      allRealMissions.where((m) => m.id == id).firstOrNull;
+
+  @override
+  List<FactionUnlock> get factionUnlocks => faction.factionUnlocks;
+
+  @override
+  List<WeeklyCommissionDef> get weeklyCommissions =>
+      faction.weeklyCommissionPool;
 }

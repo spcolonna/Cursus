@@ -4,6 +4,7 @@ import '../entities/notifications.dart';
 import '../entities/world.dart';
 import '../entities/content.dart';
 import '../entities/progression.dart';
+import '../entities/weekly.dart';
 
 abstract class AuthRepository {
   Future<User?> getCurrentUser();
@@ -35,9 +36,9 @@ abstract class MissionRepository {
   Future<void> saveMission(Mission mission);
   Future<void> completeMission(String missionId, MissionResult result);
   Future<List<Mission>> getCompletedMissions();
-  // Las rutas pueden requerir flags de historia (ej. la ruta nocturna).
-  Future<List<GameRoute>> getAvailableRoutes(int messengerRank,
-      {Set<String> flags});
+  // Las rutas pueden pedir flags de historia (la nocturna) o reputación con
+  // la facción que las encarga.
+  Future<List<GameRoute>> getAvailableRoutes(int messengerRank, WorldState world);
   Future<Mission> createMission(GameRoute route, String messengerId,
       {bool revealEvents, double payFactor});
   Future<Mission> createTutorialMission(int index, String messengerId);
@@ -108,4 +109,10 @@ abstract class NotificationScheduler {
   /// Dispara un aviso de prueba dentro de [delay]. Solo para verificar en el
   /// dispositivo que las notificaciones efectivamente llegan.
   Future<void> fireTestNotification({Duration delay});
+}
+
+/// Encargos semanales. null = nunca se guardó.
+abstract class WeeklyRepository {
+  Future<WeeklyState?> load();
+  Future<void> save(WeeklyState state);
 }

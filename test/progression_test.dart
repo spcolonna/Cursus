@@ -1,12 +1,14 @@
 // Fase 2: paga por ruta, presupuesto diario, logros, títulos y migración.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:the_messenger/data/faction_content.dart';
 import 'package:the_messenger/data/game_content_expansion.dart';
 import 'package:the_messenger/data/static_game_content.dart';
 import 'package:the_messenger/domain/entities/content.dart';
 import 'package:the_messenger/domain/entities/entities.dart';
 import 'package:the_messenger/domain/entities/guild.dart';
 import 'package:the_messenger/domain/entities/progression.dart';
+import 'package:the_messenger/domain/entities/weekly.dart';
 import 'package:the_messenger/domain/entities/world.dart';
 import 'package:the_messenger/domain/repositories/repositories.dart';
 import 'package:the_messenger/domain/usecases/progression_usecases.dart';
@@ -70,8 +72,7 @@ class _Missions implements MissionRepository {
   @override
   Future<void> completeMission(String id, MissionResult r) async {}
   @override
-  Future<List<GameRoute>> getAvailableRoutes(int rank,
-          {Set<String> flags = const {}}) async =>
+  Future<List<GameRoute>> getAvailableRoutes(int rank, WorldState world) async =>
       [];
   @override
   Future<Mission> createTutorialMission(int i, String id) =>
@@ -251,12 +252,16 @@ void main() {
       final contracts = contractSum / 70;
       final dailyPay = dailyPaySchedule.fold<int>(0, (a, r) => a + r.denarios) /
           dailyPaySchedule.length;
-      const weekly = 25; // reserva para los encargos semanales (Fase 3)
+      // Encargos semanales: dos de Denarios por semana (el tercero es el Sello).
+      final paid = weeklyCommissionPool.where((d) => d.id != kWeeklySealId);
+      final weekly =
+          2 * paid.fold<int>(0, (a, d) => a + d.denarios) / paid.length / 7;
       const ads = 60; // rewarded ads, GDD §6.4
       final total = missionsPerDay() + contracts + dailyPay + weekly + ads;
       expect(total, inInclusiveRange(435 * 0.9, 435 * 1.1),
           reason: 'misiones ${missionsPerDay()} · contratos $contracts · '
-              'paga ${dailyPay.round()} · total ${total.round()}');
+              'paga ${dailyPay.round()} · semanales ${weekly.round()} · '
+              'total ${total.round()}');
     });
 
     test('adelantar una ruta corta cuesta más de lo que paga', () {

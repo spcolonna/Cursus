@@ -5,11 +5,13 @@ import '../../data/story_content.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/entities/guild.dart';
 import '../../domain/entities/progression.dart';
+import '../../domain/entities/weekly.dart';
 import '../../domain/entities/world.dart';
 import '../../domain/repositories/content_catalog.dart';
 import '../../domain/repositories/repositories.dart';
 import '../../domain/usecases/usecases.dart';
 import '../../domain/usecases/progression_usecases.dart';
+import '../../domain/usecases/weekly_usecases.dart';
 import '../../domain/entities/notifications.dart';
 import '../../infrastructure/local/local_repositories.dart';
 import '../../infrastructure/notifications/notification_service.dart';
@@ -24,6 +26,7 @@ final messengerRepositoryProvider = Provider<MessengerRepository>((_) => LocalMe
 final missionRepositoryProvider = Provider<MissionRepository>((_) => LocalMissionRepository());
 final guildRepositoryProvider   = Provider<GuildRepository>((_) => LocalGuildRepository());
 final worldRepositoryProvider   = Provider<WorldRepository>((_) => LocalWorldRepository());
+final weeklyRepositoryProvider  = Provider<WeeklyRepository>((_) => LocalWeeklyRepository());
 final progressionRepositoryProvider =
     Provider<ProgressionRepository>((_) => LocalProgressionRepository());
 final notificationSchedulerProvider =
@@ -188,6 +191,28 @@ final equipTitleUseCaseProvider = Provider((ref) => EquipTitleUseCase(
   ref.read(getProgressionUseCaseProvider),
   ref.read(progressionRepositoryProvider),
 ));
+final rerollContractUseCaseProvider = Provider((ref) => RerollContractUseCase(
+  ref.read(guildRepositoryProvider),
+  ref.read(worldRepositoryProvider),
+  ref.read(gameContentProvider),
+));
+final getWeeklyUseCaseProvider = Provider((ref) => GetWeeklyUseCase(
+  ref.read(weeklyRepositoryProvider),
+  ref.read(gameContentProvider),
+));
+final recordWeeklyProgressUseCaseProvider =
+    Provider((ref) => RecordWeeklyProgressUseCase(
+          ref.read(getWeeklyUseCaseProvider),
+          ref.read(weeklyRepositoryProvider),
+          ref.read(gameContentProvider),
+        ));
+final claimWeeklyUseCaseProvider = Provider((ref) => ClaimWeeklyCommissionUseCase(
+  ref.read(getWeeklyUseCaseProvider),
+  ref.read(weeklyRepositoryProvider),
+  ref.read(messengerRepositoryProvider),
+  ref.read(worldRepositoryProvider),
+  ref.read(gameContentProvider),
+));
 final claimContractUseCaseProvider = Provider((ref) => ClaimContractUseCase(
   ref.read(guildRepositoryProvider),
   ref.read(messengerRepositoryProvider),
@@ -297,6 +322,7 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
       outcome: result.outcome.type,
       usedSkill: option.requiredSkills.keys.firstOrNull,
     );
+    await ref.read(weeklyProvider.notifier).recordEvent(result.outcome.type);
     await ref.read(worldProvider.notifier).refresh();
     await ref.read(progressionProvider.notifier).record(
         change: (s) => s.copyWith(eventsResolved: s.eventsResolved + 1));
@@ -379,6 +405,11 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
       await ref
           .read(guildProvider.notifier)
           .recordDelivery(completion.result.grade);
+      if (active != null) {
+        await ref
+            .read(weeklyProvider.notifier)
+            .recordDelivery(active, completion.result.grade);
+      }
       await ref.read(worldProvider.notifier).refresh();
 
       // Checklist: primera ruta real (no tutorial).
@@ -448,6 +479,12 @@ class GuildNotifier extends AsyncNotifier<GuildState> {
     return result.reward;
   }
 
+  /// Cambia un contrato del tablón por otro (favor del Gremio, 1 por día).
+  Future<void> reroll(String templateId) async {
+    state = AsyncData(
+        await ref.read(rerollContractUseCaseProvider).execute(templateId));
+  }
+
   Future<void> recordDelivery(String grade) async {
     final newState = await ref
         .read(recordContractProgressUseCaseProvider)
@@ -473,13 +510,62 @@ class WorldNotifier extends AsyncNotifier<WorldState> {
   @override
   Future<WorldState> build() => ref.read(worldRepositoryProvider).getState();
 
+  /// Relee el mundo. Si una facción subió de escalón desde la última
+  /// lectura, lo celebra (vale para eventos, entregas y encargos).
   Future<void> refresh() async {
+    final before = state.valueOrNull;
     final newState = await ref.read(worldRepositoryProvider).getState();
     state = AsyncData(newState);
+    if (before != null) {
+      ref
+          .read(celebrationQueueProvider.notifier)
+          .enqueueFactions(newState.tierUpsSince(before));
+    }
   }
 }
 final worldProvider =
     AsyncNotifierProvider<WorldNotifier, WorldState>(WorldNotifier.new);
+
+// ─── Encargos semanales ───────────────────────────────────────────────────────
+class WeeklyNotifier extends AsyncNotifier<WeeklyState> {
+  @override
+  Future<WeeklyState> build() => ref.read(getWeeklyUseCaseProvider).execute();
+
+  Future<void> refresh() async {
+    state = AsyncData(await ref.read(getWeeklyUseCaseProvider).execute());
+  }
+
+  Future<void> recordDelivery(Mission mission, String grade) async {
+    try {
+      state = AsyncData(await ref
+          .read(recordWeeklyProgressUseCaseProvider)
+          .recordDelivery(mission, grade));
+    } catch (_) {
+      // El avance semanal nunca rompe la entrega.
+    }
+  }
+
+  Future<void> recordEvent(OutcomeType outcome) async {
+    try {
+      state = AsyncData(await ref
+          .read(recordWeeklyProgressUseCaseProvider)
+          .recordEvent(outcome));
+    } catch (_) {}
+  }
+
+  Future<WeeklyCommissionDef> claim(String id) async {
+    final result = await ref.read(claimWeeklyUseCaseProvider).execute(id);
+    state = AsyncData(result.state);
+    await ref.read(worldProvider.notifier).refresh();
+    await ref.read(progressionProvider.notifier).record(
+        change: (s) =>
+            s.copyWith(denariosEarned: s.denariosEarned + result.def.denarios));
+    await ref.read(homeProvider.notifier).refresh();
+    return result.def;
+  }
+}
+final weeklyProvider =
+    AsyncNotifierProvider<WeeklyNotifier, WeeklyState>(WeeklyNotifier.new);
 
 // ─── Mission Progress (timer para la mission screen) ──────────────────────────
 class MissionProgressState {
@@ -637,12 +723,24 @@ final titlesProvider = Provider<AsyncValue<TitlesState>>((ref) =>
     ref.watch(progressionProvider).whenData(
         (p) => (unlocked: p.titles, equipped: p.equippedTitle)));
 
-/// Algo para festejar: un logro o un rango nuevo. Se muestran de a uno.
+/// Algo para festejar: un logro, un rango nuevo o un escalón de facción.
+/// Se muestran de a uno.
 class Celebration {
   final AchievementDef? achievement;
   final int? rank;
-  const Celebration.achievement(AchievementDef this.achievement) : rank = null;
-  const Celebration.rank(int this.rank) : achievement = null;
+  final Faction? faction;
+  final FactionTier? tier;
+  const Celebration.achievement(AchievementDef this.achievement)
+      : rank = null,
+        faction = null,
+        tier = null;
+  const Celebration.rank(int this.rank)
+      : achievement = null,
+        faction = null,
+        tier = null;
+  const Celebration.faction(Faction this.faction, FactionTier this.tier)
+      : achievement = null,
+        rank = null;
 }
 
 class CelebrationQueue extends Notifier<List<Celebration>> {
@@ -656,6 +754,14 @@ class CelebrationQueue extends Notifier<List<Celebration>> {
       // El rango primero: es el momento grande; los logros, después.
       if (update.rankReached != null) Celebration.rank(update.rankReached!),
       ...update.unlocked.map(Celebration.achievement),
+    ];
+  }
+
+  void enqueueFactions(Map<Faction, FactionTier> ups) {
+    if (ups.isEmpty) return;
+    state = [
+      ...state,
+      for (final e in ups.entries) Celebration.faction(e.key, e.value),
     ];
   }
 

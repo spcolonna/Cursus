@@ -6,6 +6,7 @@ import '../../domain/entities/entities.dart';
 import '../../domain/entities/guild.dart';
 import '../../domain/entities/notifications.dart';
 import '../../domain/entities/progression.dart';
+import '../../domain/entities/weekly.dart';
 import '../../domain/entities/world.dart';
 import '../../domain/repositories/repositories.dart';
 import '../../data/game_content.dart';
@@ -397,17 +398,15 @@ class LocalMissionRepository implements MissionRepository {
   }
 
   @override
-  Future<List<GameRoute>> getAvailableRoutes(int messengerRank,
-      {Set<String> flags = const {}}) async {
+  Future<List<GameRoute>> getAvailableRoutes(
+      int messengerRank, WorldState world) async {
     return allRealMissions
-        .where((m) =>
-            m.requiredRank <= messengerRank &&
-            (m.requiredFlag == null || flags.contains(m.requiredFlag)))
+        .where((m) => m.isOfferedTo(messengerRank, world))
         .map((m) => GameRoute(
       id: m.id, origin: m.origin, destination: m.destination,
       distanceKm: m.distanceKm, durationMinutes: m.durationMinutes,
       danger: m.danger, requiredRank: m.requiredRank,
-      eventCount: m.minEvents, lore: m.lore,
+      eventCount: m.minEvents, lore: m.lore, patron: m.patron,
     ))
         .toList();
   }
@@ -791,6 +790,7 @@ class LocalGuildRepository implements GuildRepository {
     }).toList(),
     'streakDay': s.streakDay,
     'lastPayDate': s.lastPayDate,
+    'rerollUsed': s.rerollUsed,
   };
 
   GuildState _fromJson(Map<String, dynamic> j) => GuildState(
@@ -805,6 +805,7 @@ class LocalGuildRepository implements GuildRepository {
     }).toList(),
     streakDay: j['streakDay'] as int? ?? 0,
     lastPayDate: j['lastPayDate'] as String?,
+    rerollUsed: j['rerollUsed'] as bool? ?? false,
   );
 }
 
@@ -848,6 +849,9 @@ class LocalWorldRepository implements WorldRepository {
         .toList(),
     'arcProgress': s.arcProgress,
     'completedArcs': s.completedArcs.toList(),
+    'patronDays': {
+      for (final e in s.patronDays.entries) e.key.index.toString(): e.value
+    },
   };
 
   WorldState _fromJson(Map<String, dynamic> j) => WorldState(
@@ -867,6 +871,12 @@ class LocalWorldRepository implements WorldRepository {
         .map((k, v) => MapEntry(k, v as int)),
     completedArcs:
         ((j['completedArcs'] as List?) ?? const []).cast<String>().toSet(),
+    // Partidas anteriores a la Fase 3 no lo tienen: arrancan sin tope usado.
+    patronDays: {
+      for (final e
+          in ((j['patronDays'] as Map<String, dynamic>?) ?? const {}).entries)
+        Faction.values[int.parse(e.key)]: e.value as String
+    },
   );
 }
 // ─── Progresión (estadísticas, logros, títulos) ───────────────────────────────
@@ -903,5 +913,30 @@ class LocalProgressionRepository implements ProgressionRepository {
       titles: p.getStringList(_kLegacyTitles) ?? const <String>[],
       equipped: p.getString(_kLegacyEquipped),
     );
+  }
+}
+
+// ─── Encargos semanales ───────────────────────────────────────────────────────
+class LocalWeeklyRepository implements WeeklyRepository {
+  static const _kWeekly = 'weekly_v2';
+
+  @override
+  Future<WeeklyState?> load() async {
+    final p = await SharedPreferences.getInstance();
+    final raw = p.getString(_kWeekly);
+    if (raw == null) return null;
+    try {
+      return WeeklyState.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (_) {
+      // Corrupto: se guarda aparte y se arma el tablón de nuevo.
+      await p.setString('${_kWeekly}_corrupt_backup', raw);
+      return null;
+    }
+  }
+
+  @override
+  Future<void> save(WeeklyState state) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setString(_kWeekly, jsonEncode(state.toJson()));
   }
 }

@@ -73,7 +73,8 @@ Flutter, arquitectura limpia (`domain/` → `infrastructure/` → `presentation/
 | Recompensas diarias / misiones diarias / eventos | ❌ |
 | Árbol de habilidades visual con perks nombrados | ✅ 5 caminos × 10 nodos con nombre, efecto numérico y comparación "ahora → próximo nivel" leída de `SkillPerks`. |
 | Ads | ❌ |
-| Épocas 2-6, cartas, reputación, gremios, Battle Pass | ❌ (backlog, ver Apéndice) |
+| Reputación con efecto jugable | ✅ Escalones por facción que abren rutas, la tarifa +10% y títulos (§4.6). |
+| Épocas 2-6, cartas, gremios sociales, Battle Pass | ❌ (backlog, ver Apéndice) |
 | Auth real | ❌ (login hardcodeado) |
 | Backend | ❌ (todo SharedPreferences) |
 
@@ -135,6 +136,25 @@ Racha de 7 días, escalada y cíclica: 30 → 50 → 70 → 100 Denarios → 1 A
 
 Con slots llenos y contratos hechos, no hay nada más que "hacer" — y está bien: el juego respeta el tiempo del casual.
 
+### 4.6 Facciones: la reputación abre puertas
+
+Cuatro facciones (Gremio, Legiones, Bajos Fondos, Patricios) con escalones fijos: **Enemigo < −39 · Sospechoso · Desconocido · Conocido ≥ 10 · Respetado ≥ 30 · Leyenda ≥ 60**. Cada ruta real tiene un **patrón**; entregarle con nota B o mejor suma **+1 (+2 con S), una vez por día y por facción** (`WorldState.patronDays`). También suman los encargos semanales y las decisiones del camino.
+
+Lo que abre cada escalón (`data/faction_content.dart`). **Ningún favor suma al score de una decisión** (cap +25%):
+
+| Facción | Conocido | Respetado | Leyenda |
+|---|---|---|---|
+| Gremio (arranca en 10) | — | Cambiar 1 contrato por día · Correo exprés a Neapolis (rango 2) | Tarifa +10% · título |
+| Legiones | Tarifa +10% en sus rutas | Brundisium por la Via Appia (**rango 4**, 36 h) | título |
+| Bajos Fondos | Tarifa +10% | Neapolis por mar, de noche (rango 3) | título |
+| Patricios | Tarifa +10% | Massilia por mar (**rango 5**, 42 h) | título |
+
+Subir de escalón se anota en el diario y se celebra con una cinta (espera a que termine cualquier aviso de cobro). El perfil (pestaña Mundo) muestra cuánto falta y el próximo favor; tocando una facción se ve la escalera completa.
+
+### 4.7 Encargos semanales
+
+Tres pedidos de gente con nombre (Varus, Décimo, Marco, Sexto, Fulvia, Rufo, Atia, Cornelia) que duran de lunes a domingo (semana ISO), en el tablón del gremio arriba de los contratos. Uno es **siempre** el de Varus: primera nota S de la semana → **1 Sello** (la "nota S semanal" de §6.1). Los otros dos salen de un pool de 11, deterministas por semana, pagan **75-100 Denarios + reputación** y dejan una entrada en el diario al cobrarlos. Metas: entregas, notas A/S, rutas de una facción, rutas de 8 h o más, eventos resueltos o exitosos. Lo no cobrado se pierde el lunes.
+
 ---
 
 ## 5. Árbol de habilidades: "Caminos del Mensajero"
@@ -195,15 +215,17 @@ Jugador que hace 3 sesiones, completa 2-3 misiones y los 3 contratos:
 | Faucet | Denarios | Aureos | Sellos |
 |---|---|---|---|
 | Misiones (una corta + una larga, nota A/B) | ~152 | — | — |
-| Encargos semanales (reserva, Fase 3) | ~25 | — | — |
+| Encargos semanales (2 de Denarios + el del Sello) | ~25 | — | ~0,14 |
 | Contratos del día | ~141 | — | 1 |
 | Paga del gremio (promedio) | ~75 | ~0,4 | ~0,15 |
 | Rewarded ads (2-3 vistas) | ~60 | ~1 | — |
-| **Total/día** | **~435** | **~1,5** | **~1,1** |
+| **Total/día** | **~435** | **~1,5** | **~1,1-1,3** |
 
 **Paga por ruta (implementado).** Cada ruta tiene un factor que se fija al aceptar, con la duración *nominal* (un boost de velocidad no baja la paga): `factor = clamp(0,6 + 0,15·log2(horas+1) + 0,3·peligro, 0,7, 1,6)`. Ruta de 2 h ≈ ×0,9 · 8 h ≈ ×1,2 · 3 días = ×1,6. Crece con el logaritmo: la ruta larga paga más en total pero menos por hora. Los capítulos de historia pagan ×1,3. La card de ruta muestra "Paga ~N" (nota A) y el resultado explica "Nota A: 90 × ruta 1,2". Lo verifica `test/progression_test.dart` (día típico 435 ±10%; hoy da ~449).
 
 **Logros y títulos (implementado).** 26 logros en `data/progression_content.dart` (camino, notas, gremio, oficio, historia, fortuna). Premios: Denarios de una sola vez, un título, y como mucho 1 Sello por logro con **tope de 8 Sellos en toda la partida**; nunca Aureos. Las estadísticas viven en `progression_v2`; al migrar se reconstruyen desde el historial y los logros ya cumplidos se pagan en silencio. Celebraciones: cinta de logro desde arriba y laurel a pantalla completa al subir de rango; nunca durante un evento.
+
+**Sellos con el encargo semanal.** El Sello de "primera S de la semana" estaba en §6.1 pero no en este presupuesto: suma ~0,14/día. Con eso, nivel 10 de un camino (50 Sellos) baja de ~6 a ~5,5 semanas, todavía dentro de la meta de 5-7. La tarifa de facción (+10% en las rutas de un patrón) solo llega tras semanas de reputación y no cambia el día típico.
 
 Sinks de referencia: curación completa 120, descanso 80, manual nivel 3 = 500 (≈ 2 días de ahorro), adelantar una misión de 2h ≈ 120. El Denario debe sentirse abundante para operar y justo para acelerar. Revisar estos números tras el primer playtest largo.
 
@@ -291,6 +313,8 @@ Navy profundo + oro/pergamino, tipografías **Fredoka** (títulos) + **Nunito** 
 5. **Misión "vacía"** (riesgo señalado ya en el GDD v1): una misión de 72h con pocos eventos se siente muerta. Regla: mínimo 1 evento cada 8h de misión; las misiones largas deben pagar acorde.
 
 ### Historial
+
+- **v2.2 (2026-10-05):** paga por ruta, 26 logros con títulos y celebraciones; reputación con escalones que abren rutas (las primeras de rango 4 y 5), tarifa de facción y cambio de contrato; encargos semanales con NPCs (§4.6-4.7).
 
 - **v2.1 (2026-07-27):** feedback visible de todo lo que hace el jugador. Retrato del mensajero por género/slot/rango/estado en todas las pantallas; contadores de moneda animados y compartidos; pronóstico narrativo antes de decidir (con chip de riesgo, que antes no se mostraba) y desglose "por qué pasó" después; sección "lo que cambió" al entregar (reputación, diario, flags traducidos a lenguaje narrativo, título de arco, XP y fatiga); notificaciones locales completas con pantalla de Ajustes y diagnóstico; auto-resolución a los 60 min alineada al diseño; árbol con efectos numéricos.
 - **v2.0 (2026-07-09):** reescritura completa desde el código real + dirección aprobada (hooks casual, árbol Caminos del Mensajero, economía de 3 recursos, guía de legibilidad). Autoría: análisis de código + diseño asistido.

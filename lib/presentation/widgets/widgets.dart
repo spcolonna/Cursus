@@ -8,6 +8,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/app_theme.dart';
 
 export 'components.dart';
+export 'faction_widgets.dart';
 export 'progression_widgets.dart';
 
 // ─── Monedas ──────────────────────────────────────────────────────────────────
@@ -126,6 +127,10 @@ class RewardAmount extends StatelessWidget {
 /// Una línea de recompensa: moneda + cantidad.
 typedef RewardLine = ({CurrencyType type, int amount});
 
+/// Cuántos avisos de recompensa hay en pantalla. Las celebraciones esperan
+/// a que llegue a 0 para no encimarse con ellos.
+final ValueNotifier<int> rewardToastsVisible = ValueNotifier(0);
+
 void showRewardToast(
   BuildContext context,
   List<RewardLine> rewards, {
@@ -151,8 +156,10 @@ void showRewardToast(
   );
 
   overlay.insert(entry);
+  rewardToastsVisible.value++;
   Future.delayed(const Duration(milliseconds: 2200), () {
     if (entry.mounted) entry.remove();
+    rewardToastsVisible.value--;
   });
 }
 

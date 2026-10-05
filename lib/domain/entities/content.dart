@@ -90,6 +90,10 @@ class RealMissionConfig {
   final int maxEvents;
   // La ruta solo aparece si el jugador tiene este flag (ej. final de un arco).
   final String? requiredFlag;
+  /// Facción que encarga la ruta: gana reputación con cada buena entrega.
+  final Faction? patron;
+  /// Reputación con [patron] necesaria para que te la ofrezcan.
+  final int minReputation;
 
   const RealMissionConfig({
     required this.id,
@@ -105,7 +109,15 @@ class RealMissionConfig {
     required this.minEvents,
     required this.maxEvents,
     this.requiredFlag,
+    this.patron,
+    this.minReputation = 0,
   });
+
+  /// ¿Se la ofrecen a un mensajero de [rank] con este [world]?
+  bool isOfferedTo(int rank, WorldState world) =>
+      requiredRank <= rank &&
+      (requiredFlag == null || world.hasFlag(requiredFlag!)) &&
+      (patron == null || world.repOf(patron!) >= minReputation);
 
   int get dangerLevel => (danger * 5).round().clamp(1, 5);
 
