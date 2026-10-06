@@ -33,25 +33,25 @@ class PrimerosPasosCard extends ConsumerWidget {
           margin: const EdgeInsets.only(bottom: 16),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.gold.withValues(alpha: 0.08),
+            color: paperTint(AppColors.ochreDeep),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.gold.withValues(alpha: 0.45), width: 2),
+            border: Border.all(color: AppColors.ochreDeep.withValues(alpha: 0.45), width: 2),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                const Icon(Icons.flag, color: AppColors.gold, size: 18),
+                const Icon(Icons.flag, color: AppColors.ochreDeep, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text('PRIMEROS PASOS',
-                      style: AppTextStyles.fredoka(12,
-                          color: AppColors.gold,
+                      style: AppTextStyles.ui(12,
+                          color: AppColors.ochreDeep,
                           weight: FontWeight.bold,
                           letterSpacing: 1)),
                 ),
                 Text('${done.length}/${PlayerProgress.allTasks.length}',
-                    style: AppTextStyles.fredoka(12, color: AppColors.amber)),
+                    style: AppTextStyles.ui(12, color: AppColors.sienna)),
               ]),
               const SizedBox(height: 10),
               ...PlayerProgress.allTasks.map((id) {
@@ -62,14 +62,14 @@ class PrimerosPasosCard extends ConsumerWidget {
                     Icon(
                       ok ? Icons.check_circle : Icons.radio_button_unchecked,
                       size: 18,
-                      color: ok ? AppColors.green : AppColors.textMuted,
+                      color: ok ? AppColors.verdigris : AppColors.inkMuted,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         _labels[id] ?? id,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: ok ? AppColors.textSecondary : AppColors.white,
+                          color: ok ? AppColors.inkSoft : AppColors.paperHigh,
                           decoration:
                               ok ? TextDecoration.lineThrough : null,
                         ),
@@ -85,8 +85,7 @@ class PrimerosPasosCard extends ConsumerWidget {
                   child: GameButton(
                     label: 'RECLAMAR · 3 Aureos + 1 Sello',
                     icon: Icons.card_giftcard,
-                    gradient: AppGradients.green,
-                    shadowColor: AppColors.greenShadow,
+                    variant: GameButtonVariant.success,
                     fontSize: 14,
                     onTap: () =>
                         ref.read(primerosPasosProvider.notifier).claimReward(),
@@ -98,7 +97,7 @@ class PrimerosPasosCard extends ConsumerWidget {
                   child: Text(
                     'Completá las 5 tareas y ganás 3 Aureos + 1 Sello.',
                     style: AppTextStyles.bodyMedium
-                        .copyWith(fontSize: 11, color: AppColors.textMuted),
+                        .copyWith(fontSize: 11, color: AppColors.inkMuted),
                   ),
                 ),
             ],

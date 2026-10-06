@@ -79,7 +79,7 @@ final shopCatalogue = <ShopItem>[
     price: 50,
     currency: PriceCurrency.denarios,
     icon: Icons.favorite,
-    color: AppColors.red,
+    color: AppColors.cinnabar,
   ),
   const ShopItem(
     id: 'boost_health_full',
@@ -89,7 +89,7 @@ final shopCatalogue = <ShopItem>[
     price: 120,
     currency: PriceCurrency.denarios,
     icon: Icons.healing,
-    color: AppColors.red,
+    color: AppColors.cinnabar,
     tag: 'POPULAR',
   ),
   const ShopItem(
@@ -100,7 +100,7 @@ final shopCatalogue = <ShopItem>[
     price: 80,
     currency: PriceCurrency.denarios,
     icon: Icons.hotel,
-    color: AppColors.sky,
+    color: AppColors.egyptianBlue,
   ),
   const ShopItem(
     id: 'boost_speed',
@@ -110,7 +110,7 @@ final shopCatalogue = <ShopItem>[
     price: 3,
     currency: PriceCurrency.aureos,
     icon: Icons.speed,
-    color: AppColors.amber,
+    color: AppColors.sienna,
     tag: 'PREMIUM',
   ),
   const ShopItem(
@@ -121,7 +121,7 @@ final shopCatalogue = <ShopItem>[
     price: 5,
     currency: PriceCurrency.aureos,
     icon: Icons.map,
-    color: AppColors.gold,
+    color: AppColors.ochreDeep,
     tag: 'POPULAR',
   ),
   // Final "El que lleva el libro" (arco 2): el mercado de la noche de la
@@ -134,7 +134,7 @@ final shopCatalogue = <ShopItem>[
     price: 200,
     currency: PriceCurrency.denarios,
     icon: Icons.map_outlined,
-    color: AppColors.purple,
+    color: AppColors.tyrian,
     tag: 'MERCADO NEGRO',
     requiredFlag: 'ending_lucius_book',
   ),
@@ -148,7 +148,7 @@ final shopCatalogue = <ShopItem>[
     price: 200,
     currency: PriceCurrency.denarios,
     icon: Icons.bolt,
-    color: AppColors.skillSpeed,
+    color: AppColors.egyptianBlue,
   ),
   const ShopItem(
     id: 'skill_stealth_1',
@@ -158,7 +158,7 @@ final shopCatalogue = <ShopItem>[
     price: 200,
     currency: PriceCurrency.denarios,
     icon: Icons.visibility_off,
-    color: AppColors.skillStealth,
+    color: AppColors.tyrian,
   ),
   const ShopItem(
     id: 'skill_combat_1',
@@ -168,7 +168,7 @@ final shopCatalogue = <ShopItem>[
     price: 200,
     currency: PriceCurrency.denarios,
     icon: Icons.shield,
-    color: AppColors.skillCombat,
+    color: AppColors.cinnabar,
   ),
   const ShopItem(
     id: 'skill_survival_1',
@@ -178,7 +178,7 @@ final shopCatalogue = <ShopItem>[
     price: 200,
     currency: PriceCurrency.denarios,
     icon: Icons.eco,
-    color: AppColors.skillSurvival,
+    color: AppColors.verdigris,
   ),
   const ShopItem(
     id: 'skill_contacts_1',
@@ -189,7 +189,7 @@ final shopCatalogue = <ShopItem>[
     price: 200,
     currency: PriceCurrency.denarios,
     icon: Icons.people,
-    color: AppColors.skillContacts,
+    color: AppColors.ochreDeep,
   ),
 
   // ── Paquetes de Aureos (real money) ───────────────────────────────────────
@@ -199,7 +199,7 @@ final shopCatalogue = <ShopItem>[
     description: '50 Aureos para gastar en la tienda.',
     category: ShopCategory.aureosPacks,
     price: 199, currency: PriceCurrency.realMoney, // en centavos USD → $1.99
-    icon: Icons.monetization_on, color: AppColors.gold,
+    icon: Icons.monetization_on, color: AppColors.ochreDeep,
     aureosReward: 50,
   ),
   const ShopItem(
@@ -208,7 +208,7 @@ final shopCatalogue = <ShopItem>[
     description: '120 Aureos. El preferido del mensajero veterano.',
     category: ShopCategory.aureosPacks,
     price: 399, currency: PriceCurrency.realMoney, // $3.99
-    icon: Icons.savings, color: AppColors.gold,
+    icon: Icons.savings, color: AppColors.ochreDeep,
     tag: 'POPULAR',
     aureosReward: 120,
   ),
@@ -218,7 +218,7 @@ final shopCatalogue = <ShopItem>[
     description: '300 Aureos. El mejor valor disponible.',
     category: ShopCategory.aureosPacks,
     price: 799, currency: PriceCurrency.realMoney, // $7.99
-    icon: Icons.workspace_premium, color: AppColors.amber,
+    icon: Icons.workspace_premium, color: AppColors.sienna,
     tag: 'MEJOR VALOR',
     aureosReward: 300,
   ),
@@ -228,7 +228,7 @@ final shopCatalogue = <ShopItem>[
     description: '800 Aureos + 500 Denarios de bonus.',
     category: ShopCategory.aureosPacks,
     price: 1999, currency: PriceCurrency.realMoney, // $19.99
-    icon: Icons.account_balance, color: AppColors.amber,
+    icon: Icons.account_balance, color: AppColors.sienna,
     tag: 'VIP',
     aureosReward: 800,
     dinariosReward: 500,
@@ -242,7 +242,7 @@ final shopCatalogue = <ShopItem>[
         '30 Aureos + 2.º slot de mensajero + 2 Sellos. El momento "ajá" del juego paralelo.',
     category: ShopCategory.bundles,
     price: 299, currency: PriceCurrency.realMoney, // $2.99
-    icon: Icons.card_giftcard, color: AppColors.green,
+    icon: Icons.card_giftcard, color: AppColors.verdigris,
     tag: 'OFERTA',
     aureosReward: 30,
     isLimited: true,
@@ -255,7 +255,7 @@ final shopCatalogue = <ShopItem>[
     price: 699,
     currency: PriceCurrency.realMoney,
     icon: Icons.military_tech,
-    color: AppColors.amber,
+    color: AppColors.sienna,
     tag: 'POPULAR',
     aureosReward: 50,
   ),
@@ -269,7 +269,7 @@ final shopCatalogue = <ShopItem>[
     price: 15,
     currency: PriceCurrency.aureos,
     icon: Icons.verified,
-    color: AppColors.amber,
+    color: AppColors.sienna,
     tag: 'ÉLITE',
   ),
   const ShopItem(
@@ -280,7 +280,7 @@ final shopCatalogue = <ShopItem>[
     price: 120,
     currency: PriceCurrency.aureos,
     icon: Icons.workspace_premium,
-    color: AppColors.gold,
+    color: AppColors.ochreDeep,
     tag: 'PACK',
   ),
 ];
@@ -569,12 +569,12 @@ class _TopBar extends StatelessWidget {
         gradient: AppGradients.header,
         border: Border(
             bottom: BorderSide(
-                color: AppColors.gold.withValues(alpha: 0.3), width: 2)),
+                color: AppColors.ochreDeep.withValues(alpha: 0.3), width: 2)),
         boxShadow: const [
           BoxShadow(
-              color: AppColors.shadowHard,
-              blurRadius: 10,
-              offset: Offset(0, 3)),
+              color: AppColors.shadowSoft,
+              blurRadius: 8,
+              offset: Offset(0, 2)),
         ],
       ),
       child: Row(children: [
@@ -582,10 +582,9 @@ class _TopBar extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: Text('TIENDA',
-              style: AppTextStyles.fredoka(18,
-                  color: AppColors.gold,
-                  letterSpacing: 1,
-                  weight: FontWeight.bold)),
+              style: AppTextStyles.heading(18,
+                  color: AppColors.ochreDeep,
+                  letterSpacing: 1)),
         ),
         // Wallet display
         if (messenger != null) ...[
@@ -610,7 +609,7 @@ class _TabRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 52,
-      color: AppColors.bgDark,
+      color: AppColors.paperDeep,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -626,17 +625,17 @@ class _TabRow extends StatelessWidget {
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                gradient: selected ? AppGradients.gold : null,
-                color: selected ? null : AppColors.bgCard2,
+                gradient: selected ? AppGradients.ochre : null,
+                color: selected ? null : AppColors.paperDeep,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: selected ? AppColors.outline : AppColors.bgLine,
+                  color: selected ? AppColors.ink : AppColors.paperLine,
                   width: selected ? 2.5 : 2,
                 ),
                 boxShadow: selected
                     ? [
                         const BoxShadow(
-                            color: AppColors.goldShadow,
+                            color: AppColors.ink,
                             offset: Offset(0, 3),
                             blurRadius: 0)
                       ]
@@ -646,13 +645,13 @@ class _TabRow extends StatelessWidget {
                 Icon(cat.icon,
                     size: 14,
                     color:
-                        selected ? AppColors.outline : AppColors.textSecondary),
+                        selected ? AppColors.ink : AppColors.inkSoft),
                 const SizedBox(width: 6),
                 Text(cat.label,
-                    style: AppTextStyles.fredoka(13,
+                    style: AppTextStyles.ui(13,
                         color: selected
-                            ? AppColors.outline
-                            : AppColors.textSecondary,
+                            ? AppColors.ink
+                            : AppColors.inkSoft,
                         weight:
                             selected ? FontWeight.bold : FontWeight.normal)),
               ]),
@@ -682,7 +681,7 @@ class _TargetSelector extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
       child: Row(children: [
         Text('Para:',
-            style: AppTextStyles.fredoka(13, color: AppColors.textSecondary)),
+            style: AppTextStyles.ui(13, color: AppColors.inkSoft)),
         const SizedBox(width: 8),
         for (final m in messengers) ...[
           GestureDetector(
@@ -696,21 +695,21 @@ class _TargetSelector extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
                 color:
-                    m.id == selectedId ? AppColors.bgCard : AppColors.bgCard2,
+                    m.id == selectedId ? AppColors.paper : AppColors.paperDeep,
                 borderRadius: BorderRadius.circular(AppRadii.lg),
                 border: Border.all(
                     color:
-                        m.id == selectedId ? AppColors.gold : AppColors.bgLine,
+                        m.id == selectedId ? AppColors.ochreDeep : AppColors.paperLine,
                     width: m.id == selectedId ? 2.5 : 1.5),
               ),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
                 MessengerAvatar.from(m, size: 22),
                 const SizedBox(width: 6),
                 Text(m.name,
-                    style: AppTextStyles.fredoka(13,
+                    style: AppTextStyles.ui(13,
                         color: m.id == selectedId
-                            ? AppColors.gold
-                            : AppColors.textSecondary,
+                            ? AppColors.ochreDeep
+                            : AppColors.inkSoft,
                         weight: FontWeight.bold)),
               ]),
             ),
@@ -764,11 +763,11 @@ class _ShopCard extends StatelessWidget {
 
     return GameCard(
       borderColor: justBought
-          ? AppColors.green
+          ? AppColors.verdigris
           : item.isLimited
-              ? AppColors.red.withValues(alpha: 0.6)
-              : AppColors.bgLine,
-      gradient: justBought ? AppGradients.purchased : null,
+              ? AppColors.cinnabar.withValues(alpha: 0.6)
+              : AppColors.paperLine,
+      gradient: justBought ? AppGradients.verdigrisTint : null,
       child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
         // Icon box
         Container(
@@ -783,7 +782,7 @@ class _ShopCard extends StatelessWidget {
           child: Center(
             child: justBought
                 ? const Icon(Icons.check_circle,
-                    color: AppColors.green, size: 28)
+                    color: AppColors.verdigris, size: 28)
                 : Icon(item.icon, color: item.color, size: 26),
           ),
         ),
@@ -795,7 +794,7 @@ class _ShopCard extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(item.name,
-                    style: AppTextStyles.fredoka(15, weight: FontWeight.bold)),
+                    style: AppTextStyles.ui(15, weight: FontWeight.bold)),
               ),
               if (item.tag != null) _Tag(label: item.tag!, item: item),
             ]),
@@ -810,28 +809,28 @@ class _ShopCard extends StatelessWidget {
               Row(children: [
                 if (item.aureosReward != null) ...[
                   const Icon(Icons.monetization_on,
-                      size: 12, color: AppColors.gold),
+                      size: 12, color: AppColors.ochreDeep),
                   const SizedBox(width: 3),
                   Text('+${item.aureosReward} Aureos',
-                      style: AppTextStyles.fredoka(12, color: AppColors.gold)),
+                      style: AppTextStyles.ui(12, color: AppColors.ochreDeep)),
                   const SizedBox(width: 8),
                 ],
                 if (item.dinariosReward != null) ...[
-                  const Icon(Icons.toll, size: 12, color: AppColors.sky),
+                  const Icon(Icons.toll, size: 12, color: AppColors.egyptianBlue),
                   const SizedBox(width: 3),
                   Text('+${item.dinariosReward} Denarios',
-                      style: AppTextStyles.fredoka(12, color: AppColors.sky)),
+                      style: AppTextStyles.ui(12, color: AppColors.egyptianBlue)),
                 ],
               ]),
             ],
             if (item.isLimited) ...[
               const SizedBox(height: 4),
               Row(children: [
-                const Icon(Icons.timer, size: 14, color: AppColors.red),
+                const Icon(Icons.timer, size: 14, color: AppColors.cinnabar),
                 const SizedBox(width: 4),
                 Text('TIEMPO LIMITADO',
-                    style: AppTextStyles.fredoka(12,
-                        color: AppColors.textPrimary, letterSpacing: 0.5)),
+                    style: AppTextStyles.ui(12,
+                        color: AppColors.ink, letterSpacing: 0.5)),
               ]),
             ],
           ]),
@@ -859,11 +858,11 @@ class _Tag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (label) {
-      'POPULAR' => AppColors.sky,
-      'MEJOR VALOR' => AppColors.green,
-      'VIP' => AppColors.amber,
-      'OFERTA' => AppColors.red,
-      _ => AppColors.gold,
+      'POPULAR' => AppColors.egyptianBlue,
+      'MEJOR VALOR' => AppColors.verdigris,
+      'VIP' => AppColors.sienna,
+      'OFERTA' => AppColors.cinnabar,
+      _ => AppColors.ochreDeep,
     };
     return Padding(
       padding: const EdgeInsets.only(left: 6),
@@ -894,34 +893,34 @@ class _BuyButton extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.green.withValues(alpha: 0.15),
+          color: paperTint(AppColors.verdigris),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.green, width: 2),
+          border: Border.all(color: AppColors.verdigris, width: 2),
         ),
         child: Text('COMPRADO',
-            style: AppTextStyles.fredoka(12,
-                color: AppColors.green, weight: FontWeight.bold)),
+            style: AppTextStyles.ui(12,
+                color: AppColors.verdigris, weight: FontWeight.bold)),
       );
     }
 
     final (gradient, shadow, iconColor, textColor) = switch (currency) {
       PriceCurrency.realMoney => (
-          AppGradients.green,
-          AppColors.greenShadow,
-          AppColors.outline,
-          AppColors.outline,
+          AppGradients.verdigris,
+          AppColors.ink,
+          AppColors.paper,
+          AppColors.paper,
         ),
       PriceCurrency.aureos => (
-          AppGradients.gold,
-          AppColors.goldShadow,
-          AppColors.outline,
-          AppColors.outline,
+          AppGradients.ochre,
+          AppColors.ink,
+          AppColors.ink,
+          AppColors.ink,
         ),
       PriceCurrency.denarios => (
-          AppGradients.sky,
-          AppColors.skyDark,
-          AppColors.outline,
-          AppColors.outline,
+          AppGradients.egyptianBlue,
+          AppColors.ink,
+          AppColors.paper,
+          AppColors.paper,
         ),
     };
 
@@ -938,12 +937,13 @@ class _BuyButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             gradient: canAfford ? gradient : AppGradients.disabled,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.outline, width: 2.5),
+            borderRadius: BorderRadius.circular(AppRadii.xs),
+            border: Border.all(
+                color: canAfford ? AppColors.ink : AppColors.inkMuted, width: 2),
             boxShadow: [
               BoxShadow(
-                  color: canAfford ? shadow : AppColors.outline,
-                  offset: const Offset(0, 3),
+                  color: canAfford ? shadow : AppColors.paperLine,
+                  offset: const Offset(3, 3),
                   blurRadius: 0),
             ],
           ),
@@ -955,12 +955,12 @@ class _BuyButton extends StatelessWidget {
                       ? Icons.monetization_on
                       : Icons.toll,
               size: 16,
-              color: canAfford ? iconColor : AppColors.textSecondary,
+              color: canAfford ? iconColor : AppColors.inkSoft,
             ),
             const SizedBox(height: 2),
             Text(priceLabel,
-                style: AppTextStyles.fredoka(13,
-                    color: canAfford ? textColor : AppColors.textSecondary,
+                style: AppTextStyles.ui(13,
+                    color: canAfford ? textColor : AppColors.inkSoft,
                     weight: FontWeight.bold)),
           ]),
         ),
@@ -1017,23 +1017,23 @@ class _PaywallDialog extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.bgCard2,
+            color: AppColors.paperDeep,
             borderRadius: BorderRadius.circular(AppRadii.md - 2),
-            border: Border.all(color: AppColors.bgLine, width: 2),
+            border: Border.all(color: AppColors.paperLine, width: 2),
           ),
           child: Column(children: [
             if (item.aureosReward != null)
-              _rewardRow(Icons.monetization_on, AppColors.gold,
+              _rewardRow(Icons.monetization_on, AppColors.ochreDeep,
                   '+${item.aureosReward} Aureos'),
             if (item.dinariosReward != null)
-              _rewardRow(Icons.toll, AppColors.sky,
+              _rewardRow(Icons.toll, AppColors.egyptianBlue,
                   '+${item.dinariosReward} Denarios'),
             if (item.id == 'bundle_starter') ...[
-              _rewardRow(Icons.person_add, AppColors.green, '+2.º mensajero'),
-              _rewardRow(Icons.verified, AppColors.amber, '+2 Sellos'),
+              _rewardRow(Icons.person_add, AppColors.verdigris, '+2.º mensajero'),
+              _rewardRow(Icons.verified, AppColors.sienna, '+2 Sellos'),
             ],
             if (item.id == 'bundle_warrior')
-              _rewardRow(Icons.trending_up, AppColors.green,
+              _rewardRow(Icons.trending_up, AppColors.verdigris,
                   '+2 niveles de habilidad a elección (en Caminos)'),
           ]),
         ),
@@ -1049,7 +1049,7 @@ class _PaywallDialog extends StatelessWidget {
           Flexible(
             child: Text(text,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.fredoka(14,
+                style: AppTextStyles.ui(14,
                     color: GameChip.legibleText(color),
                     weight: FontWeight.bold)),
           ),

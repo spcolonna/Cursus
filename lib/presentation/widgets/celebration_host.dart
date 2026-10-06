@@ -102,13 +102,13 @@ class _CelebrationHostState extends ConsumerState<CelebrationHost> {
       chips: [
         if (r.denarios > 0)
           GameChip('+${r.denarios} Denarios',
-              icon: CurrencyType.denarios.icon, color: AppColors.sky),
+              icon: CurrencyType.denarios.icon, color: AppColors.egyptianBlue),
         if (r.seals > 0)
           GameChip('+${r.seals} Sello',
-              icon: CurrencyType.seals.icon, color: AppColors.purple),
+              icon: CurrencyType.seals.icon, color: AppColors.tyrian),
         if (r.title != null)
           GameChip('«${r.title}»',
-              icon: Icons.military_tech, color: AppColors.amber),
+              icon: Icons.military_tech, color: AppColors.sienna),
       ],
       onDone: _pop,
       onOpen: () {
@@ -239,9 +239,9 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
               child: Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  gradient: AppGradients.card,
+                  gradient: AppGradients.paper,
                   borderRadius: BorderRadius.circular(AppRadii.lg),
-                  border: Border.all(color: AppColors.gold, width: 2.5),
+                  border: Border.all(color: AppColors.ochreDeep, width: 2.5),
                   boxShadow: const [
                     BoxShadow(
                         color: AppColors.shadowHard,
@@ -265,15 +265,15 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(widget.header,
-                            style: AppTextStyles.fredoka(12,
-                                color: AppColors.gold,
+                            style: AppTextStyles.ui(12,
+                                color: AppColors.ochreDeep,
                                 weight: FontWeight.bold,
                                 letterSpacing: 1.2)),
                         const SizedBox(height: 2),
                         Text(widget.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.fredoka(17,
+                            style: AppTextStyles.ui(17,
                                 weight: FontWeight.bold)),
                         if (widget.chips.isNotEmpty)
                           Padding(
@@ -288,7 +288,7 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
                     ),
                   ),
                   const Icon(Icons.chevron_right,
-                      color: AppColors.textSecondary),
+                      color: AppColors.inkSoft),
                 ]),
               ),
             ),
@@ -356,15 +356,16 @@ class _RankUpOverlayState extends State<_RankUpOverlay>
         return Opacity(
           opacity: fade,
           child: Material(
-            color: AppColors.scrim,
+            // Noche de tinta: el laurel y el rango brillan en ocre.
+            color: AppColors.ink.withValues(alpha: 0.92),
             child: SafeArea(
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.xl),
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     Text('¡NUEVO RANGO!',
-                        style: AppTextStyles.fredoka(16,
-                            color: AppColors.gold,
+                        style: AppTextStyles.ui(16,
+                            color: AppColors.ochreLight,
                             weight: FontWeight.bold,
                             letterSpacing: 2)),
                     const SizedBox(height: AppSpacing.lg),
@@ -389,13 +390,13 @@ class _RankUpOverlayState extends State<_RankUpOverlay>
                         ]),
                     const SizedBox(height: AppSpacing.lg),
                     Text(title,
-                        style: AppTextStyles.fredoka(34,
-                            color: AppColors.gold, weight: FontWeight.bold)),
+                        style: AppTextStyles.heading(34,
+                            color: AppColors.ochreLight)),
                     const SizedBox(height: AppSpacing.sm),
                     Text(_blurb(widget.rank),
                         textAlign: TextAlign.center,
                         style: AppTextStyles.bodyLarge
-                            .copyWith(color: AppColors.parchment)),
+                            .copyWith(color: AppColors.paper)),
                     const SizedBox(height: AppSpacing.xl),
                     SizedBox(
                       width: 220,

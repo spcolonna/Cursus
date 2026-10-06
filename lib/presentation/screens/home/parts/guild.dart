@@ -29,19 +29,19 @@ class _GuildSummaryCard extends ConsumerWidget {
     return GameCard(
       padding: const EdgeInsets.all(14),
       borderColor: ready > 0
-          ? AppColors.gold
-          : AppColors.brownBorder.withValues(alpha: 0.6),
+          ? AppColors.ochreDeep
+          : AppColors.ochreDeep.withValues(alpha: 0.6),
       onTap: () => _openGuildBoard(context, ref),
       semanticLabel: 'Tablón del gremio: $claimed de $total cobrados',
       child: Row(children: [
-        const Icon(Icons.push_pin, color: AppColors.brownBorder, size: 22),
+        const Icon(Icons.push_pin, color: AppColors.ochreDeep, size: 22),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('TABLÓN DEL GREMIO',
-                style: AppTextStyles.fredoka(13,
-                    color: AppColors.amber,
+                style: AppTextStyles.ui(13,
+                    color: AppColors.sienna,
                     weight: FontWeight.bold,
                     letterSpacing: 1)),
             const SizedBox(height: AppSpacing.xs),
@@ -56,12 +56,12 @@ class _GuildSummaryCard extends ConsumerWidget {
                     height: 8,
                     decoration: BoxDecoration(
                       color: c.claimed
-                          ? AppColors.green
+                          ? AppColors.verdigris
                           : c.completed
-                              ? AppColors.gold
-                              : AppColors.outline,
+                              ? AppColors.ochreDeep
+                              : AppColors.ink,
                       borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: AppColors.bgLine),
+                      border: Border.all(color: AppColors.paperLine),
                     ),
                   ),
                 ),
@@ -78,7 +78,7 @@ class _GuildSummaryCard extends ConsumerWidget {
           ]),
         ),
         if (ready > 0)
-          GameChip('COBRAR $ready', icon: Icons.savings, color: AppColors.gold)
+          GameChip('COBRAR $ready', icon: Icons.savings, color: AppColors.ochreDeep)
               .animate(
                   onPlay: (c) => AppMotion.reduced(context)
                       ? null
@@ -86,7 +86,7 @@ class _GuildSummaryCard extends ConsumerWidget {
               .scaleXY(begin: 1.0, end: 1.06, duration: 600.ms)
         else
           const Icon(Icons.chevron_right_rounded,
-              color: AppColors.textMuted, size: 26),
+              color: AppColors.inkMuted, size: 26),
       ]),
     );
   }
@@ -126,11 +126,11 @@ class _ClaimButton extends StatelessWidget {
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            gradient: AppGradients.gold,
+            gradient: AppGradients.ochre,
             borderRadius: BorderRadius.circular(AppRadii.sm + 2),
-            border: Border.all(color: AppColors.outline, width: 2),
+            border: Border.all(color: AppColors.ink, width: 2),
             boxShadow: const [
-              BoxShadow(color: AppColors.goldShadow, offset: Offset(0, 3)),
+              BoxShadow(color: AppColors.ink, offset: Offset(0, 3)),
             ],
           ),
           child: busy
@@ -138,10 +138,10 @@ class _ClaimButton extends StatelessWidget {
                   width: 18,
                   height: 18,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: AppColors.outline))
+                      strokeWidth: 2, color: AppColors.ink))
               : Text('COBRAR',
-                  style: AppTextStyles.fredoka(13,
-                      color: AppColors.outline, weight: FontWeight.bold)),
+                  style: AppTextStyles.ui(13,
+                      color: AppColors.ink, weight: FontWeight.bold)),
         ),
       ),
     );
@@ -169,23 +169,23 @@ class _WeeklyCardState extends ConsumerState<_WeeklyCard> {
     final progress = e.progress.clamp(0, d.target);
     final done = progress >= d.target;
     final accent =
-        d.npcFaction == null ? AppColors.gold : factionColor(d.npcFaction!);
+        d.npcFaction == null ? AppColors.ochreDeep : factionColor(d.npcFaction!);
 
     final Widget trailing = e.claimed
         ? const GameChip('COBRADO',
-            key: ValueKey('claimed'), icon: Icons.check, color: AppColors.green)
+            key: ValueKey('claimed'), icon: Icons.check, color: AppColors.verdigris)
         : done
             ? _ClaimButton(
                 key: const ValueKey('claim'), busy: _claiming, onTap: _claim)
             : Text('$progress/${d.target}',
                 key: const ValueKey('progress'),
-                style: AppTextStyles.fredoka(14,
-                    color: AppColors.textSecondary, weight: FontWeight.bold));
+                style: AppTextStyles.ui(14,
+                    color: AppColors.inkSoft, weight: FontWeight.bold));
 
     return GameCard(
       padding: const EdgeInsets.all(AppSpacing.md),
       borderColor:
-          done && !e.claimed ? AppColors.gold : accent.withValues(alpha: 0.5),
+          done && !e.claimed ? AppColors.ochreDeep : accent.withValues(alpha: 0.5),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           NpcPortrait(name: d.npcName, faction: d.npcFaction, size: 44),
@@ -194,7 +194,7 @@ class _WeeklyCardState extends ConsumerState<_WeeklyCard> {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(d.npcName,
-                  style: AppTextStyles.fredoka(15, weight: FontWeight.bold)),
+                  style: AppTextStyles.ui(15, weight: FontWeight.bold)),
               Text(d.npcRole, style: AppTextStyles.bodySmall),
             ]),
           ),
@@ -209,19 +209,18 @@ class _WeeklyCardState extends ConsumerState<_WeeklyCard> {
         if (!e.claimed) ...[
           const SizedBox(height: AppSpacing.sm),
           Text('«${d.intro}»',
-              style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.parchment, fontStyle: FontStyle.italic)),
+              style: AppTextStyles.proseItalic(size: 14)),
         ],
         const SizedBox(height: AppSpacing.sm),
         Text(d.goalText,
-            style: AppTextStyles.fredoka(13,
-                color: e.claimed ? AppColors.textMuted : AppColors.textPrimary,
+            style: AppTextStyles.ui(13,
+                color: e.claimed ? AppColors.inkMuted : AppColors.ink,
                 weight: FontWeight.bold)),
         const SizedBox(height: 6),
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: Stack(children: [
-            Container(height: 6, color: AppColors.outline),
+            Container(height: 6, color: AppColors.paperShade),
             TweenAnimationBuilder<double>(
               tween: Tween(end: (progress / d.target).clamp(0.0, 1.0)),
               duration: AppMotion.of(context, AppMotion.slow),
@@ -229,7 +228,7 @@ class _WeeklyCardState extends ConsumerState<_WeeklyCard> {
               builder: (_, v, __) => FractionallySizedBox(
                 widthFactor: v,
                 child: Container(
-                    height: 6, color: e.claimed ? AppColors.green : accent),
+                    height: 6, color: e.claimed ? AppColors.verdigris : accent),
               ),
             ),
           ]),
@@ -238,10 +237,10 @@ class _WeeklyCardState extends ConsumerState<_WeeklyCard> {
         Wrap(spacing: 6, runSpacing: 4, children: [
           if (d.denarios > 0)
             GameChip('+${d.denarios}',
-                icon: CurrencyType.denarios.icon, color: AppColors.sky),
+                icon: CurrencyType.denarios.icon, color: AppColors.egyptianBlue),
           if (d.seals > 0)
             GameChip('+${d.seals} Sello',
-                icon: CurrencyType.seals.icon, color: AppColors.purple),
+                icon: CurrencyType.seals.icon, color: AppColors.tyrian),
           for (final r in d.rep.entries)
             GameChip('+${r.value} ${r.key.label}',
                 icon: factionIcon(r.key), color: factionColor(r.key)),
@@ -341,7 +340,7 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
     final Widget trailing;
     if (c.claimed) {
       trailing = const GameChip('COBRADO',
-          key: ValueKey('claimed'), icon: Icons.check, color: AppColors.green);
+          key: ValueKey('claimed'), icon: Icons.check, color: AppColors.verdigris);
     } else if (c.completed) {
       final button = _ClaimButton(
           key: const ValueKey('claim'), busy: _claiming, onTap: _claim);
@@ -371,7 +370,7 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
 
     return GameCard(
       padding: const EdgeInsets.all(AppSpacing.md),
-      borderColor: c.completed && !c.claimed ? AppColors.gold : null,
+      borderColor: c.completed && !c.claimed ? AppColors.ochreDeep : null,
       child: Row(children: [
         // Estado
         AnimatedContainer(
@@ -380,22 +379,22 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
           height: 28,
           decoration: BoxDecoration(
             color: c.claimed
-                ? AppColors.green.withValues(alpha: 0.15)
-                : AppColors.outline,
+                ? AppColors.verdigris.withValues(alpha: 0.15)
+                : AppColors.ink,
             shape: BoxShape.circle,
             border: Border.all(
                 color: c.claimed
-                    ? AppColors.green
+                    ? AppColors.verdigris
                     : c.completed
-                        ? AppColors.gold
-                        : AppColors.bgLine,
+                        ? AppColors.ochreDeep
+                        : AppColors.paperLine,
                 width: 2),
           ),
           child: c.claimed
-              ? const Icon(Icons.check, size: 16, color: AppColors.green)
+              ? const Icon(Icons.check, size: 16, color: AppColors.verdigris)
               : c.completed
                   ? const Icon(Icons.priority_high,
-                      size: 16, color: AppColors.gold)
+                      size: 16, color: AppColors.ochreDeep)
                   : null,
         ),
         const SizedBox(width: 10),
@@ -403,9 +402,9 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(t.description,
-                style: AppTextStyles.fredoka(13,
+                style: AppTextStyles.ui(13,
                     color:
-                        c.claimed ? AppColors.textMuted : AppColors.textPrimary,
+                        c.claimed ? AppColors.inkMuted : AppColors.ink,
                     weight: FontWeight.bold)),
             const SizedBox(height: AppSpacing.xs),
             Row(children: [
@@ -413,7 +412,7 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: Stack(children: [
-                    Container(height: 6, color: AppColors.outline),
+                    Container(height: 6, color: AppColors.paperShade),
                     TweenAnimationBuilder<double>(
                       tween: Tween(end: (progress / t.target).clamp(0.0, 1.0)),
                       duration: AppMotion.of(context, AppMotion.slow),
@@ -423,8 +422,8 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
                         child: Container(
                             height: 6,
                             color: c.claimed
-                                ? AppColors.green
-                                : AppColors.brownBorder),
+                                ? AppColors.verdigris
+                                : AppColors.ochreDeep),
                       ),
                     ),
                   ]),
@@ -440,7 +439,7 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
           GameIconButton(
             icon: Icons.autorenew,
             semanticLabel: 'Cambiar este contrato por otro',
-            color: AppColors.textSecondary,
+            color: AppColors.inkSoft,
             onTap: _reroll,
           ),
         // Recompensa → botón de cobro → cobrado, sin saltos.
@@ -532,18 +531,18 @@ class _DailyPayDialogState extends ConsumerState<_DailyPayDialog> {
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              gradient: AppGradients.gold,
+              gradient: AppGradients.ochre,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.outline, width: 3),
+              border: Border.all(color: AppColors.ink, width: 3),
               boxShadow: [
                 BoxShadow(
-                    color: AppColors.gold.withValues(alpha: 0.4),
+                    color: AppColors.ochreDeep.withValues(alpha: 0.4),
                     blurRadius: 26,
                     spreadRadius: 3),
               ],
             ),
             child:
-                const Icon(Icons.savings, color: AppColors.outline, size: 34),
+                const Icon(Icons.savings, color: AppColors.ink, size: 34),
           ).animate().scale(
               begin: AppMotion.reduced(context)
                   ? const Offset(1, 1)
@@ -568,26 +567,26 @@ class _DailyPayDialogState extends ConsumerState<_DailyPayDialog> {
               margin: const EdgeInsets.symmetric(horizontal: 2),
               decoration: BoxDecoration(
                 color: isToday
-                    ? AppColors.gold.withValues(alpha: 0.2)
+                    ? AppColors.ochreDeep.withValues(alpha: 0.2)
                     : isPast
-                        ? AppColors.green.withValues(alpha: 0.12)
-                        : AppColors.bgCard2,
+                        ? AppColors.verdigris.withValues(alpha: 0.12)
+                        : AppColors.paperDeep,
                 borderRadius: BorderRadius.circular(AppRadii.sm),
                 border: Border.all(
                     color: isToday
-                        ? AppColors.gold
+                        ? AppColors.ochreDeep
                         : isPast
-                            ? AppColors.green
-                            : AppColors.bgLine,
+                            ? AppColors.verdigris
+                            : AppColors.paperLine,
                     width: isToday ? 2 : 1.5),
               ),
               child: Center(
                 child: isPast
-                    ? const Icon(Icons.check, size: 14, color: AppColors.green)
+                    ? const Icon(Icons.check, size: 14, color: AppColors.verdigris)
                     : Text('$d',
-                        style: AppTextStyles.fredoka(13,
+                        style: AppTextStyles.ui(13,
                             color:
-                                isToday ? AppColors.gold : AppColors.textMuted,
+                                isToday ? AppColors.ochreDeep : AppColors.inkMuted,
                             weight: FontWeight.bold)),
               ),
             )

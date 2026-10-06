@@ -50,15 +50,15 @@ class AchievementMedal extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: unlocked ? AppGradients.gold : null,
-        color: unlocked ? null : AppColors.bgCard2,
+        gradient: unlocked ? AppGradients.ochre : null,
+        color: unlocked ? null : AppColors.paperDeep,
         border: Border.all(
-            color: unlocked ? AppColors.outline : AppColors.bgLine,
+            color: unlocked ? AppColors.ink : AppColors.paperLine,
             width: size > 40 ? 2.5 : 2),
         boxShadow: unlocked
             ? const [
                 BoxShadow(
-                    color: AppColors.goldShadow,
+                    color: AppColors.ink,
                     offset: Offset(0, 3),
                     blurRadius: 0),
               ]
@@ -67,7 +67,7 @@ class AchievementMedal extends StatelessWidget {
       child: Icon(
         unlocked ? achievementIcon(kind) : Icons.lock_outline,
         size: size * 0.5,
-        color: unlocked ? AppColors.outline : AppColors.textMuted,
+        color: unlocked ? AppColors.ink : AppColors.inkMuted,
       ),
     );
   }
@@ -93,11 +93,11 @@ class RankLaurel extends StatelessWidget {
             height: size * 0.5,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: AppGradients.gold,
-              border: Border.all(color: AppColors.outline, width: 3),
+              gradient: AppGradients.ochre,
+              border: Border.all(color: AppColors.ink, width: 3),
               boxShadow: const [
                 BoxShadow(
-                    color: AppColors.goldShadow,
+                    color: AppColors.ink,
                     offset: Offset(0, 5),
                     blurRadius: 0),
               ],
@@ -105,8 +105,8 @@ class RankLaurel extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               _romanRanks[rank.clamp(1, 5)],
-              style: AppTextStyles.fredoka(size * 0.2,
-                  color: AppColors.outline, weight: FontWeight.bold),
+              style: AppTextStyles.ui(size * 0.2,
+                  color: AppColors.ink, weight: FontWeight.bold),
             ),
           ),
         ),
@@ -120,13 +120,13 @@ class _LaurelPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final c = size.center(Offset.zero);
     final r = size.width * 0.38;
-    final leaf = Paint()..color = AppColors.gold;
+    final leaf = Paint()..color = AppColors.ochreDeep;
     final edge = Paint()
-      ..color = AppColors.outline
+      ..color = AppColors.ink
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.6;
     final stem = Paint()
-      ..color = AppColors.goldDark
+      ..color = AppColors.ochreDeep
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5
       ..strokeCap = StrokeCap.round;
@@ -203,28 +203,28 @@ class TitlePicker extends StatelessWidget {
                 constraints: const BoxConstraints(minHeight: 44),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
-                  gradient: t == equipped ? AppGradients.gold : null,
+                  gradient: t == equipped ? AppGradients.ochre : null,
                   color: t == equipped
                       ? null
-                      : AppColors.gold.withValues(alpha: 0.1),
+                      : AppColors.ochreDeep.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadii.lg),
                   border: Border.all(
                       color: t == equipped
-                          ? AppColors.outline
-                          : AppColors.gold.withValues(alpha: 0.45),
+                          ? AppColors.ink
+                          : AppColors.ochreDeep.withValues(alpha: 0.45),
                       width: 2),
                 ),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   Icon(t == equipped ? Icons.check : Icons.military_tech,
                       color:
-                          t == equipped ? AppColors.outline : AppColors.gold,
+                          t == equipped ? AppColors.ink : AppColors.ochreDeep,
                       size: 16),
                   const SizedBox(width: 6),
                   Text(t,
-                      style: AppTextStyles.fredoka(13,
+                      style: AppTextStyles.ui(13,
                           color: t == equipped
-                              ? AppColors.outline
-                              : AppColors.gold,
+                              ? AppColors.ink
+                              : AppColors.ochreDeep,
                           weight: FontWeight.bold)),
                 ]),
               ),

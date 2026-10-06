@@ -43,7 +43,7 @@ class HomeScreen extends ConsumerWidget {
     return homeAsync.when(
       loading: () => const _LoadingHome(),
       error: (e, _) => Scaffold(
-        backgroundColor: AppColors.bgDeep,
+        backgroundColor: AppColors.paperDeep,
         body: ErrorState(
             error: e, onRetry: () => ref.read(homeProvider.notifier).refresh()),
       ),
@@ -64,7 +64,7 @@ class _LoadingHome extends StatelessWidget {
   const _LoadingHome();
   @override
   Widget build(BuildContext context) => const Scaffold(
-        backgroundColor: AppColors.bgDeep,
+        backgroundColor: AppColors.paperDeep,
         body: LoadingState(),
       );
 }
@@ -143,20 +143,12 @@ class _HomeScaffoldState extends ConsumerState<_HomeScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    final bgAsset = isDay
-        ? 'assets/images/bg_home_day.jpg'
-        : 'assets/images/bg_home_night.jpg';
-
+    // La página de papel; en la Fase I3 se le suma el cielo vivo arriba.
     return Scaffold(
-      backgroundColor: AppColors.bgDeep,
+      backgroundColor: AppColors.paperDeep,
       body: Stack(fit: StackFit.expand, children: [
-        Image.asset(bgAsset,
-            fit: BoxFit.cover,
-            cacheWidth: 1080,
-            errorBuilder: (_, __, ___) =>
-                const ColoredBox(color: AppColors.bgDeep)),
         const DecoratedBox(
-            decoration: BoxDecoration(gradient: AppGradients.homeOverlay)),
+            decoration: BoxDecoration(gradient: AppGradients.page)),
         Column(children: [
           SafeArea(
             bottom: false,
@@ -182,10 +174,10 @@ class _TopBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.topBar,
+        color: AppColors.paper,
         border: Border(
           bottom: BorderSide(
-              color: AppColors.gold.withValues(alpha: 0.3), width: 1.5),
+              color: AppColors.ochreDeep.withValues(alpha: 0.3), width: 1.5),
         ),
       ),
       child: Row(children: [
@@ -195,10 +187,10 @@ class _TopBar extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.fade,
                 softWrap: false,
-                style: AppTextStyles.brandWordmark(18, AppColors.gold)),
+                style: AppTextStyles.brandWordmark(18, AppColors.ochreDeep)),
             Text('Roma · 50 a.C.',
                 style:
-                    AppTextStyles.fredoka(12, color: AppColors.textSecondary)),
+                    AppTextStyles.ui(12, color: AppColors.inkSoft)),
           ]),
         ),
         if (m != null) ...[
@@ -400,14 +392,14 @@ class _RosterChip extends StatelessWidget {
           curve: AppMotion.enter,
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           decoration: BoxDecoration(
-            color: selected ? AppColors.bgCard : AppColors.bgCard2,
+            color: selected ? AppColors.paper : AppColors.paperDeep,
             borderRadius: BorderRadius.circular(AppRadii.md),
             border: Border.all(
               color: hasEvent
-                  ? AppColors.red
+                  ? AppColors.cinnabar
                   : selected
-                      ? AppColors.gold
-                      : AppColors.bgLine,
+                      ? AppColors.ochreDeep
+                      : AppColors.paperLine,
               width: selected ? 2.5 : 1.5,
             ),
           ),
@@ -422,9 +414,9 @@ class _RosterChip extends StatelessWidget {
                     width: 14,
                     height: 14,
                     decoration: BoxDecoration(
-                      color: AppColors.red,
+                      color: AppColors.cinnabar,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.outline, width: 2),
+                      border: Border.all(color: AppColors.ink, width: 2),
                     ),
                   )
                       .animate(
@@ -438,8 +430,8 @@ class _RosterChip extends StatelessWidget {
             Text(m.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.fredoka(12,
-                    color: selected ? AppColors.gold : AppColors.textSecondary,
+                style: AppTextStyles.ui(12,
+                    color: selected ? AppColors.ochreDeep : AppColors.inkSoft,
                     weight: FontWeight.bold)),
             if (mission != null && !hasEvent)
               Padding(
@@ -449,8 +441,8 @@ class _RosterChip extends StatelessWidget {
               )
             else
               Text(status,
-                  style: AppTextStyles.fredoka(12,
-                      color: hasEvent ? AppColors.textPrimary : AppColors.textMuted)),
+                  style: AppTextStyles.ui(12,
+                      color: hasEvent ? AppColors.ink : AppColors.inkMuted)),
           ]),
         ),
       ),
@@ -470,15 +462,15 @@ class _AutoResolvedNotice extends StatelessWidget {
   Widget build(BuildContext context) {
     return GameCard(
       padding: const EdgeInsets.all(14),
-      borderColor: AppColors.amber.withValues(alpha: 0.6),
+      borderColor: AppColors.sienna.withValues(alpha: 0.6),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           const Icon(Icons.history_toggle_off,
-              color: AppColors.amber, size: 18),
+              color: AppColors.sienna, size: 18),
           const SizedBox(width: AppSpacing.sm),
           Text('PASÓ MIENTRAS NO ESTABAS',
-              style: AppTextStyles.fredoka(12,
-                  color: AppColors.amber,
+              style: AppTextStyles.ui(12,
+                  color: AppColors.sienna,
                   weight: FontWeight.bold,
                   letterSpacing: 1)),
         ]),
@@ -514,8 +506,8 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(text,
-      style: AppTextStyles.fredoka(13,
-          color: AppColors.textSecondary,
+      style: AppTextStyles.ui(13,
+          color: AppColors.inkSoft,
           weight: FontWeight.bold,
           letterSpacing: 1.5));
 }

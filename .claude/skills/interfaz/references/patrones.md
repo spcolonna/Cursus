@@ -12,7 +12,7 @@ class XScreen extends ConsumerWidget {
     return GradientScaffold(
       body: SafeArea(
         child: state.when(
-          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.gold)),
+          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.ochreDeep)),
           error: (e, _) => _ErrorView(message: '$e'),
           data: (data) => ListView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
@@ -79,7 +79,7 @@ Fondo `bgCard`, borde `bgLine` 2.5, título `titleMedium`, cuerpo `bodyMedium`. 
 
 ## Feedback de recompensa
 
-Denarios/Aureos/Sellos siempre con su ícono Material + cantidad en Fredoka bold del color del recurso (oro para Aureos, `textPrimary` para Denarios, `sky` para Sellos). Nunca solo un número suelto.
+Denarios/Aureos/Sellos siempre con su ícono Material + cantidad en Figtree bold del color del recurso (`egyptianBlue` para Denarios, `ochreDeep` para Aureos, `tyrian` para Sellos; ver `CurrencyType`). Nunca solo un número suelto.
 
 ## Antipatrones vistos en este repo
 

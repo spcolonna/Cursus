@@ -78,7 +78,7 @@ class _Header extends ConsumerWidget {
           AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm),
       decoration: const BoxDecoration(
         gradient: AppGradients.header,
-        border: Border(bottom: BorderSide(color: AppColors.bgLine)),
+        border: Border(bottom: BorderSide(color: AppColors.paperLine)),
       ),
       child: Row(children: [
         GameBackButton(
@@ -89,7 +89,7 @@ class _Header extends ConsumerWidget {
         GameIconButton(
           icon: Icons.settings_outlined,
           semanticLabel: 'Ajustes',
-          color: AppColors.textSecondary,
+          color: AppColors.inkSoft,
           onTap: () => context.push('/settings'),
         ),
       ]),
@@ -108,23 +108,23 @@ class _Tabs extends StatelessWidget {
       child: Container(
         height: 44,
         decoration: BoxDecoration(
-          color: AppColors.bgCard2,
+          color: AppColors.paperDeep,
           borderRadius: BorderRadius.circular(AppRadii.md),
-          border: Border.all(color: AppColors.bgLine, width: 1.5),
+          border: Border.all(color: AppColors.paperLine, width: 1.5),
         ),
         child: TabBar(
           onTap: (_) => AppFeedback.tap(),
           indicatorSize: TabBarIndicatorSize.tab,
           dividerColor: AppColors.transparent,
           indicator: BoxDecoration(
-            gradient: AppGradients.gold,
+            gradient: AppGradients.ochre,
             borderRadius: BorderRadius.circular(AppRadii.md - 3),
-            border: Border.all(color: AppColors.outline, width: 2),
+            border: Border.all(color: AppColors.ink, width: 2),
           ),
-          labelColor: AppColors.outline,
-          unselectedLabelColor: AppColors.textSecondary,
-          labelStyle: AppTextStyles.fredoka(13, weight: FontWeight.bold),
-          unselectedLabelStyle: AppTextStyles.fredoka(13),
+          labelColor: AppColors.ink,
+          unselectedLabelColor: AppColors.inkSoft,
+          labelStyle: AppTextStyles.ui(13, weight: FontWeight.bold),
+          unselectedLabelStyle: AppTextStyles.ui(13),
           tabs: const [
             Tab(text: 'Mensajero'),
             Tab(text: 'Mundo'),
@@ -166,8 +166,7 @@ class _MessengerTab extends ConsumerWidget {
           child: GameButton(
             label: 'VER CAMINOS DEL MENSAJERO',
             icon: Icons.account_tree_outlined,
-            gradient: AppGradients.purple,
-            shadowColor: AppColors.purpleShadow,
+            variant: GameButtonVariant.secret,
             fontSize: 14,
             onTap: () => context.push('/skills'),
           ),
@@ -189,7 +188,7 @@ class _MessengerTab extends ConsumerWidget {
               }
             },
             child: Text('Cerrar sesión',
-                style: AppTextStyles.fredoka(13, color: AppColors.textMuted)),
+                style: AppTextStyles.ui(13, color: AppColors.inkMuted)),
           ),
         ),
       ],
@@ -206,8 +205,7 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GameCard(
-      gradient: AppGradients.blue,
-      borderColor: AppColors.gold.withValues(alpha: 0.35),
+      frieze: true,
       child: Column(children: [
         Row(children: [
           // Retrato: vuela desde el Home.
@@ -219,14 +217,14 @@ class _HeroCard extends StatelessWidget {
               Text(messenger.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.fredoka(20, weight: FontWeight.bold)),
+                  style: AppTextStyles.heading(20)),
               if (title != null)
                 Text('«$title»',
-                    style: AppTextStyles.fredoka(13,
-                        color: AppColors.gold, weight: FontWeight.bold)),
+                    style: AppTextStyles.ui(13,
+                        color: AppColors.ochreDeep, weight: FontWeight.bold)),
               const SizedBox(height: 6),
               GameChip('${messenger.rankTitle} · Rango ${messenger.rank}',
-                  icon: Icons.military_tech, color: AppColors.gold),
+                  icon: Icons.military_tech, color: AppColors.ochreDeep),
               const SizedBox(height: 6),
               Text(
                 '${messenger.completedMissionIds.length} misiones completadas',
@@ -243,10 +241,10 @@ class _HeroCard extends StatelessWidget {
             value: messenger.health,
             maxValue: 100,
             color: messenger.health > 60
-                ? AppColors.green
+                ? AppColors.verdigris
                 : messenger.health > 30
-                    ? AppColors.riskMed
-                    : AppColors.red,
+                    ? AppColors.sienna
+                    : AppColors.cinnabar,
           )),
           const SizedBox(width: 14),
           Expanded(
@@ -255,10 +253,10 @@ class _HeroCard extends StatelessWidget {
             value: messenger.fatigue,
             maxValue: 100,
             color: messenger.fatigue < 40
-                ? AppColors.green
+                ? AppColors.verdigris
                 : messenger.fatigue < 70
-                    ? AppColors.riskMed
-                    : AppColors.red,
+                    ? AppColors.sienna
+                    : AppColors.cinnabar,
           )),
         ]),
       ]),
@@ -289,7 +287,7 @@ class _SkillsGrid extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.bgCard2,
+                  color: AppColors.paperDeep,
                   borderRadius: BorderRadius.circular(AppRadii.sm + 2),
                   border: Border.all(color: skillColor(skill), width: 1.5),
                 ),
@@ -305,7 +303,7 @@ class _SkillsGrid extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('${skill.label} · Nv.$level',
-                                style: AppTextStyles.fredoka(13,
+                                style: AppTextStyles.ui(13,
                                     weight: FontWeight.bold)),
                             // 10 niveles: 1-5 dorados, 6-10 sellos de élite.
                             Row(
@@ -319,16 +317,16 @@ class _SkillsGrid extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: filled
                                       ? (isElite
-                                          ? AppColors.purple
-                                          : AppColors.gold)
-                                      : AppColors.bgCard2,
+                                          ? AppColors.tyrian
+                                          : AppColors.ochreDeep)
+                                      : AppColors.paperDeep,
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                       color: filled
                                           ? (isElite
-                                              ? AppColors.purple
-                                              : AppColors.goldDark)
-                                          : AppColors.bgLine,
+                                              ? AppColors.tyrian
+                                              : AppColors.ochreDeep)
+                                          : AppColors.paperLine,
                                       width: 1.5),
                                 ),
                               );
@@ -338,7 +336,7 @@ class _SkillsGrid extends StatelessWidget {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: Stack(children: [
-                          Container(height: 6, color: AppColors.outline),
+                          Container(height: 6, color: AppColors.paperShade),
                           TweenAnimationBuilder<double>(
                             tween: Tween(
                                 begin: 0, end: level >= 5 ? 1.0 : xpProgress),
@@ -350,8 +348,8 @@ class _SkillsGrid extends StatelessWidget {
                                 height: 6,
                                 decoration: BoxDecoration(
                                   gradient: level >= 5
-                                      ? AppGradients.purple
-                                      : AppGradients.gold,
+                                      ? AppGradients.tyrian
+                                      : AppGradients.ochre,
                                 ),
                               ),
                             ),
@@ -395,7 +393,7 @@ class _AchievementsCard extends ConsumerWidget {
         .firstOrNull;
 
     return GameCard(
-      borderColor: AppColors.gold.withValues(alpha: 0.5),
+      borderColor: AppColors.ochreDeep.withValues(alpha: 0.5),
       semanticLabel: 'Logros: ${unlocked.length} de ${defs.length}. '
           'Tocá para verlos y elegir tu título.',
       onTap: () => context.push('/achievements'),
@@ -419,7 +417,7 @@ class _AchievementsCard extends ConsumerWidget {
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('${unlocked.length} de ${defs.length} logros',
-                style: AppTextStyles.fredoka(16, weight: FontWeight.bold)),
+                style: AppTextStyles.ui(16, weight: FontWeight.bold)),
             if (next != null)
               Text('Próximo: ${next.goal}',
                   maxLines: 2,
@@ -427,7 +425,7 @@ class _AchievementsCard extends ConsumerWidget {
                   style: AppTextStyles.bodyMedium),
           ]),
         ),
-        const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+        const Icon(Icons.chevron_right, color: AppColors.inkSoft),
       ]),
     );
   }
@@ -535,17 +533,17 @@ class _FactionRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(faction.label,
-                style: AppTextStyles.fredoka(15, weight: FontWeight.bold)),
+                style: AppTextStyles.ui(15, weight: FontWeight.bold)),
           ),
           GameChip('${tier.label} · $v', color: color),
           const Icon(Icons.chevron_right_rounded,
-              color: AppColors.textMuted, size: 24),
+              color: AppColors.inkMuted, size: 24),
         ]),
         const SizedBox(height: AppSpacing.sm),
         ClipRRect(
           borderRadius: BorderRadius.circular(4),
           child: Stack(children: [
-            Container(height: 8, color: AppColors.outline),
+            Container(height: 8, color: AppColors.paperShade),
             TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: fill),
               duration: AppMotion.of(context, AppMotion.slow * 2),
@@ -602,7 +600,7 @@ class _JournalCard extends StatelessWidget {
     final entries = world.journal.reversed.take(15).toList();
     return GameCard(
       gradient: AppGradients.story,
-      borderColor: AppColors.purple.withValues(alpha: 0.6),
+      borderColor: AppColors.tyrian.withValues(alpha: 0.6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -616,7 +614,7 @@ class _JournalCard extends StatelessWidget {
                     const Padding(
                       padding: EdgeInsets.only(top: 4),
                       child: Icon(Icons.circle,
-                          size: 8, color: AppColors.purple),
+                          size: 8, color: AppColors.tyrian),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -624,16 +622,12 @@ class _JournalCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('${j.date.day}/${j.date.month}',
-                                style: AppTextStyles.fredoka(12,
-                                    color: AppColors.textSecondary,
+                                style: AppTextStyles.ui(12,
+                                    color: AppColors.inkSoft,
                                     letterSpacing: 0.5)),
                             const SizedBox(height: 2),
                             Text(j.text,
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.parchment,
-                                  height: 1.45,
-                                  fontStyle: FontStyle.italic,
-                                )),
+                                style: AppTextStyles.proseItalic(size: 14)),
                           ]),
                     ),
                   ]),
@@ -703,11 +697,11 @@ class _MissionHistoryCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.bgCard2,
+              color: AppColors.paperDeep,
               borderRadius: BorderRadius.circular(AppRadii.sm + 2),
             ),
             child: const Icon(Icons.map_outlined,
-                color: AppColors.textMuted, size: 22),
+                color: AppColors.inkMuted, size: 22),
           ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
@@ -716,8 +710,8 @@ class _MissionHistoryCard extends StatelessWidget {
               '${mission.origin} → ${mission.destination}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.fredoka(13,
-                  color: AppColors.gold, weight: FontWeight.bold),
+              style: AppTextStyles.ui(13,
+                  color: AppColors.ochreDeep, weight: FontWeight.bold),
             ),
             Text(
               mission.packageDescription,

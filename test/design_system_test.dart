@@ -7,8 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:the_messenger/presentation/theme/motion.dart';
 import 'package:the_messenger/presentation/widgets/components.dart';
 
-const _maxRawColors = 0; // `Color(0x…)` en lib/presentation/screens
-const _maxMaterialColors = 0; // `Colors.xxx` de Material en pantallas
+const _maxRawColors = 0; // `Color(0x…)` en screens/ y widgets/
+const _maxMaterialColors = 0; // `Colors.xxx` de Material en screens/ y widgets/
 
 /// Pantallas ya migradas: cero colores sueltos.
 const _clean = [
@@ -24,10 +24,15 @@ const _clean = [
 ];
 
 void main() {
-  final screens = Directory('lib/presentation/screens')
-      .listSync(recursive: true)
-      .whereType<File>()
-      .where((f) => f.path.endsWith('.dart'));
+  // Los colores viven en theme/ (AppColors para interfaz, ArtColors para
+  // pintura). Pantallas y widgets solo los nombran.
+  final screens = [
+    for (final dir in ['screens', 'widgets'])
+      ...Directory('lib/presentation/$dir')
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.dart')),
+  ];
 
   int count(RegExp re, Iterable<File> files) => files
       .map((f) => re.allMatches(f.readAsStringSync()).length)
@@ -46,6 +51,25 @@ void main() {
       final f = File('lib/presentation/screens/$path');
       expect(count(rawColor, [f]), 0, reason: path);
       expect(count(materialColor, [f]), 0, reason: path);
+    }
+  });
+
+  test('sin estilos de texto sueltos ni fuentes viejas', () {
+    final rawStyle = RegExp(r'(^|[^A-Za-z.])TextStyle\(', multiLine: true);
+    for (final f in screens) {
+      expect(count(rawStyle, [f]), 0, reason: f.path);
+    }
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    for (final family in ['Marcellus', 'Figtree', 'Literata']) {
+      expect(pubspec, contains('family: $family'));
+    }
+    for (final old in ['Fredoka', 'Nunito']) {
+      expect(pubspec.contains(old), isFalse, reason: old);
+      expect(
+          Directory('lib').listSync(recursive: true).whereType<File>().any(
+              (f) => f.readAsStringSync().contains("'$old'")),
+          isFalse,
+          reason: old);
     }
   });
 

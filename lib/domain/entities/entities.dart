@@ -180,13 +180,6 @@ extension SkillTypeX on SkillType {
     SkillType.survival => 'SU',
     SkillType.contacts => 'CO',
   };
-  String get emoji => switch (this) {
-    SkillType.speed    => '\u26A1',
-    SkillType.stealth  => '\uD83D\uDD75',
-    SkillType.combat   => '\u2694',
-    SkillType.survival => '\uD83C\uDF3F',
-    SkillType.contacts => '\uD83E\uDD1D',
-  };
 }
 
 // ─── Game Route ───────────────────────────────────────────────────────────────

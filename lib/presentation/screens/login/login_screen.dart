@@ -48,7 +48,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgDeep,
+      backgroundColor: AppColors.ink,
       body: Stack(fit: StackFit.expand, children: [
         // El camino a la hora real; en la Fase I3 pasa a ser el cielo vivo.
         const EventScene(category: EventCategory.road),
@@ -82,7 +82,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Text(
                     'Roma, 50 a.C. El correo te espera.',
                     style: AppTextStyles.bodyLarge
-                        .copyWith(color: AppColors.parchment),
+                        .copyWith(color: AppColors.onSky),
                     textAlign: TextAlign.center,
                   ).animate(delay: 300.ms).fadeIn(duration: 500.ms),
                   const SizedBox(height: 48),
@@ -91,12 +91,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.red.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.red.withValues(alpha: 0.5)),
+                        color: AppColors.paper,
+                        borderRadius: BorderRadius.circular(AppRadii.sm),
+                        border: Border.all(color: AppColors.cinnabar, width: 2),
                       ),
                       child: Text(_error!,
-                          style: AppTextStyles.fredoka(13),
+                          style: AppTextStyles.ui(13, color: AppColors.cinnabar),
                           textAlign: TextAlign.center),
                     ),
                     const SizedBox(height: 16),
@@ -117,7 +117,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Text(
                     'Sin cuenta. Tus partidas se guardan en este dispositivo.\nMás adelante vas a poder sincronizar en la nube.',
                     style: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.textSecondary),
+                        .copyWith(color: AppColors.onSky),
                     textAlign: TextAlign.center,
                   ).animate(delay: 500.ms).fadeIn(duration: 500.ms),
                   const SizedBox(height: 48),

@@ -119,11 +119,11 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style:
-                      AppTextStyles.fredoka(13, color: AppColors.textSecondary),
+                      AppTextStyles.ui(13, color: AppColors.inkSoft),
                 ),
               ),
               if (mission.isTutorial)
-                const GameChip('PRUEBA DE VARUS', color: AppColors.amber),
+                const GameChip('PRUEBA DE VARUS', color: AppColors.sienna),
             ]),
           ),
 
@@ -174,8 +174,8 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
                                 .shimmer(
                                     duration: 900.ms,
                                     color: celebrate
-                                        ? AppColors.parchment
-                                        : AppColors.textMuted),
+                                        ? AppColors.paper
+                                        : AppColors.inkMuted),
                   ]),
                 ),
 
@@ -183,9 +183,8 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
 
                 Text(
                   gradeLabel,
-                  style: AppTextStyles.fredoka(22,
+                  style: AppTextStyles.heading(22,
                       color: GameChip.legibleText(color),
-                      weight: FontWeight.bold,
                       letterSpacing: 2),
                 )
                     .animate(delay: at(300))
@@ -199,7 +198,7 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
                   suffix: '% de eficacia',
                   duration: const Duration(milliseconds: 900),
                   style:
-                      AppTextStyles.fredoka(14, color: AppColors.textSecondary),
+                      AppTextStyles.ui(14, color: AppColors.inkSoft),
                 ).animate(delay: at(400)).fadeIn(duration: d(250)),
 
                 const SizedBox(height: 28),
@@ -286,25 +285,20 @@ class _EpilogueCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: AppGradients.story,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.purple, width: 2),
+        border: Border.all(color: AppColors.tyrian, width: 2),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          const Icon(Icons.auto_stories, color: AppColors.purple, size: 16),
+          const Icon(Icons.auto_stories, color: AppColors.tyrian, size: 16),
           const SizedBox(width: 8),
           Text('LA HISTORIA CONTINÚA',
-              style: AppTextStyles.fredoka(12,
-                  color: AppColors.textPrimary,
+              style: AppTextStyles.ui(12,
+                  color: AppColors.ink,
                   weight: FontWeight.bold,
                   letterSpacing: 1.5)),
         ]),
         const SizedBox(height: 10),
-        Text(text,
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontSize: 14,
-              height: 1.6,
-              color: AppColors.parchment,
-            )),
+        Text(text, style: AppTextStyles.prose(size: 15)),
       ]),
     );
   }
@@ -327,8 +321,8 @@ class _GradeSeal extends StatelessWidget {
           painter: _WaxSealPainter(color),
           child: Center(
             child: Text(grade,
-                style: AppTextStyles.fredoka(78,
-                    color: AppColors.parchment, weight: FontWeight.bold)),
+                style: AppTextStyles.heading(78,
+                    color: AppColors.paper)),
           ),
         ),
       ),
@@ -357,7 +351,7 @@ class _WaxSealPainter extends CustomPainter {
     blob.close();
     canvas.drawPath(
         blob.shift(const Offset(0, 6)), Paint()..color = AppColors.shadowHard);
-    final dark = Color.lerp(color, AppColors.outline, 0.45)!;
+    final dark = Color.lerp(color, AppColors.ink, 0.45)!;
     canvas.drawPath(
         blob,
         Paint()
@@ -377,7 +371,7 @@ class _WaxSealPainter extends CustomPainter {
         c,
         r * 0.72 - 3,
         Paint()
-          ..color = AppColors.parchment.withValues(alpha: 0.25)
+          ..color = AppColors.paper.withValues(alpha: 0.25)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.2);
   }
@@ -404,15 +398,15 @@ class _ScoreCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgCard2,
+        color: AppColors.paperDeep,
         borderRadius: BorderRadius.circular(16),
         border:
             Border.all(color: gradeColor.withValues(alpha: 0.3), width: 1.5),
       ),
       child: Column(children: [
         Text('DESGLOSE',
-            style: AppTextStyles.fredoka(12,
-                color: AppColors.textMuted,
+            style: AppTextStyles.ui(12,
+                color: AppColors.inkMuted,
                 weight: FontWeight.bold,
                 letterSpacing: 1.5)),
         const SizedBox(height: 14),
@@ -474,9 +468,9 @@ class _ScoreRow extends StatelessWidget {
   });
 
   Color get _color {
-    if (score >= 80) return AppColors.green;
-    if (score >= 50) return AppColors.amber;
-    return AppColors.red;
+    if (score >= 80) return AppColors.verdigris;
+    if (score >= 50) return AppColors.sienna;
+    return AppColors.cinnabar;
   }
 
   @override
@@ -487,8 +481,8 @@ class _ScoreRow extends StatelessWidget {
       Expanded(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(label,
-              style: AppTextStyles.fredoka(13,
-                  color: AppColors.textPrimary, weight: FontWeight.bold)),
+              style: AppTextStyles.ui(13,
+                  color: AppColors.ink, weight: FontWeight.bold)),
           Text(sublabel, style: AppTextStyles.bodySmall),
         ]),
       ),
@@ -498,7 +492,7 @@ class _ScoreRow extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(5),
           child: Stack(children: [
-            Container(height: 10, color: AppColors.outline),
+            Container(height: 10, color: AppColors.paperShade),
             // La barra se llena: el puntaje se "cuenta" frente al jugador.
             TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: (score / 100).clamp(0.0, 1.0)),
@@ -517,13 +511,13 @@ class _ScoreRow extends StatelessWidget {
       SizedBox(
         width: 36,
         child: CountUpText(score.round(),
-            style: AppTextStyles.fredoka(13,
+            style: AppTextStyles.ui(13,
                 color: GameChip.legibleText(_color), weight: FontWeight.bold)),
       ),
       SizedBox(
         width: 38,
         child: Text('×$weight%',
-            style: AppTextStyles.fredoka(12, color: AppColors.textMuted),
+            style: AppTextStyles.ui(12, color: AppColors.inkMuted),
             textAlign: TextAlign.right),
       ),
     ]);
@@ -555,18 +549,18 @@ class _WhatChanged extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: AppGradients.card,
+        gradient: AppGradients.paper,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.bgLine, width: 2),
+        border: Border.all(color: AppColors.paperLine, width: 2),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           const Icon(Icons.change_history,
-              size: 15, color: AppColors.textSecondary),
+              size: 15, color: AppColors.inkSoft),
           const SizedBox(width: 7),
           Text('LO QUE CAMBIÓ',
-              style: AppTextStyles.fredoka(12,
-                  color: AppColors.textSecondary, letterSpacing: 1.2)),
+              style: AppTextStyles.ui(12,
+                  color: AppColors.inkSoft, letterSpacing: 1.2)),
         ]),
         const SizedBox(height: 12),
 
@@ -592,18 +586,18 @@ class _WhatChanged extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              gradient: AppGradients.gold,
+              gradient: AppGradients.ochre,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.outline, width: 2),
+              border: Border.all(color: AppColors.ink, width: 2),
             ),
             child: Row(children: [
               const Icon(Icons.military_tech,
-                  color: AppColors.outline, size: 22),
+                  color: AppColors.ink, size: 22),
               const SizedBox(width: 8),
               Expanded(
                 child: Text('Ganaste el título «${completion.endingTitle}»',
-                    style: AppTextStyles.fredoka(14,
-                        color: AppColors.outline, weight: FontWeight.bold)),
+                    style: AppTextStyles.ui(14,
+                        color: AppColors.ink, weight: FontWeight.bold)),
               ),
             ]),
           ),
@@ -617,7 +611,7 @@ class _WhatChanged extends StatelessWidget {
               GameChip(
                 '+${e.value} XP ${e.key.label}',
                 icon: Icons.school_outlined,
-                color: AppColors.sky,
+                color: AppColors.egyptianBlue,
                 size: GameChipSize.medium,
               ),
           ]),
@@ -633,14 +627,14 @@ class _WhatChanged extends StatelessWidget {
                     ? '${completion.fatigueDelta} de fatiga al llegar'
                     : '${completion.fatigueDelta} de fatiga: ${completion.restStop}',
                 icon: Icons.self_improvement,
-                color: AppColors.green,
+                color: AppColors.verdigris,
                 size: GameChipSize.medium,
               ),
             if (completion.injured)
               const GameChip(
                 'Llegaste herido: descansá antes de salir',
                 icon: Icons.medical_services_outlined,
-                color: AppColors.red,
+                color: AppColors.cinnabar,
                 size: GameChipSize.medium,
               ),
           ]),
@@ -656,7 +650,7 @@ class _WhatChanged extends StatelessWidget {
                 Icon(
                   e.value > 0 ? Icons.trending_up : Icons.trending_down,
                   size: 15,
-                  color: e.value > 0 ? AppColors.riskLow : AppColors.riskMed,
+                  color: e.value > 0 ? AppColors.verdigris : AppColors.sienna,
                 ),
                 const SizedBox(width: 7),
                 Expanded(
@@ -677,7 +671,7 @@ class _WhatChanged extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 6),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Icon(Icons.key_outlined, size: 15, color: AppColors.purple),
+              const Icon(Icons.key_outlined, size: 15, color: AppColors.tyrian),
               const SizedBox(width: 7),
               Expanded(
                 child: Text(line,
@@ -692,19 +686,18 @@ class _WhatChanged extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(11),
             decoration: BoxDecoration(
-              color: AppColors.bgCard2,
+              color: AppColors.paperDeep,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                  color: AppColors.purple.withValues(alpha: 0.45), width: 1.5),
+                  color: AppColors.tyrian.withValues(alpha: 0.45), width: 1.5),
             ),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Icon(Icons.menu_book_outlined,
-                  size: 15, color: AppColors.purple),
+                  size: 15, color: AppColors.tyrian),
               const SizedBox(width: 8),
               Expanded(
                 child: Text('«${completion.journalEntry}»',
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(height: 1.4, fontStyle: FontStyle.italic)),
+                    style: AppTextStyles.proseItalic(size: 14)),
               ),
             ]),
           ),
@@ -733,10 +726,10 @@ class _RewardCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
       decoration: BoxDecoration(
-        color: AppColors.sky.withValues(alpha: 0.08),
+        color: paperTint(AppColors.egyptianBlue),
         borderRadius: BorderRadius.circular(14),
         border:
-            Border.all(color: AppColors.sky.withValues(alpha: 0.4), width: 2),
+            Border.all(color: AppColors.egyptianBlue.withValues(alpha: 0.4), width: 2),
       ),
       child: Column(children: [
         Row(
@@ -752,7 +745,7 @@ class _RewardCard extends StatelessWidget {
                   type: CurrencyType.denarios, amount: value, fontSize: 22),
             ),
             const SizedBox(width: 10),
-            const GameChip('RECOMPENSA', color: AppColors.sky),
+            const GameChip('RECOMPENSA', color: AppColors.egyptianBlue),
           ],
         ),
         // De dónde sale el número: nota × la ruta que elegiste.
@@ -762,7 +755,7 @@ class _RewardCard extends StatelessWidget {
             'Nota $grade: ${gradeBaseReward(grade)} × ruta '
             '${payFactor.toStringAsFixed(1).replaceAll('.', ',')}',
             style: AppTextStyles.bodySmall
-                .copyWith(color: AppColors.textSecondary),
+                .copyWith(color: AppColors.inkSoft),
           ),
         ],
       ]),
@@ -789,27 +782,27 @@ class _EventsSummary extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.bgCard2,
+        color: AppColors.paperDeep,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.bgLine, width: 1.5),
+        border: Border.all(color: AppColors.paperLine, width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
             Text('EVENTOS RESUELTOS',
-                style: AppTextStyles.fredoka(12,
-                    color: AppColors.textMuted,
+                style: AppTextStyles.ui(12,
+                    color: AppColors.inkMuted,
                     weight: FontWeight.bold,
                     letterSpacing: 1.5)),
             const Spacer(),
             Text('$successes/$total exitosos',
-                style: AppTextStyles.fredoka(12,
+                style: AppTextStyles.ui(12,
                     color: successes == total
-                        ? AppColors.green
+                        ? AppColors.verdigris
                         : successes > 0
-                            ? AppColors.amber
-                            : AppColors.textPrimary,
+                            ? AppColors.sienna
+                            : AppColors.ink,
                     weight: FontWeight.bold)),
           ]),
           const SizedBox(height: 10),
@@ -817,10 +810,10 @@ class _EventsSummary extends StatelessWidget {
             final isSuccess = e.outcome?.type == OutcomeType.success;
             final isPartial = e.outcome?.type == OutcomeType.partial;
             final color = isSuccess
-                ? AppColors.green
+                ? AppColors.verdigris
                 : isPartial
-                    ? AppColors.amber
-                    : AppColors.red;
+                    ? AppColors.sienna
+                    : AppColors.cinnabar;
             final icon = isSuccess
                 ? Icons.check_circle
                 : isPartial
@@ -838,8 +831,8 @@ class _EventsSummary extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(e.title,
-                            style: AppTextStyles.fredoka(12,
-                                color: AppColors.textPrimary,
+                            style: AppTextStyles.ui(12,
+                                color: AppColors.ink,
                                 weight: FontWeight.bold)),
                         if (e.outcome?.chosenOptionText != null)
                           Text('Decidiste: ${e.outcome!.chosenOptionText}',

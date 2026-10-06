@@ -50,9 +50,10 @@ lib/
 ├── data/geo_content.dart        CONTENIDO: coordenadas de ciudades, trazados de rutas, costas, Roma
 ├── data/static_game_content.dart StaticGameContent: implementa GameContentCatalog con lo de data/
 └── presentation/
-    ├── theme/app_theme.dart      AppColors, AppGradients, AppTextStyles, AppSpacing, AppRadii
-    │                             + GameButton (variantes), GameCard, GradientScaffold, StatBar,
-    │                             RiskChip, DeadlineChip, PackageBadge   ← design system
+    ├── theme/app_theme.dart      AppColors (papel, tinta y pigmentos), kTextPairs, AppGradients,
+    │                             AppTextStyles (Marcellus/Figtree/Literata), AppSpacing, AppRadii
+    │                             + GameButton (variantes), GameCard, PompeianFrieze, GradientScaffold,
+    │                             StatBar, RiskChip, DeadlineChip, PackageBadge   ← design system
     ├── theme/motion.dart         AppMotion: duraciones, curvas y movimiento reducido
     ├── theme/art_palette.dart    ArtColors: colores de pintura (mapas, escenas, cera), nunca de texto
     ├── feedback/feedback.dart    AppFeedback: sonido + vibración en un solo lugar
@@ -93,8 +94,8 @@ Para búsquedas amplias (¿dónde se usa X?, ¿existe Y?), delegá en el subagen
 
 1. **Nada de destreza.** Todo el gameplay es elegir entre 2-3 opciones. Nunca timing, tapping ni minijuegos.
 2. **Ninguna acción del jugador puede requerir >3 min de atención continua.**
-3. **Contraste WCAG AA obligatorio** (≥4.5:1; títulos grandes ≥3:1). `textMuted` nunca más oscuro que `#9C9484`.
-4. **Sin emojis en UI** — íconos Material (el set ya usado). Los emojis en `SkillTypeX.emoji` son deuda heredada, no los propagues.
+3. **Contraste WCAG AA obligatorio** (≥4.5:1; títulos grandes ≥3:1). Todo par texto/fondo está en `kTextPairs` y lo valida `test/contrast_test.dart`. `inkMuted` nunca más clara que `#5E4F41`.
+4. **Sin emojis en UI** — íconos Material (el set ya usado).
 5. **`domain/` no importa Flutter ni `data/`** (lo verifica `test/fixes_test.dart`; el contenido llega por `GameContentCatalog`). El contenido (`data/`) no contiene lógica; la lógica (`usecases/`) no contiene prosa.
 6. **Las consecuencias narrativas son duras; las mecánicas, suaves.** Nunca se quitan skills, monedas ni mensajeros.
 7. **Cap de poder del árbol: +25%** de efectividad por camino maxeado. El azar siempre permite fallar en riesgo 4-5.

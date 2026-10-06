@@ -98,19 +98,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final slide = _slides[_currentIndex];
 
     return GradientScaffold(
-      useEventBg: true,
       body: SafeArea(
         child: Column(children: [
           Align(
             alignment: Alignment.topRight,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(0, AppSpacing.sm, AppSpacing.lg, 0),
-              child: GameButton(
+              child: IntrinsicWidth(
+                child: GameButton(
                 label: 'Saltar',
                 fontSize: 13,
-                variant: GameButtonVariant.secondary,
+                variant: GameButtonVariant.ghost,
                 onTap: _finish,
-              ),
+              )),
             ),
           ),
 
@@ -146,8 +146,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       margin: const EdgeInsets.symmetric(horizontal: 3),
                       decoration: BoxDecoration(
                         color: i == _currentIndex
-                            ? AppColors.gold
-                            : AppColors.bgLine,
+                            ? AppColors.ochreDeep
+                            : AppColors.paperLine,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -187,28 +187,28 @@ class _SlideView extends StatelessWidget {
           height: 120,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            gradient: AppGradients.gold,
-            border: Border.all(color: AppColors.outline, width: 4),
+            gradient: AppGradients.ochre,
+            border: Border.all(color: AppColors.ink, width: 4),
             boxShadow: [
               BoxShadow(
-                  color: AppColors.gold.withValues(alpha: 0.35),
+                  color: AppColors.ochreDeep.withValues(alpha: 0.35),
                   blurRadius: 40,
                   spreadRadius: 4),
               const BoxShadow(
-                  color: AppColors.goldShadow,
+                  color: AppColors.ink,
                   offset: Offset(0, 6),
                   blurRadius: 0),
             ],
           ),
-          child: Icon(slide.icon, size: 56, color: AppColors.outline),
+          child: Icon(slide.icon, size: 56, color: AppColors.ink),
         ),
         const SizedBox(height: 36),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28),
           child: Text(
             slide.title,
-            style: AppTextStyles.fredoka(28,
-                color: AppColors.gold, weight: FontWeight.bold),
+            style: AppTextStyles.heading(28,
+                color: AppColors.ochreDeep),
             textAlign: TextAlign.center,
           ),
         ),
@@ -217,11 +217,7 @@ class _SlideView extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Text(
             slide.body,
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.parchment,
-              height: 1.7,
-              fontSize: 15,
-            ),
+            style: AppTextStyles.prose(size: 16),
             textAlign: TextAlign.center,
           ),
         ),

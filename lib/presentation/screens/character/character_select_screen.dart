@@ -59,28 +59,28 @@ class _CharacterSelectScreenState
               // Header
               Text(
                 'TU MENSAJERO',
-                style: AppTextStyles.fredoka(13,
-                    color: AppColors.gold, letterSpacing: 2),
+                style: AppTextStyles.ui(13,
+                    color: AppColors.ochreDeep, letterSpacing: 2),
               )
                   .animate().fadeIn(duration: 300.ms),
               const SizedBox(height: 6),
               Text(
                 'Elegí quién lleva el mensaje',
-                style: AppTextStyles.fredoka(28, weight: FontWeight.bold),
+                style: AppTextStyles.heading(28),
               ).animate(delay: 100.ms).fadeIn(),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Va a ser tu mensajero principal. Más adelante vas a poder '
                 'contratar otros.',
                 style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.textSecondary, fontSize: 15),
+                    color: AppColors.inkSoft, fontSize: 15),
               ).animate(delay: 150.ms).fadeIn(),
 
               const SizedBox(height: 36),
 
               // Gender selection
               Text('Tipo de mensajero',
-                  style: AppTextStyles.fredoka(14, color: AppColors.textMuted)),
+                  style: AppTextStyles.ui(14, color: AppColors.inkMuted)),
               const SizedBox(height: 12),
               Row(children: [
                 Expanded(
@@ -104,23 +104,23 @@ class _CharacterSelectScreenState
 
               // Name input
               Text('Nombre del mensajero',
-                  style: AppTextStyles.fredoka(14, color: AppColors.textMuted))
+                  style: AppTextStyles.ui(14, color: AppColors.inkMuted))
                   .animate(delay: 400.ms).fadeIn(),
               const SizedBox(height: 10),
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.bgCard,
+                  color: AppColors.paper,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
                     color: _error != null
-                        ? AppColors.red.withValues(alpha: 0.6)
-                        : AppColors.gold.withValues(alpha: 0.3),
-                    width: 2,
+                        ? AppColors.cinnabar.withValues(alpha: 0.6)
+                        : AppColors.paperLine,
+                    width: 1.5,
                   ),
                 ),
                 child: TextField(
                   controller: _nameController,
-                  style: AppTextStyles.fredoka(18),
+                  style: AppTextStyles.heading(18),
                   textCapitalization: TextCapitalization.words,
                   maxLength: 20,
                   decoration: InputDecoration(
@@ -128,7 +128,7 @@ class _CharacterSelectScreenState
                         ? 'Ej: Marcus, Lucius...'
                         : 'Ej: Julia, Livia...',
                     hintStyle: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.textMuted),
+                        .copyWith(color: AppColors.inkMuted),
                     counterText: '',
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
@@ -150,10 +150,10 @@ class _CharacterSelectScreenState
                 const SizedBox(height: AppSpacing.sm),
                 Row(children: [
                   const Icon(Icons.error_outline,
-                      color: AppColors.red, size: 16),
+                      color: AppColors.cinnabar, size: 16),
                   const SizedBox(width: 6),
                   Text(_error!, style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.textPrimary)),
+                      .copyWith(color: AppColors.ink)),
                 ]).animate().shakeX(hz: 4, amount: 3, duration: 300.ms),
               ],
 
@@ -204,7 +204,7 @@ class _GenderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMale = gender == MessengerGender.male;
-    const accentColor = AppColors.gold;
+    const accentColor = AppColors.ochreDeep;
 
     return GestureDetector(
       onTap: () {
@@ -215,37 +215,27 @@ class _GenderCard extends StatelessWidget {
         duration: AppMotion.of(context, AppMotion.base),
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(
-          gradient: selected
-              ? LinearGradient(
-            colors: [
-              accentColor.withValues(alpha: 0.3),
-              accentColor.withValues(alpha: 0.1),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          )
-              : const LinearGradient(
-              colors: [AppColors.bgCard, AppColors.bgCard2]),
+          gradient: selected ? AppGradients.ochreTint : AppGradients.paper,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: selected
-                ? accentColor
-                : AppColors.bgLine,
-            width: selected ? 3 : 2,
+                ? AppColors.ink
+                : AppColors.paperLine,
+            width: selected ? 2.5 : 1,
           ),
           boxShadow: selected
-              ? [BoxShadow(
-              color: accentColor.withValues(alpha: 0.3),
-              blurRadius: 16, spreadRadius: 1)]
-              : [],
+              ? const [BoxShadow(
+              color: AppColors.ink, offset: Offset(3, 3))]
+              : const [BoxShadow(
+              color: AppColors.shadowSoft, blurRadius: 10, offset: Offset(0, 3))],
         ),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           MessengerAvatar(gender: gender, size: 72),
           const SizedBox(height: 12),
           Text(
             isMale ? 'HOMBRE' : 'MUJER',
-            style: AppTextStyles.fredoka(13,
-                color: selected ? accentColor : AppColors.textMuted,
+            style: AppTextStyles.ui(13,
+                color: selected ? accentColor : AppColors.inkMuted,
                 letterSpacing: 1),
           ),
           const SizedBox(height: 4),
@@ -278,9 +268,9 @@ class _PreviewCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.bgCard2,
+        color: AppColors.paperDeep,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.bgLine, width: 2),
+        border: Border.all(color: AppColors.paperLine, width: 2),
       ),
       child: Row(children: [
         MessengerAvatar(gender: gender, size: 56),
@@ -291,7 +281,7 @@ class _PreviewCard extends StatelessWidget {
             children: [
               Text(
                 name,
-                style: AppTextStyles.fredoka(20, weight: FontWeight.bold),
+                style: AppTextStyles.heading(20),
               ),
               const SizedBox(height: 4),
               Text(
@@ -300,9 +290,9 @@ class _PreviewCard extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Row(children: [
-                _miniStat('Salud', '100', AppColors.green),
+                _miniStat('Salud', '100', AppColors.verdigris),
                 const SizedBox(width: 10),
-                _miniStat('Fatiga', '0', AppColors.textMuted),
+                _miniStat('Fatiga', '0', AppColors.inkMuted),
               ]),
             ],
           ),
@@ -315,7 +305,7 @@ class _PreviewCard extends StatelessWidget {
     mainAxisSize: MainAxisSize.min,
     children: [
       Text('$label: ', style: AppTextStyles.bodyMedium),
-      Text(value, style: AppTextStyles.fredoka(12, color: color)),
+      Text(value, style: AppTextStyles.ui(12, color: color)),
     ],
   );
 }

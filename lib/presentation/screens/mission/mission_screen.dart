@@ -69,7 +69,7 @@ class _MissionScreenState extends ConsumerState<MissionScreen> {
     return homeAsync.when(
       loading: () => const _Loading(),
       error: (e, _) => Scaffold(
-        backgroundColor: AppColors.bgDeep,
+        backgroundColor: AppColors.paperDeep,
         body: ErrorState(
             error: e, onRetry: () => ref.read(homeProvider.notifier).refresh()),
       ),
@@ -85,7 +85,6 @@ class _MissionScreenState extends ConsumerState<MissionScreen> {
             : ref.read(missionProgressProvider).blockedByEvent;
 
         return GradientScaffold(
-          useEventBg: true,
           // Viajando, el camino; con un evento encima, su escenario.
           background: AnimatedSwitcher(
             duration: AppMotion.of(context, AppMotion.slow),
@@ -152,7 +151,7 @@ class _Loading extends StatelessWidget {
   const _Loading();
   @override
   Widget build(BuildContext context) => const Scaffold(
-        backgroundColor: AppColors.bgDeep,
+        backgroundColor: AppColors.paperDeep,
         body: LoadingState(),
       );
 }
@@ -169,10 +168,10 @@ class _TopBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.topBar,
+        color: AppColors.paper,
         border: Border(
           bottom: BorderSide(
-              color: AppColors.gold.withValues(alpha: 0.3), width: 1.5),
+              color: AppColors.ochreDeep.withValues(alpha: 0.3), width: 1.5),
         ),
       ),
       child: Row(children: [
@@ -185,8 +184,8 @@ class _TopBar extends StatelessWidget {
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(
               '${mission.origin} → ${mission.destination}',
-              style: AppTextStyles.fredoka(15,
-                  color: AppColors.gold, weight: FontWeight.bold),
+              style: AppTextStyles.ui(15,
+                  color: AppColors.ochreDeep, weight: FontWeight.bold),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -194,7 +193,7 @@ class _TopBar extends StatelessWidget {
               mission.isTutorial
                   ? 'Prueba de Varus · ${messenger.name}'
                   : 'En camino · ${messenger.name}',
-              style: AppTextStyles.fredoka(12, color: AppColors.textSecondary),
+              style: AppTextStyles.ui(12, color: AppColors.inkSoft),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -234,19 +233,19 @@ class _TravelView extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
-            color: AppColors.outline,
+            color: AppColors.ink,
             borderRadius: BorderRadius.circular(AppRadii.md),
-            border: Border.all(color: AppColors.bgLine, width: 2),
+            border: Border.all(color: AppColors.paperLine, width: 2),
             boxShadow: const [
               BoxShadow(
-                  color: AppColors.outline,
+                  color: AppColors.ink,
                   offset: Offset(0, 4),
                   blurRadius: 0),
             ],
           ),
           child: LiveProgressBar(
             height: 18,
-            track: AppColors.trackDark,
+            track: AppColors.paperShade,
             progressAt: mission.progressAt,
             marks: eventMarks(mission),
           ),
@@ -261,17 +260,17 @@ class _TravelView extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(readyToDeliver ? '¡Llegaste!' : '$pct% del camino',
-                  style: AppTextStyles.fredoka(13,
+                  style: AppTextStyles.ui(13,
                       color: readyToDeliver
-                          ? AppColors.gold
-                          : AppColors.textSecondary,
+                          ? AppColors.ochreDeep
+                          : AppColors.inkSoft,
                       weight: readyToDeliver
                           ? FontWeight.bold
                           : FontWeight.normal)),
               if (!readyToDeliver)
                 Text(_timeLeft(mission, now),
-                    style: AppTextStyles.fredoka(13,
-                        color: AppColors.gold, weight: FontWeight.bold)),
+                    style: AppTextStyles.ui(13,
+                        color: AppColors.ochreDeep, weight: FontWeight.bold)),
             ],
           );
         }),
@@ -282,13 +281,13 @@ class _TravelView extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.bgCard2,
+            color: AppColors.paperDeep,
             borderRadius: BorderRadius.circular(AppRadii.md - 2),
-            border: Border.all(color: AppColors.bgLine, width: 1.5),
+            border: Border.all(color: AppColors.paperLine, width: 1.5),
           ),
           child: Row(children: [
             const Icon(Icons.inventory_2,
-                color: AppColors.textSecondary, size: 16),
+                color: AppColors.inkSoft, size: 16),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
                 child: Text(mission.packageDescription,
@@ -333,8 +332,8 @@ class _TravelView extends ConsumerWidget {
         if (resolved.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xl),
           Text('EVENTOS RESUELTOS',
-              style: AppTextStyles.fredoka(12,
-                  color: AppColors.textMuted,
+              style: AppTextStyles.ui(12,
+                  color: AppColors.inkMuted,
                   weight: FontWeight.bold,
                   letterSpacing: 1.5)),
           const SizedBox(height: 10),
@@ -382,30 +381,30 @@ class _RevealedNextEvent extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.gold.withValues(alpha: 0.08),
+        color: paperTint(AppColors.ochreDeep),
         borderRadius: BorderRadius.circular(AppRadii.md - 2),
         border: Border.all(
-            color: AppColors.gold.withValues(alpha: 0.45), width: 1.5),
+            color: AppColors.ochreDeep.withValues(alpha: 0.45), width: 1.5),
       ),
       child: Row(children: [
-        const Icon(Icons.map, color: AppColors.gold, size: 16),
+        const Icon(Icons.map, color: AppColors.ochreDeep, size: 16),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('PRÓXIMO EVENTO REVELADO',
-                style: AppTextStyles.fredoka(12,
-                    color: AppColors.gold, letterSpacing: 1)),
+                style: AppTextStyles.ui(12,
+                    color: AppColors.ochreDeep, letterSpacing: 1)),
             const SizedBox(height: 2),
             Text(next.title,
-                style: AppTextStyles.fredoka(13),
+                style: AppTextStyles.ui(13),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis),
           ]),
         ),
         const SizedBox(width: AppSpacing.sm),
         Text(etaLabel,
-            style: AppTextStyles.fredoka(12, color: AppColors.textSecondary)),
+            style: AppTextStyles.ui(12, color: AppColors.inkSoft)),
       ]),
     );
   }
@@ -431,19 +430,19 @@ class _DeliverButtonState extends ConsumerState<_DeliverButton> {
         width: double.infinity,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.green.withValues(alpha: 0.18),
+          color: paperTint(AppColors.verdigris),
           borderRadius: BorderRadius.circular(AppRadii.md),
-          border: Border.all(color: AppColors.green, width: 2),
+          border: Border.all(color: AppColors.verdigris, width: 2),
         ),
         child: Row(children: [
-          const Icon(Icons.flag_rounded, color: AppColors.green, size: 24),
+          const Icon(Icons.flag_rounded, color: AppColors.verdigris, size: 24),
           const SizedBox(width: 10),
           Expanded(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('Llegaste a ${widget.mission.destination}',
-                  style: AppTextStyles.fredoka(15,
-                      color: AppColors.green, weight: FontWeight.bold)),
+                  style: AppTextStyles.ui(15,
+                      color: AppColors.verdigris, weight: FontWeight.bold)),
               Text('Entregá el mensaje para cobrar.',
                   style: AppTextStyles.bodyMedium),
             ]),
@@ -519,13 +518,13 @@ class _SkipButtonState extends ConsumerState<_SkipButton> {
         // Paga la billetera común (la del principal).
         final wallet = ref.watch(homeProvider).valueOrNull?.messenger;
         final canAfford = (wallet?.denarios ?? 0) >= cost;
-        final color = canAfford ? AppColors.sky : AppColors.textMuted;
+        final color = canAfford ? AppColors.egyptianBlue : AppColors.inkMuted;
 
         return GameCard(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
           borderColor: canAfford
-              ? AppColors.sky.withValues(alpha: 0.5)
-              : AppColors.bgLine,
+              ? AppColors.egyptianBlue.withValues(alpha: 0.5)
+              : AppColors.paperLine,
           semanticLabel: '$skipLabel por $cost denarios',
           onTap: canAfford && !_loading
               ? _skip
@@ -540,14 +539,14 @@ class _SkipButtonState extends ConsumerState<_SkipButton> {
                     canAfford
                         ? skipLabel
                         : 'Sin denarios suficientes para adelantar',
-                    style: AppTextStyles.fredoka(13, color: color))),
+                    style: AppTextStyles.ui(13, color: color))),
             const SizedBox(width: AppSpacing.sm),
             if (_loading)
               const SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
-                      color: AppColors.sky, strokeWidth: 2))
+                      color: AppColors.egyptianBlue, strokeWidth: 2))
             else
               RewardAmount(
                   type: CurrencyType.denarios,
@@ -664,15 +663,15 @@ class _ResolvedEventTile extends StatelessWidget {
     final isPartial = outcome?.type == OutcomeType.partial;
 
     final (borderColor, icon) = isSuccess
-        ? (AppColors.green, Icons.check_circle)
+        ? (AppColors.verdigris, Icons.check_circle)
         : isPartial
-            ? (AppColors.amber, Icons.warning_rounded)
-            : (AppColors.red, Icons.cancel);
+            ? (AppColors.sienna, Icons.warning_rounded)
+            : (AppColors.cinnabar, Icons.cancel);
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: borderColor.withValues(alpha: 0.12),
+        color: paperTint(borderColor),
         borderRadius: BorderRadius.circular(AppRadii.md - 2),
         border:
             Border.all(color: borderColor.withValues(alpha: 0.7), width: 1.5),
@@ -688,21 +687,19 @@ class _ResolvedEventTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(event.title,
-                  style: AppTextStyles.fredoka(13, weight: FontWeight.bold)),
+                  style: AppTextStyles.ui(13, weight: FontWeight.bold)),
               if (outcome?.chosenOptionText != null) ...[
                 const SizedBox(height: 3),
                 Text('Decidiste: ${outcome!.chosenOptionText}',
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.textSecondary)),
+                        .copyWith(color: AppColors.inkSoft)),
               ],
               if (outcome?.narrative != null) ...[
                 const SizedBox(height: AppSpacing.xs),
-                // El rojo no es legible como texto: la prosa va en pergamino
-                // y el color del resultado queda en el ícono y el borde.
+                // La prosa va en tinta; el color del resultado queda en el
+                // ícono y el borde.
                 Text(outcome!.narrative,
-                    style: AppTextStyles.bodySmall.copyWith(
-                        color: GameChip.legibleText(borderColor),
-                        fontStyle: FontStyle.italic),
+                    style: AppTextStyles.proseItalic(size: 14),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis),
               ],
@@ -741,14 +738,22 @@ class _CityLabel extends StatelessWidget {
   const _CityLabel({required this.label, required this.isOrigin});
 
   @override
+  // Va sobre la escena: en un rótulo de papel, nunca suelto sobre el cielo.
   Widget build(BuildContext context) => Flexible(
-        child: Text(label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: isOrigin ? TextAlign.left : TextAlign.right,
-            style: AppTextStyles.fredoka(12,
-                color: isOrigin ? AppColors.textMuted : AppColors.gold,
-                weight: FontWeight.bold)),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: AppColors.paper,
+            borderRadius: BorderRadius.circular(AppRadii.xs),
+            border: Border.all(color: AppColors.paperLine),
+          ),
+          child: Text(label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.ui(12,
+                  color: isOrigin ? AppColors.inkSoft : AppColors.ochreDeep,
+                  weight: FontWeight.bold)),
+        ),
       );
 }
 
@@ -777,9 +782,9 @@ class _EventPanel extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: AppColors.amberCard,
+                  color: AppColors.paper,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.amber, width: 2.5),
+                  border: Border.all(color: AppColors.sienna, width: 2.5),
                   boxShadow: const [
                     BoxShadow(
                         color: AppColors.shadowSoft,
@@ -791,17 +796,17 @@ class _EventPanel extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Row(children: [
-                      GameChip('EVENTO', color: AppColors.amber),
+                      GameChip('EVENTO', color: AppColors.sienna),
                       Spacer(),
                       GameChip('Progreso pausado',
-                          icon: Icons.pause_circle, color: AppColors.amber),
+                          icon: Icons.pause_circle, color: AppColors.sienna),
                     ]),
                     const SizedBox(height: AppSpacing.md),
                     Text(event.title,
-                        style: AppTextStyles.fredoka(20,
-                            color: AppColors.gold, weight: FontWeight.bold)),
+                        style: AppTextStyles.heading(20,
+                            color: AppColors.ochreDeep)),
                     const SizedBox(height: AppSpacing.sm),
-                    Text(event.description, style: AppTextStyles.bodyLarge),
+                    Text(event.description, style: AppTextStyles.prose()),
                   ],
                 ),
               ),

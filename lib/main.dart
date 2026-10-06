@@ -14,7 +14,7 @@ void main() async {
 
   // Las fuentes van empaquetadas: su licencia OFL tiene que figurar en la app.
   LicenseRegistry.addLicense(() async* {
-    for (final family in const ['Fredoka', 'Nunito', 'Marcellus', 'Figtree', 'Literata']) {
+    for (final family in const ['Marcellus', 'Figtree', 'Literata']) {
       final text = await rootBundle.loadString('assets/fonts/OFL-$family.txt');
       yield LicenseEntryWithLineBreaks([family], text);
     }

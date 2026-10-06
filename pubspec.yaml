@@ -47,7 +47,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/
     - assets/audio/
     - assets/content/
     - assets/art/events/
@@ -55,8 +54,6 @@ flutter:
     - assets/art/npcs/
     - assets/art/endings/
     - assets/art/scenes/
-    - assets/fonts/OFL-Fredoka.txt
-    - assets/fonts/OFL-Nunito.txt
     - assets/fonts/OFL-Marcellus.txt
     - assets/fonts/OFL-Figtree.txt
     - assets/fonts/OFL-Literata.txt
@@ -81,26 +78,6 @@ flutter:
           weight: 600
         - asset: assets/fonts/Literata-Italic.ttf
           style: italic
-    - family: Fredoka
-      fonts:
-        - asset: assets/fonts/Fredoka-Regular.ttf
-        - asset: assets/fonts/Fredoka-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Fredoka-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Fredoka-Bold.ttf
-          weight: 700
-    - family: Nunito
-      fonts:
-        - asset: assets/fonts/Nunito-Regular.ttf
-        - asset: assets/fonts/Nunito-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Nunito-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Nunito-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Nunito-ExtraBold.ttf
-          weight: 800
 
 # Ícono y launch screen: salen de BrandSealPainter (tool/gen_icon_test.dart).
 flutter_launcher_icons:

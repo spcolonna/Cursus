@@ -66,11 +66,11 @@ class _EventScreenState extends ConsumerState<EventScreen> {
 
     return homeAsync.when(
       loading: () => const Scaffold(
-        backgroundColor: AppColors.bgDeep,
+        backgroundColor: AppColors.paperDeep,
         body: LoadingState(),
       ),
       error: (e, _) => Scaffold(
-        backgroundColor: AppColors.bgDeep,
+        backgroundColor: AppColors.paperDeep,
         body: ErrorState(
             error: e, onRetry: () => ref.read(homeProvider.notifier).refresh()),
       ),
@@ -123,9 +123,8 @@ class _EventScreenState extends ConsumerState<EventScreen> {
         // Decisión → resultado: la decisión se va y el sello entra. Sin
         // corte en seco.
         return GradientScaffold(
-          useEventBg: true,
-          // En el resultado la escena se apaga: el sello y el título van
-          // encima y tienen que leerse.
+          // En el resultado la escena se cubre de papel: queda un fantasma
+          // detrás y el sello y el título se leen en tinta.
           background: scene == null
               ? null
               : Stack(fit: StackFit.expand, children: [
@@ -134,7 +133,7 @@ class _EventScreenState extends ConsumerState<EventScreen> {
                     duration: AppMotion.of(context, AppMotion.slow),
                     color: _resolution == null
                         ? AppColors.transparent
-                        : AppColors.scrim,
+                        : AppColors.paperDeep.withValues(alpha: 0.9),
                   ),
                 ]),
           body: AnimatedSwitcher(
@@ -238,8 +237,8 @@ class _DecisionView extends StatelessWidget {
               _buildHeader(context),
               const SizedBox(height: AppSpacing.lg),
               Text('¿QUÉ HACÉS?',
-                  style: AppTextStyles.fredoka(13,
-                      color: AppColors.textSecondary,
+                  style: AppTextStyles.ui(13,
+                      color: AppColors.inkSoft,
                       weight: FontWeight.bold,
                       letterSpacing: 1.5)),
               const SizedBox(height: 10),
@@ -281,7 +280,7 @@ class _DecisionView extends StatelessWidget {
               child: GameChip(
                 mission.isTutorial ? 'PRUEBA DE VARUS' : 'EVENTO CRÍTICO',
                 icon: Icons.warning_amber_rounded,
-                color: AppColors.amber,
+                color: AppColors.sienna,
               ),
             ),
           ),
@@ -303,7 +302,7 @@ class _DecisionView extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: AppGradients.event,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.red, width: 2.5),
+            border: Border.all(color: AppColors.cinnabar, width: 2.5),
             boxShadow: const [
               BoxShadow(
                   color: AppColors.shadowSoft,
@@ -313,17 +312,10 @@ class _DecisionView extends StatelessWidget {
           ),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(event.title,
-                style: AppTextStyles.fredoka(22,
-                    color: AppColors.parchment, weight: FontWeight.bold)),
+            Text(event.title, style: AppTextStyles.heading(24)),
             const SizedBox(height: AppSpacing.sm),
-            // La narrativa es el corazón del juego: texto grande y claro.
-            Text(event.description,
-                style: AppTextStyles.bodyLarge.copyWith(
-                  fontSize: 15,
-                  height: 1.55,
-                  color: AppColors.parchment,
-                )),
+            // La narrativa es el corazón del juego: se lee como una carta.
+            Text(event.description, style: AppTextStyles.prose(size: 17)),
           ]),
         ),
       ),
@@ -336,8 +328,8 @@ class _DecisionView extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xl),
       decoration: const BoxDecoration(
-        color: AppColors.bgCard,
-        border: Border(top: BorderSide(color: AppColors.bgLine)),
+        color: AppColors.paper,
+        border: Border(top: BorderSide(color: AppColors.paperLine)),
       ),
       child: SizedBox(
         width: double.infinity,
@@ -378,20 +370,20 @@ class _DecisionCountdown extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          gradient: AppGradients.gold,
+          gradient: AppGradients.ochre,
           borderRadius: BorderRadius.circular(AppRadii.sm + 2),
-          border: Border.all(color: AppColors.outline, width: 2),
+          border: Border.all(color: AppColors.ink, width: 2),
           boxShadow: const [
-            BoxShadow(color: AppColors.goldShadow, offset: Offset(0, 3))
+            BoxShadow(color: AppColors.ink, offset: Offset(0, 3))
           ],
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(urgent ? Icons.alarm : Icons.timer_outlined,
-              color: AppColors.outline, size: 14),
+              color: AppColors.ink, size: 14),
           const SizedBox(width: AppSpacing.xs),
           Text(label,
-              style: AppTextStyles.fredoka(13,
-                  color: AppColors.outline, weight: FontWeight.bold)),
+              style: AppTextStyles.ui(13,
+                  color: AppColors.ink, weight: FontWeight.bold)),
         ]),
       ),
     );
@@ -427,11 +419,11 @@ class _OptionCard extends StatelessWidget {
       };
 
   static Color _forecastColor(ForecastBand band) => switch (band) {
-        ForecastBand.assured => AppColors.riskLow,
-        ForecastBand.favourable => AppColors.riskLow,
-        ForecastBand.uncertain => AppColors.textSecondary,
-        ForecastBand.risky => AppColors.riskMed,
-        ForecastBand.reckless => AppColors.amber,
+        ForecastBand.assured => AppColors.verdigris,
+        ForecastBand.favourable => AppColors.verdigris,
+        ForecastBand.uncertain => AppColors.inkSoft,
+        ForecastBand.risky => AppColors.sienna,
+        ForecastBand.reckless => AppColors.sienna,
       };
 
   @override
@@ -439,7 +431,7 @@ class _OptionCard extends StatelessWidget {
     final meetsReqs = _meetsRequirements();
     final forecast = forecastFor(option, messenger);
 
-    final textColor = meetsReqs ? AppColors.textPrimary : AppColors.textMuted;
+    final textColor = meetsReqs ? AppColors.ink : AppColors.inkMuted;
 
     return Semantics(
       button: true,
@@ -472,22 +464,24 @@ class _OptionCard extends StatelessWidget {
                       : isSecret
                           ? AppGradients.optionSecret
                           : AppGradients.option,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppRadii.md),
               border: Border.all(
                 color: isSelected
-                    ? AppColors.gold
+                    ? AppColors.ink
                     : isSecret
-                        ? AppColors.purple
-                        : AppColors.bgLine,
-                width: isSelected ? 3 : 2,
+                        ? AppColors.tyrian
+                        : AppColors.paperLine,
+                width: isSelected ? 2.5 : 1.5,
               ),
+              // Elegida: queda estampada, con la sombra dura de los botones.
               boxShadow: isSelected
-                  ? [
+                  ? const [BoxShadow(color: AppColors.ink, offset: Offset(3, 3))]
+                  : const [
                       BoxShadow(
-                          color: AppColors.gold.withValues(alpha: 0.25),
-                          blurRadius: 16)
-                    ]
-                  : const [],
+                          color: AppColors.shadowSoft,
+                          blurRadius: 8,
+                          offset: Offset(0, 2))
+                    ],
             ),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -498,22 +492,22 @@ class _OptionCard extends StatelessWidget {
                   height: 24,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isSelected ? AppColors.gold : AppColors.outline,
+                    color: isSelected ? AppColors.ochre : AppColors.paper,
                     border: Border.all(
                         color: isSelected
-                            ? AppColors.gold
+                            ? AppColors.ink
                             : meetsReqs
-                                ? AppColors.textMuted
-                                : AppColors.bgLine,
+                                ? AppColors.inkMuted
+                                : AppColors.paperLine,
                         width: 2.5),
                   ),
                   child: isSelected
                       ? const Icon(Icons.check,
-                          color: AppColors.outline, size: 15)
+                          color: AppColors.ink, size: 15)
                       : meetsReqs
                           ? null
                           : const Icon(Icons.lock,
-                              color: AppColors.textMuted, size: 12),
+                              color: AppColors.inkMuted, size: 12),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -528,7 +522,7 @@ class _OptionCard extends StatelessWidget {
                 RiskChip(level: forecast.effectiveRisk),
                 if (option.timeCostMinutes > 0)
                   GameChip(_timeLabel(option.timeCostMinutes),
-                      icon: Icons.schedule, color: AppColors.amber),
+                      icon: Icons.schedule, color: AppColors.sienna),
                 ...option.requiredSkills.entries.map((e) {
                   final met = messenger != null &&
                       messenger!.skillLevel(e.key) >=
@@ -537,7 +531,7 @@ class _OptionCard extends StatelessWidget {
                   return GameChip('${e.key.label} Nv.${e.value}',
                       icon: skillIconData(e.key),
                       trailingIcon: met ? Icons.check : null,
-                      color: met ? AppColors.green : AppColors.purple);
+                      color: met ? AppColors.verdigris : AppColors.tyrian);
                 }),
               ]),
               if (meetsReqs) ...[
@@ -559,11 +553,11 @@ class _OptionCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
                 Row(children: [
                   const Icon(Icons.auto_awesome,
-                      color: AppColors.purple, size: 14),
+                      color: AppColors.tyrian, size: 14),
                   const SizedBox(width: 6),
                   Text('Tu historia abrió este camino',
                       style: AppTextStyles.bodyMedium
-                          .copyWith(color: AppColors.textPrimary)),
+                          .copyWith(color: AppColors.ink)),
                 ]),
               ],
               if (!meetsReqs) ...[
@@ -572,7 +566,7 @@ class _OptionCard extends StatelessWidget {
                     // Candado narrativo si es por reputación.
                     option.lockedHint ?? 'Te falta habilidad para esto.',
                     style: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.textSecondary)),
+                        .copyWith(color: AppColors.inkSoft)),
               ],
             ]),
           ),
@@ -614,20 +608,20 @@ class _OutcomeView extends StatelessWidget {
       OutcomeType.success => (
           Icons.emoji_events,
           '¡ÉXITO!',
-          AppGradients.green,
-          AppColors.green
+          AppGradients.verdigris,
+          AppColors.verdigris
         ),
       OutcomeType.partial => (
           Icons.bolt,
           'ÉXITO PARCIAL',
-          AppGradients.gold,
-          AppColors.gold
+          AppGradients.ochre,
+          AppColors.ochreDeep
         ),
       OutcomeType.fail => (
           Icons.close_rounded,
           'FALLASTE',
-          AppGradients.red,
-          AppColors.red
+          AppGradients.cinnabar,
+          AppColors.cinnabar
         ),
     };
 
@@ -643,15 +637,20 @@ class _OutcomeView extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: grad,
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.outline, width: 4),
+        border: Border.all(color: AppColors.ink, width: 4),
         boxShadow: [
           BoxShadow(
-              color: color.withValues(alpha: 0.55),
-              blurRadius: 46,
-              spreadRadius: 8)
+              color: color.withValues(alpha: 0.35),
+              blurRadius: 40,
+              spreadRadius: 4)
         ],
       ),
-      child: Center(child: Icon(icon, size: 58, color: AppColors.parchment)),
+      child: Center(
+          child: Icon(icon,
+              size: 58,
+              color: outcome.type == OutcomeType.partial
+                  ? AppColors.ink
+                  : AppColors.paper)),
     );
     stamp = reduced
         ? stamp.animate().fadeIn(duration: d(200))
@@ -673,7 +672,7 @@ class _OutcomeView extends StatelessWidget {
                     curve: Curves.elasticOut)
                 .fade(duration: 300.ms)
                 .then()
-                .shimmer(duration: 800.ms, color: AppColors.parchment);
+                .shimmer(duration: 800.ms, color: AppColors.paper);
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -687,9 +686,8 @@ class _OutcomeView extends StatelessWidget {
             const SizedBox(height: 26),
 
             Text(title,
-                    style: AppTextStyles.fredoka(34,
+                    style: AppTextStyles.heading(34,
                         color: color,
-                        weight: FontWeight.bold,
                         letterSpacing: 1.5))
                 .animate(delay: at(250))
                 .fadeIn(duration: d(200))
@@ -705,11 +703,7 @@ class _OutcomeView extends StatelessWidget {
             GameCard(
               borderColor: color.withValues(alpha: 0.4),
               child: Text(outcome.narrative,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontSize: 15,
-                    height: 1.65,
-                    color: AppColors.parchment,
-                  ),
+                  style: AppTextStyles.prose(size: 17),
                   textAlign: TextAlign.center),
             )
                 .animate(delay: at(450))
@@ -733,7 +727,7 @@ class _OutcomeView extends StatelessWidget {
                             duration: d(450),
                             curve: Curves.elasticOut)
                         .then()
-                        .shimmer(duration: d(900), color: AppColors.parchment),
+                        .shimmer(duration: d(900), color: AppColors.paper),
                   )),
             ],
 
@@ -743,13 +737,13 @@ class _OutcomeView extends StatelessWidget {
               GameCard(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 gradient:
-                    isTutorial ? AppGradients.tutorialCard : AppGradients.blue,
+                    isTutorial ? AppGradients.ochreTint : AppGradients.blueTint,
                 borderColor: isTutorial
-                    ? AppColors.amber.withValues(alpha: 0.5)
-                    : AppColors.gold.withValues(alpha: 0.4),
+                    ? AppColors.sienna.withValues(alpha: 0.5)
+                    : AppColors.ochreDeep.withValues(alpha: 0.4),
                 child: Row(children: [
                   Icon(isTutorial ? Icons.emoji_events : Icons.auto_awesome,
-                      color: isTutorial ? AppColors.amber : AppColors.gold,
+                      color: isTutorial ? AppColors.sienna : AppColors.ochreDeep,
                       size: 22),
                   const SizedBox(width: 10),
                   Expanded(
@@ -757,8 +751,8 @@ class _OutcomeView extends StatelessWidget {
                     isTutorial
                         ? '¡Varus está satisfecho! Siguiente prueba desbloqueada.'
                         : '¡Misión completada! Resultado disponible en tu perfil.',
-                    style: AppTextStyles.fredoka(13,
-                        color: isTutorial ? AppColors.amber : AppColors.gold),
+                    style: AppTextStyles.ui(13,
+                        color: isTutorial ? AppColors.sienna : AppColors.ochreDeep),
                   )),
                 ]),
               )
@@ -785,15 +779,15 @@ class _OutcomeView extends StatelessWidget {
                       icon: Icons.favorite,
                       size: GameChipSize.medium,
                       color: outcome.healthDelta > 0
-                          ? AppColors.green
-                          : AppColors.red,
+                          ? AppColors.verdigris
+                          : AppColors.cinnabar,
                     ),
                   if (outcome.timeDeltaMinutes != 0)
                     GameChip(
                       '+${outcome.timeDeltaMinutes}m de viaje',
                       icon: Icons.timer_outlined,
                       size: GameChipSize.medium,
-                      color: AppColors.riskMed,
+                      color: AppColors.sienna,
                     ),
                   // El mundo recuerda: cambios de reputación de la decisión.
                   ...?repDelta?.entries.map((e) => GameChip(
@@ -802,7 +796,7 @@ class _OutcomeView extends StatelessWidget {
                             ? Icons.thumb_up_alt_outlined
                             : Icons.thumb_down_alt_outlined,
                         size: GameChipSize.medium,
-                        color: e.value > 0 ? AppColors.sky : AppColors.riskMed,
+                        color: e.value > 0 ? AppColors.egyptianBlue : AppColors.sienna,
                       )),
                   // XP ganado (antes solo se veía si justo subías de nivel)
                   if (outcome.xpGained > 0 && outcome.usedSkill != null)
@@ -810,7 +804,7 @@ class _OutcomeView extends StatelessWidget {
                       '+${outcome.xpGained} XP de ${outcome.usedSkill!.label}',
                       icon: Icons.school_outlined,
                       size: GameChipSize.medium,
-                      color: AppColors.sky,
+                      color: AppColors.egyptianBlue,
                     ),
                   // El mundo tomó nota: flags y diario dejaban de ser invisibles.
                   if (resolution.journalNote != null ||
@@ -821,7 +815,7 @@ class _OutcomeView extends StatelessWidget {
                           : 'Roma no se olvida de esto',
                       icon: Icons.menu_book_outlined,
                       size: GameChipSize.medium,
-                      color: AppColors.purple,
+                      color: AppColors.tyrian,
                     ),
                 ]
                     .animate(interval: AppMotion.stagger, delay: at(700))
@@ -870,11 +864,11 @@ class _LevelUpBanner extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.lg, vertical: AppSpacing.md),
         decoration: BoxDecoration(
-          gradient: AppGradients.gold,
+          gradient: AppGradients.ochre,
           borderRadius: BorderRadius.circular(AppRadii.md),
-          border: Border.all(color: AppColors.outline, width: 2.5),
+          border: Border.all(color: AppColors.ink, width: 2.5),
           boxShadow: const [
-            BoxShadow(color: AppColors.goldShadow, offset: Offset(0, 4)),
+            BoxShadow(color: AppColors.ink, offset: Offset(0, 4)),
           ],
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -882,23 +876,23 @@ class _LevelUpBanner extends StatelessWidget {
             width: 30,
             height: 30,
             decoration: const BoxDecoration(
-                color: AppColors.outline, shape: BoxShape.circle),
-            child: Icon(skillIconData(skill), color: AppColors.gold, size: 18),
+                color: AppColors.ink, shape: BoxShape.circle),
+            child: Icon(skillIconData(skill), color: AppColors.ochreDeep, size: 18),
           ),
           const SizedBox(width: 10),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('¡SUBISTE DE NIVEL!',
-                style: AppTextStyles.fredoka(12,
-                    color: AppColors.outline,
+                style: AppTextStyles.ui(12,
+                    color: AppColors.ink,
                     weight: FontWeight.bold,
                     letterSpacing: 1)),
             Text(skill.label,
-                style: AppTextStyles.fredoka(17,
-                    color: AppColors.outline, weight: FontWeight.bold)),
+                style: AppTextStyles.ui(17,
+                    color: AppColors.ink, weight: FontWeight.bold)),
           ]),
           const SizedBox(width: AppSpacing.sm),
           const Icon(Icons.arrow_upward_rounded,
-              color: AppColors.outline, size: 22),
+              color: AppColors.ink, size: 22),
         ]),
       );
 }
@@ -916,14 +910,14 @@ class _WhyItHappened extends StatelessWidget {
     if (factors.isEmpty) return const SizedBox.shrink();
 
     return GameCard(
-      borderColor: AppColors.bgLine,
+      borderColor: AppColors.paperLine,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          const Icon(Icons.balance, size: 15, color: AppColors.textSecondary),
+          const Icon(Icons.balance, size: 15, color: AppColors.inkSoft),
           const SizedBox(width: 7),
           Text('POR QUÉ PASÓ',
-              style: AppTextStyles.fredoka(12,
-                  color: AppColors.textSecondary, letterSpacing: 1.2)),
+              style: AppTextStyles.ui(12,
+                  color: AppColors.inkSoft, letterSpacing: 1.2)),
         ]),
         const SizedBox(height: 10),
         ...factors.map((f) => Padding(
@@ -934,23 +928,23 @@ class _WhyItHappened extends StatelessWidget {
                 ),
                 Text(
                   f.value >= 0 ? '+${f.value}' : '−${f.value.abs()}',
-                  style: AppTextStyles.fredoka(13,
+                  style: AppTextStyles.ui(13,
                       color:
-                          f.value >= 0 ? AppColors.riskLow : AppColors.riskMed,
+                          f.value >= 0 ? AppColors.verdigris : AppColors.sienna,
                       weight: FontWeight.bold),
                 ),
               ]),
             )),
-        const Divider(color: AppColors.bgLine, height: 16),
+        const Divider(color: AppColors.paperLine, height: 16),
         Row(children: [
           Expanded(
             child: Text('Tu tirada',
-                style: AppTextStyles.fredoka(12,
-                    color: AppColors.textPrimary, weight: FontWeight.bold)),
+                style: AppTextStyles.ui(12,
+                    color: AppColors.ink, weight: FontWeight.bold)),
           ),
           Text('${resolution.score}',
-              style: AppTextStyles.fredoka(15,
-                  color: AppColors.gold, weight: FontWeight.bold)),
+              style: AppTextStyles.ui(15,
+                  color: AppColors.ochreDeep, weight: FontWeight.bold)),
         ]),
         const SizedBox(height: 4),
         Text(

@@ -52,10 +52,18 @@ class _MessengerSlotCard extends ConsumerWidget {
         duration: AppMotion.of(context, AppMotion.slow),
         switchInCurve: AppMotion.enter,
         switchOutCurve: AppMotion.exit,
+        // Align con heightFactor en vez de SizeTransition: crece igual pero
+        // no recorta, así la sombra de la card no queda cortada en las esquinas.
         transitionBuilder: (child, anim) => FadeTransition(
           opacity: anim,
-          child: SizeTransition(
-              sizeFactor: anim, axisAlignment: -1, child: child),
+          child: AnimatedBuilder(
+            animation: anim,
+            builder: (_, c) => Align(
+                alignment: Alignment.topCenter,
+                heightFactor: anim.value,
+                child: c),
+            child: child,
+          ),
         ),
         child: content,
       ),
@@ -72,7 +80,7 @@ class _MessengerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GameCard(
       padding: const EdgeInsets.all(14),
-      borderColor: AppColors.gold.withValues(alpha: 0.4),
+      borderColor: AppColors.ochreDeep.withValues(alpha: 0.4),
       onTap: () => context.push('/profile'),
       semanticLabel: 'Ver perfil de ${messenger.name}',
       child: Row(children: [
@@ -90,26 +98,26 @@ class _MessengerCard extends StatelessWidget {
                 final title = ref.watch(titlesProvider).valueOrNull?.equipped;
                 if (title == null) return const SizedBox.shrink();
                 return Text('«$title»',
-                    style: AppTextStyles.fredoka(12,
-                        color: AppColors.gold, weight: FontWeight.bold));
+                    style: AppTextStyles.ui(12,
+                        color: AppColors.ochreDeep, weight: FontWeight.bold));
               }),
             const SizedBox(height: AppSpacing.xs),
             Wrap(spacing: 6, runSpacing: 4, children: [
               GameChip('${messenger.rankTitle} · Rank ${messenger.rank}',
-                  color: AppColors.gold),
-              GameChip(messenger.status.label, color: AppColors.sky),
+                  color: AppColors.ochreDeep),
+              GameChip(messenger.status.label, color: AppColors.egyptianBlue),
             ]),
             if (!messenger.tutorialComplete) ...[
               const SizedBox(height: AppSpacing.xs),
               Text(
                 'Prueba ${messenger.tutorialMissionIndex + 1}/${tutorialMissions.length} de Varus',
-                style: AppTextStyles.fredoka(12, color: AppColors.amber),
+                style: AppTextStyles.ui(12, color: AppColors.sienna),
               ),
             ],
           ]),
         ),
         const Icon(Icons.chevron_right_rounded,
-            color: AppColors.textMuted, size: 26),
+            color: AppColors.inkMuted, size: 26),
       ]),
     );
   }
@@ -128,22 +136,22 @@ class _UrgentEventButton extends StatelessWidget {
     final card = GameCard(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: AppSpacing.lg),
       gradient: AppGradients.event,
-      borderColor: AppColors.red,
+      borderColor: AppColors.cinnabar,
       onTap: () => context.push('/event?m=${mission.messengerId}'),
       semanticLabel: 'Evento pendiente: ${event.title}. Decidir.',
       child: Row(children: [
-        const Icon(Icons.warning_rounded, color: AppColors.parchment, size: 26),
+        const Icon(Icons.warning_rounded, color: AppColors.cinnabar, size: 26),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('¡EVENTO PENDIENTE!',
-                style: AppTextStyles.fredoka(13,
-                    color: AppColors.parchment,
+                style: AppTextStyles.ui(13,
+                    color: AppColors.cinnabar,
                     weight: FontWeight.bold,
                     letterSpacing: 1)),
             Text(event.title,
                 style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.parchment),
+                    .copyWith(color: AppColors.ink),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis),
             PeriodicBuilder(
@@ -154,8 +162,7 @@ class _UrgentEventButton extends StatelessWidget {
                   left.isNegative
                       ? 'Tu mensajero va a decidir solo'
                       : 'Decide solo en ${left.inMinutes} min',
-                  style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.parchment),
+                  style: AppTextStyles.bodySmall,
                 );
               },
             ),
@@ -165,17 +172,17 @@ class _UrgentEventButton extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            gradient: AppGradients.gold,
+            gradient: AppGradients.ochre,
             borderRadius: BorderRadius.circular(AppRadii.sm + 2),
-            border: Border.all(color: AppColors.outline, width: 2),
+            border: Border.all(color: AppColors.ink, width: 2),
             boxShadow: const [
               BoxShadow(
-                  color: AppColors.goldShadow, offset: Offset(0, 3), blurRadius: 0)
+                  color: AppColors.ink, offset: Offset(0, 3), blurRadius: 0)
             ],
           ),
           child: Text('DECIDIR',
-              style: AppTextStyles.fredoka(13,
-                  color: AppColors.outline, weight: FontWeight.bold)),
+              style: AppTextStyles.ui(13,
+                  color: AppColors.ink, weight: FontWeight.bold)),
         ),
       ]),
     );
@@ -200,7 +207,7 @@ class _ActiveMissionBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTut = mission.isTutorial;
-    final accentColor = isTut ? AppColors.amber : AppColors.gold;
+    final accentColor = isTut ? AppColors.sienna : AppColors.ochreDeep;
 
     return GameCard(
       padding: const EdgeInsets.all(14),
@@ -216,7 +223,7 @@ class _ActiveMissionBanner extends StatelessWidget {
           Expanded(
             child: Text(
               '${mission.origin} → ${mission.destination}',
-              style: AppTextStyles.fredoka(15,
+              style: AppTextStyles.ui(15,
                   color: accentColor, weight: FontWeight.bold),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -228,7 +235,7 @@ class _ActiveMissionBanner extends StatelessWidget {
         LiveProgressBar(
           height: 10,
           progressAt: mission.progressAt,
-          gradient: isTut ? AppGradients.amber : AppGradients.gold,
+          gradient: isTut ? AppGradients.sienna : AppGradients.ochre,
           marks: _eventMarksFor(mission),
         ),
         const SizedBox(height: 6),
@@ -237,17 +244,17 @@ class _ActiveMissionBanner extends StatelessWidget {
           final now = DateTime.now();
           if (mission.readyToDeliverAt(now)) {
             return Row(children: [
-              const Icon(Icons.flag_rounded, color: AppColors.gold, size: 18),
+              const Icon(Icons.flag_rounded, color: AppColors.ochreDeep, size: 18),
               const SizedBox(width: 6),
               Expanded(
                 child: Text('¡Llegó a ${mission.destination}! Tocá para entregar',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.fredoka(13,
-                        color: AppColors.gold, weight: FontWeight.bold)),
+                    style: AppTextStyles.ui(13,
+                        color: AppColors.ochreDeep, weight: FontWeight.bold)),
               ),
               const Icon(Icons.chevron_right_rounded,
-                  color: AppColors.gold, size: 22),
+                  color: AppColors.ochreDeep, size: 22),
             ])
                 .animate(
                     onPlay: (c) => AppMotion.reduced(context)
@@ -293,21 +300,21 @@ class _TutorialCard extends ConsumerWidget {
     final total = tutorialMissions.length;
 
     return GameCard(
-      gradient: AppGradients.tutorialCard,
-      borderColor: AppColors.amber,
+      gradient: AppGradients.ochreTint,
+      borderColor: AppColors.sienna,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          GameChip('PRUEBA $n/$total', color: AppColors.amber),
+          GameChip('PRUEBA $n/$total', color: AppColors.sienna),
           const Spacer(),
           GameChip(_durationLabel(tutorial.durationMinutes),
-              icon: Icons.schedule, color: AppColors.gold),
+              icon: Icons.schedule, color: AppColors.ochreDeep),
         ]),
         const SizedBox(height: AppSpacing.md),
         Text('${tutorial.origin} → ${tutorial.destination}',
-            style: AppTextStyles.fredoka(18,
-                color: AppColors.gold, weight: FontWeight.bold)),
+            style: AppTextStyles.heading(18,
+                color: AppColors.ochreDeep)),
         const SizedBox(height: AppSpacing.sm),
-        _LoreQuote(text: tutorial.lore, accent: AppColors.amber),
+        _LoreQuote(text: tutorial.lore, accent: AppColors.sienna),
         const SizedBox(height: 14),
         SizedBox(
           width: double.infinity,
@@ -334,7 +341,7 @@ class _TutorialCard extends ConsumerWidget {
   }
 }
 
-/// Cita de lore en cursiva, sobre un velo oscuro.
+/// Cita de lore en cursiva, sobre un pozo de papel.
 class _LoreQuote extends StatelessWidget {
   final String text;
   final Color accent;
@@ -344,7 +351,7 @@ class _LoreQuote extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColors.bgCard2,
+          color: AppColors.paperDeep,
           borderRadius: BorderRadius.circular(AppRadii.sm + 2),
           border: Border.all(color: accent.withValues(alpha: 0.3), width: 1),
         ),
@@ -353,11 +360,7 @@ class _LoreQuote extends StatelessWidget {
           const SizedBox(width: 6),
           Expanded(
             child: Text(text,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontStyle: FontStyle.italic,
-                  color: AppColors.textPrimary,
-                  height: 1.45,
-                )),
+                style: AppTextStyles.proseItalic(size: 15)),
           ),
         ]),
       );
@@ -450,8 +453,8 @@ class _RouteCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('${route.origin} → ${route.destination}',
-                    style: AppTextStyles.fredoka(16,
-                        color: AppColors.gold, weight: FontWeight.bold)),
+                    style: AppTextStyles.ui(16,
+                        color: AppColors.ochreDeep, weight: FontWeight.bold)),
                 const SizedBox(height: 3),
                 Text(route.lore,
                     style: AppTextStyles.bodyMedium,
@@ -470,7 +473,7 @@ class _RouteCard extends ConsumerWidget {
           GameChip(
             'Paga ~${(gradeBaseReward('A') * routePayFactor(route.durationMinutes, route.danger) * route.payBonus).round()}',
             icon: CurrencyType.denarios.icon,
-            color: AppColors.sky,
+            color: AppColors.egyptianBlue,
             trailingIcon: route.payBonus > 1 ? Icons.arrow_upward : null,
           ),
           // Quién la encarga: entregarle bien suma reputación con esa facción.

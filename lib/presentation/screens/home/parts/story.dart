@@ -23,10 +23,10 @@ class _StoryChapterCardState extends ConsumerState<_StoryChapterCard> {
       decoration: BoxDecoration(
         gradient: AppGradients.story,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.purple, width: 2.5),
+        border: Border.all(color: AppColors.tyrian, width: 2.5),
         boxShadow: [
           BoxShadow(
-              color: AppColors.purple.withValues(alpha: 0.25),
+              color: paperTint(AppColors.tyrian),
               offset: const Offset(0, 4),
               blurRadius: 14),
         ],
@@ -48,31 +48,30 @@ class _StoryChapterCardState extends ConsumerState<_StoryChapterCard> {
         const SizedBox(height: AppSpacing.md),
         Row(children: [
           const GameChip('HISTORIA',
-              icon: Icons.auto_stories, color: AppColors.purple),
+              icon: Icons.auto_stories, color: AppColors.tyrian),
           const Spacer(),
           GameChip(_durationLabel(c.durationMinutes),
-              icon: Icons.schedule, color: AppColors.gold),
+              icon: Icons.schedule, color: AppColors.ochreDeep),
         ]),
         const SizedBox(height: AppSpacing.md),
         if (widget.arcTitle case final arc?)
           Text(arc.toUpperCase(),
-              style: AppTextStyles.fredoka(12,
-                  color: AppColors.textSecondary, weight: FontWeight.bold)),
+              style: AppTextStyles.ui(12,
+                  color: AppColors.inkSoft, weight: FontWeight.bold)),
         Text(c.chapterTitle,
-            style: AppTextStyles.fredoka(17, weight: FontWeight.bold)),
+            style: AppTextStyles.ui(17, weight: FontWeight.bold)),
         const SizedBox(height: AppSpacing.xs),
         Text('${c.origin} → ${c.destination}',
-            style: AppTextStyles.fredoka(13, color: AppColors.textSecondary)),
+            style: AppTextStyles.ui(13, color: AppColors.inkSoft)),
         const SizedBox(height: 10),
-        _LoreQuote(text: c.lore, accent: AppColors.purple),
+        _LoreQuote(text: c.lore, accent: AppColors.tyrian),
         const SizedBox(height: 14),
         SizedBox(
           width: double.infinity,
           child: GameButton(
             label: 'COMENZAR CAPÍTULO',
             icon: Icons.play_arrow_rounded,
-            gradient: AppGradients.purple,
-            shadowColor: AppColors.purpleShadow,
+            variant: GameButtonVariant.secret,
             fontSize: 16,
             isLoading: _loading,
             onTap: _loading ? null : _start,
@@ -87,7 +86,7 @@ class _StoryChapterCardState extends ConsumerState<_StoryChapterCard> {
         .shimmer(
             delay: 3.seconds,
             duration: 1400.ms,
-            color: AppColors.purple.withValues(alpha: 0.25));
+            color: AppColors.tyrian.withValues(alpha: 0.25));
   }
 
   Future<void> _start() async {
@@ -121,33 +120,33 @@ class _LockedStoryCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.bgCard,
+          color: AppColors.paper,
           borderRadius: BorderRadius.circular(AppRadii.lg),
-          border: Border.all(color: AppColors.purple, width: 2),
+          border: Border.all(color: AppColors.tyrian, width: 2),
         ),
         child: Row(children: [
           Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.purple.withValues(alpha: 0.18),
+              color: paperTint(AppColors.tyrian),
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: const Icon(Icons.lock_outline,
-                color: AppColors.purple, size: 24),
+                color: AppColors.tyrian, size: 24),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(step.arc.title.toUpperCase(),
-                  style: AppTextStyles.fredoka(12,
-                      color: AppColors.textSecondary, weight: FontWeight.bold)),
+                  style: AppTextStyles.ui(12,
+                      color: AppColors.inkSoft, weight: FontWeight.bold)),
               Text(step.chapter.chapterTitle,
-                  style: AppTextStyles.fredoka(15, weight: FontWeight.bold)),
+                  style: AppTextStyles.ui(15, weight: FontWeight.bold)),
               const SizedBox(height: 2),
               Text('Se abre en rango $rank · ${kRankTitles[rank]}',
                   style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.textSecondary)),
+                      .copyWith(color: AppColors.inkSoft)),
             ]),
           ),
         ]),

@@ -23,8 +23,8 @@ class _BottomNav extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(
           AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, bottomPad + AppSpacing.sm),
       decoration: const BoxDecoration(
-        color: AppColors.navBg,
-        border: Border(top: BorderSide(color: AppColors.navBorder, width: 2)),
+        color: AppColors.paper,
+        border: Border(top: BorderSide(color: AppColors.ochreDeep, width: 2)),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadowHard,
@@ -50,7 +50,7 @@ class _BottomNav extends StatelessWidget {
           _NavTab(
             icon: Icons.map_outlined,
             label: 'Misión',
-            accent: hasEvent ? AppColors.red : null,
+            accent: hasEvent ? AppColors.cinnabar : null,
             badge: hasEvent,
             onTap: target == null
                 ? () => showGameSnack(
@@ -91,7 +91,7 @@ class _NavTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = dimmed ? AppColors.textMuted : (accent ?? AppColors.gold);
+    final color = dimmed ? AppColors.inkMuted : (accent ?? AppColors.ochreDeep);
     return Expanded(
       child: Semantics(
         button: true,
@@ -103,8 +103,8 @@ class _NavTab extends StatelessWidget {
             onTap();
           },
           radius: 36,
-          highlightColor: AppColors.gold.withValues(alpha: 0.08),
-          splashColor: AppColors.gold.withValues(alpha: 0.12),
+          highlightColor: AppColors.ochreDeep.withValues(alpha: 0.08),
+          splashColor: AppColors.ochreDeep.withValues(alpha: 0.12),
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 52),
             child: Column(
@@ -121,10 +121,10 @@ class _NavTab extends StatelessWidget {
                           width: 11,
                           height: 11,
                           decoration: BoxDecoration(
-                            color: AppColors.red,
+                            color: AppColors.cinnabar,
                             shape: BoxShape.circle,
                             border:
-                                Border.all(color: AppColors.outline, width: 1.5),
+                                Border.all(color: AppColors.ink, width: 1.5),
                           ),
                         ),
                       ),
@@ -133,12 +133,12 @@ class _NavTab extends StatelessWidget {
                   Text(label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.fredoka(12,
+                      style: AppTextStyles.ui(12,
                           color: dimmed
-                              ? AppColors.textMuted
+                              ? AppColors.inkMuted
                               : (accent == null
-                                  ? AppColors.textSecondary
-                                  : AppColors.textPrimary))),
+                                  ? AppColors.inkSoft
+                                  : AppColors.ink))),
                 ]),
           ),
         ),
@@ -163,23 +163,23 @@ class _NavTabHome extends StatelessWidget {
             width: size,
             height: size,
             decoration: BoxDecoration(
-              gradient: AppGradients.gold,
+              gradient: AppGradients.ochre,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.outline, width: 2.5),
+              border: Border.all(color: AppColors.ink, width: 2.5),
               boxShadow: const [
                 BoxShadow(
-                    color: AppColors.goldShadow,
+                    color: AppColors.ink,
                     offset: Offset(0, 4),
                     blurRadius: 0),
               ],
             ),
             child: const Icon(Icons.home_rounded,
-                size: 26, color: AppColors.outline),
+                size: 26, color: AppColors.ink),
           ),
           const SizedBox(height: 3),
           Text('Inicio',
-              style: AppTextStyles.fredoka(12,
-                  color: AppColors.gold, weight: FontWeight.bold)),
+              style: AppTextStyles.ui(12,
+                  color: AppColors.ochreDeep, weight: FontWeight.bold)),
         ]),
       ),
     );

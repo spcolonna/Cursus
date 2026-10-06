@@ -42,15 +42,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgDeep,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment.center,
-            radius: 1.2,
-            colors: [AppColors.skyDark, AppColors.bgDeep],
-          ),
-        ),
+      // El mismo cal del launch screen nativo: no hay salto al abrir.
+      backgroundColor: AppColors.paper,
+      body: SizedBox.expand(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -62,7 +56,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
               const SizedBox(height: 24),
 
-              const BrandMark(size: 40, layout: BrandLayout.wordmark)
+              const BrandMark(
+                  size: 40, layout: BrandLayout.wordmark, color: AppColors.ink)
               .animate(delay: 500.ms)
               .fadeIn(duration: 600.ms)
               .slideY(begin: 0.3, end: 0),
@@ -82,7 +77,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                   width: 8, height: 8,
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: const BoxDecoration(
-                    color: AppColors.gold, shape: BoxShape.circle,
+                    color: AppColors.ochreDeep, shape: BoxShape.circle,
                   ),
                 )
                 .animate(delay: Duration(milliseconds: 900 + i * 150), onPlay: (c) => c.repeat())

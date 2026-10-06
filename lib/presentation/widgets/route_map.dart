@@ -151,10 +151,10 @@ class _MapFrame extends StatelessWidget {
         width: double.infinity,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(radius),
-          border: Border.all(color: AppColors.outline, width: 2.5),
+          border: Border.all(color: AppColors.ink, width: 2.5),
           boxShadow: const [
             BoxShadow(
-                color: AppColors.outline, offset: Offset(0, 4), blurRadius: 0),
+                color: AppColors.ink, offset: Offset(0, 4), blurRadius: 0),
           ],
         ),
         child: ClipRRect(
@@ -249,7 +249,7 @@ class RouteMapPainter extends CustomPainter {
 
     final landFill = Paint()..color = ArtColors.land;
     final coast = Paint()
-      ..color = AppColors.outline
+      ..color = AppColors.ink
       ..style = PaintingStyle.stroke
       ..strokeWidth = thumbnail ? 1.5 : 2.5
       ..strokeJoin = StrokeJoin.round;
@@ -326,7 +326,7 @@ class RouteMapPainter extends CustomPainter {
       // Ciudades.
       final dot = Paint()..color = ArtColors.city;
       final ring = Paint()
-        ..color = AppColors.outline
+        ..color = AppColors.ink
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5;
       for (final p in atlas.visibleCities.values) {
@@ -401,7 +401,7 @@ class RouteMapPainter extends CustomPainter {
     canvas.drawPath(
         tiber,
         Paint()
-          ..color = AppColors.outline
+          ..color = AppColors.ink
           ..style = PaintingStyle.stroke
           ..strokeWidth = cam.scale * 0.055 + 3
           ..strokeCap = StrokeCap.round);
@@ -437,7 +437,7 @@ class RouteMapPainter extends CustomPainter {
     canvas.drawPath(
         path,
         Paint()
-          ..color = AppColors.outline
+          ..color = AppColors.ink
           ..style = PaintingStyle.stroke
           ..strokeWidth = thumbnail ? 5 : 9
           ..strokeCap = StrokeCap.round
@@ -461,7 +461,7 @@ class RouteMapPainter extends CustomPainter {
       canvas.drawPath(
           done,
           Paint()
-            ..color = AppColors.gold.withValues(alpha: 0.25)
+            ..color = AppColors.ochreDeep.withValues(alpha: 0.25)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 10
             ..strokeCap = StrokeCap.round
@@ -469,7 +469,7 @@ class RouteMapPainter extends CustomPainter {
       canvas.drawPath(
           done,
           Paint()
-            ..color = AppColors.gold
+            ..color = AppColors.ochreDeep
             ..style = PaintingStyle.stroke
             ..strokeWidth = 4
             ..strokeCap = StrokeCap.round);
@@ -477,9 +477,9 @@ class RouteMapPainter extends CustomPainter {
 
     final start = metric.getTangentForOffset(0)!.position;
     final end = metric.getTangentForOffset(len)!.position;
-    _dot(canvas, start, thumbnail ? 3.5 : 6, ArtColors.city, AppColors.outline);
+    _dot(canvas, start, thumbnail ? 3.5 : 6, ArtColors.city, AppColors.ink);
     if (thumbnail) {
-      _dot(canvas, end, 4, AppColors.gold, AppColors.outline);
+      _dot(canvas, end, 4, AppColors.ochreDeep, AppColors.ink);
       return;
     }
     _flag(canvas, end, progress >= 1);
@@ -501,7 +501,7 @@ class RouteMapPainter extends CustomPainter {
             pos,
             13 * pulse,
             Paint()
-              ..color = AppColors.amber.withValues(alpha: 0.25)
+              ..color = AppColors.sienna.withValues(alpha: 0.25)
               ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3));
       }
       _dot(
@@ -509,11 +509,11 @@ class RouteMapPainter extends CustomPainter {
         pos,
         6.5 * pulse,
         resolved
-            ? AppColors.green
+            ? AppColors.verdigris
             : blocking
-                ? AppColors.amber
-                : AppColors.bgCard2,
-        resolved ? AppColors.greenDark : AppColors.outline,
+                ? AppColors.sienna
+                : AppColors.paperDeep,
+        resolved ? AppColors.verdigris : AppColors.ink,
       );
     }
 
@@ -524,17 +524,17 @@ class RouteMapPainter extends CustomPainter {
         ? (geometry.bySea ? math.sin(t * 2.2) * 2.2 : math.sin(t * 7) * 1.6)
         : 0.0;
     final c = tangent.position.translate(0, -16 + bob);
-    canvas.drawCircle(c.translate(0, 3), 15, Paint()..color = AppColors.goldShadow);
-    canvas.drawCircle(c, 15, Paint()..color = AppColors.gold);
+    canvas.drawCircle(c.translate(0, 3), 15, Paint()..color = AppColors.ink);
+    canvas.drawCircle(c, 15, Paint()..color = AppColors.ochreDeep);
     canvas.drawCircle(
         c,
         15,
         Paint()
-          ..color = AppColors.outline
+          ..color = AppColors.ink
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.5);
     _icon(canvas, c, geometry.bySea ? Icons.sailing : Icons.directions_run, 18,
-        AppColors.outline);
+        AppColors.ink);
   }
 
   // ─── Utilidades ───
@@ -586,7 +586,7 @@ class RouteMapPainter extends CustomPainter {
 
   void _flag(Canvas canvas, Offset base, bool reached) {
     final pole = Paint()
-      ..color = AppColors.outline
+      ..color = AppColors.ink
       ..strokeWidth = 2.5
       ..strokeCap = StrokeCap.round;
     final top = base.translate(0, -26);
@@ -597,26 +597,21 @@ class RouteMapPainter extends CustomPainter {
       ..lineTo(top.dx, top.dy + 11)
       ..close();
     canvas.drawPath(
-        cloth, Paint()..color = reached ? AppColors.gold : AppColors.amber);
+        cloth, Paint()..color = reached ? AppColors.ochreDeep : AppColors.sienna);
     canvas.drawPath(
         cloth,
         Paint()
-          ..color = AppColors.outline
+          ..color = AppColors.ink
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.5);
-    _dot(canvas, base, 5, AppColors.gold, AppColors.outline);
+    _dot(canvas, base, 5, AppColors.ochreDeep, AppColors.ink);
   }
 
   void _icon(Canvas canvas, Offset c, IconData icon, double size, Color color) {
     final tp = TextPainter(
       text: TextSpan(
         text: String.fromCharCode(icon.codePoint),
-        style: TextStyle(
-          fontFamily: icon.fontFamily,
-          package: icon.fontPackage,
-          fontSize: size,
-          color: color,
-        ),
+        style: AppTextStyles.iconGlyph(icon, size, color),
       ),
       textDirection: ui.TextDirection.ltr,
     )..layout();

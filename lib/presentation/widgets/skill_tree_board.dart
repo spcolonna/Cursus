@@ -81,11 +81,11 @@ class _SkillTreeBoardState extends State<SkillTreeBoard>
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.sm, AppSpacing.md, AppSpacing.sm, AppSpacing.md),
       decoration: BoxDecoration(
-        gradient: AppGradients.card,
+        gradient: AppGradients.paper,
         borderRadius: BorderRadius.circular(AppRadii.lg),
-        border: Border.all(color: AppColors.bgLine, width: 2),
+        border: Border.all(color: AppColors.paperLine, width: 2),
         boxShadow: const [
-          BoxShadow(color: AppColors.outline, offset: Offset(0, 4), blurRadius: 0),
+          BoxShadow(color: AppColors.ink, offset: Offset(0, 4), blurRadius: 0),
         ],
       ),
       child: Column(children: [
@@ -165,7 +165,7 @@ class _Column extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 2),
             decoration: BoxDecoration(
               color: focused
-                  ? skillColor(skill).withValues(alpha: 0.14)
+                  ? paperTint(skillColor(skill), amount: 0.1)
                   : AppColors.transparent,
               borderRadius: BorderRadius.circular(AppRadii.md),
               border: Border.all(
@@ -226,8 +226,8 @@ class _Foot extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text('$level/10',
-                style: AppTextStyles.fredoka(12,
-                    color: focused ? AppColors.textPrimary : AppColors.textSecondary,
+                style: AppTextStyles.ui(12,
+                    color: focused ? AppColors.ink : AppColors.inkSoft,
                     weight: FontWeight.bold)),
           ]),
         ),
@@ -258,7 +258,7 @@ class _PathPainter extends CustomPainter {
 
     // Tronco: la parte ganada en el color del camino.
     final trunk = Paint()
-      ..color = AppColors.bgLine
+      ..color = AppColors.paperLine
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
     canvas.drawLine(at(1), at(kMaxSkillLevelElite), trunk);
@@ -269,7 +269,7 @@ class _PathPainter extends CustomPainter {
     // Umbral de los Sellos, entre el 5 y el 6.
     final gateY = (at(5).dy + at(6).dy) / 2;
     final gate = Paint()
-      ..color = AppColors.purple.withValues(alpha: 0.7)
+      ..color = AppColors.tyrian.withValues(alpha: 0.7)
       ..strokeWidth = 1.5;
     for (var x = 4.0; x < size.width - 4; x += 6) {
       canvas.drawLine(Offset(x, gateY), Offset(x + 3, gateY), gate);
@@ -288,7 +288,7 @@ class _PathPainter extends CustomPainter {
             c,
             ring,
             Paint()
-              ..color = (elite ? AppColors.purple : color)
+              ..color = (elite ? AppColors.tyrian : color)
                   .withValues(alpha: 0.35 * (1 - p))
               ..style = PaintingStyle.stroke
               ..strokeWidth = 2.5);
@@ -304,7 +304,7 @@ class _PathPainter extends CustomPainter {
   void _bronzeNode(Canvas canvas, Offset c,
       {required bool unlocked, required bool next}) {
     const r = 8.5;
-    canvas.drawCircle(c.translate(0, 2), r, Paint()..color = AppColors.outline);
+    canvas.drawCircle(c.translate(0, 2), r, Paint()..color = AppColors.ink);
     canvas.drawCircle(
         c,
         r,
@@ -312,17 +312,17 @@ class _PathPainter extends CustomPainter {
           ..color = unlocked
               ? color
               : next
-                  ? AppColors.bgDark
-                  : AppColors.bgCard2);
+                  ? AppColors.paperDeep
+                  : AppColors.paperDeep);
     if (unlocked) {
       canvas.drawCircle(c.translate(-2.5, -2.5), 2.5,
-          Paint()..color = AppColors.white.withValues(alpha: 0.5));
+          Paint()..color = AppColors.paperHigh.withValues(alpha: 0.5));
     }
     canvas.drawCircle(
         c,
         r,
         Paint()
-          ..color = next ? color : (unlocked ? AppColors.outline : AppColors.bgLine)
+          ..color = next ? color : (unlocked ? AppColors.ink : AppColors.paperLine)
           ..style = PaintingStyle.stroke
           ..strokeWidth = next ? 2.5 : 2);
   }
@@ -357,17 +357,17 @@ class _PathPainter extends CustomPainter {
         Paint()
           ..color = next
               ? ArtColors.wax.withValues(alpha: 0.25)
-              : AppColors.bgCard2);
+              : AppColors.paperDeep);
     canvas.drawPath(
         waxSealPath(c, r),
         Paint()
-          ..color = next ? AppColors.purple : AppColors.bgLine
+          ..color = next ? AppColors.tyrian : AppColors.paperLine
           ..style = PaintingStyle.stroke
           ..strokeWidth = next ? 2.5 : 2);
     if (!next) {
       // Candado mínimo: dos trazos.
       final lock = Paint()
-        ..color = AppColors.bgLine
+        ..color = AppColors.paperLine
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke;
       canvas.drawRect(Rect.fromCenter(center: c.translate(0, 2), width: 8, height: 6), lock);

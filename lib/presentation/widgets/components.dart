@@ -39,23 +39,25 @@ class GameChip extends StatelessWidget {
     this.size = GameChipSize.small,
   });
 
-  /// Rojo y violeta no llegan a 4.5:1 como texto sobre navy (regla 1 de la
-  /// skill interfaz): ahí el texto va en pergamino y el color queda en el
-  /// borde y el ícono.
+  /// Los pigmentos claros son para rellenos: como texto se usa su versión
+  /// profunda (todos los demás pasan 4.5:1 sobre papel, ver kTextPairs).
   static Color legibleText(Color c) => switch (c) {
-        AppColors.red ||
-        AppColors.riskHigh ||
-        AppColors.purple ||
-        AppColors.skillStealth ||
-        AppColors.redDark =>
-          AppColors.textPrimary,
+        AppColors.ochre || AppColors.ochreLight => AppColors.ochreDeep,
+        AppColors.cinnabarLight => AppColors.cinnabar,
+        AppColors.egyptianBlueLight => AppColors.egyptianBlue,
+        AppColors.verdigrisLight => AppColors.verdigris,
+        AppColors.tyrianLight => AppColors.tyrian,
         _ => c,
       };
+
+  /// Papel apenas teñido y opaco: el chip se lee igual sobre una card que
+  /// sobre una escena pintada.
+  static Color tint(Color c) => paperTint(c);
 
   @override
   Widget build(BuildContext context) {
     final neutral = color == null;
-    final c = color ?? AppColors.textSecondary;
+    final c = color ?? AppColors.inkSoft;
     final small = size == GameChipSize.small;
     final iconSize = small ? 12.0 : 14.0;
     return Container(
@@ -63,10 +65,10 @@ class GameChip extends StatelessWidget {
           horizontal: small ? AppSpacing.sm : AppSpacing.md,
           vertical: small ? 3 : 6),
       decoration: BoxDecoration(
-        color: neutral ? AppColors.bgCard2 : c.withValues(alpha: 0.14),
+        color: neutral ? AppColors.paperDeep : tint(c),
         borderRadius: BorderRadius.circular(small ? AppRadii.sm : AppRadii.lg),
         border: Border.all(
-            color: neutral ? AppColors.bgLine : c.withValues(alpha: 0.55),
+            color: neutral ? AppColors.paperLine : c.withValues(alpha: 0.6),
             width: small ? 1.5 : 2),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -77,7 +79,7 @@ class GameChip extends StatelessWidget {
         Flexible(
           child: Text(label,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.fredoka(small ? 12 : 13,
+              style: AppTextStyles.ui(small ? 12 : 13,
                   color: legibleText(c), weight: FontWeight.bold)),
         ),
         if (trailingIcon != null) ...[
@@ -109,7 +111,7 @@ class GameIconButton extends StatefulWidget {
     required this.icon,
     required this.onTap,
     required this.semanticLabel,
-    this.color = AppColors.gold,
+    this.color = AppColors.ochreDeep,
     this.size = 44,
     this.isBack = false,
   });
@@ -155,14 +157,14 @@ class _GameIconButtonState extends State<GameIconButton> {
                 top: down ? _depth - 1 : 0, bottom: down ? 1 : _depth),
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.bgCard2,
+                color: AppColors.paperDeep,
                 borderRadius: BorderRadius.circular(AppRadii.md - 2),
                 border: Border.all(
-                    color: enabled ? widget.color : AppColors.bgLine,
+                    color: enabled ? widget.color : AppColors.paperLine,
                     width: 2.5),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.outline,
+                    color: AppColors.ink,
                     offset: Offset(0, down ? 1 : _depth),
                     blurRadius: 0,
                   ),
@@ -170,7 +172,7 @@ class _GameIconButtonState extends State<GameIconButton> {
               ),
               child: Icon(widget.icon,
                   size: widget.size * 0.48,
-                  color: enabled ? widget.color : AppColors.textMuted),
+                  color: enabled ? widget.color : AppColors.inkMuted),
             ),
           ),
         ),
@@ -236,13 +238,13 @@ class GameDialog extends StatelessWidget {
     required this.child,
     this.icon,
     this.title,
-    this.accent = AppColors.gold,
+    this.accent = AppColors.ochreDeep,
     this.actions = const [],
   });
 
   @override
   Widget build(BuildContext context) => Dialog(
-        backgroundColor: AppColors.bgCard2.withValues(alpha: 1),
+        backgroundColor: AppColors.paperDeep.withValues(alpha: 1),
         insetPadding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.xl, vertical: AppSpacing.xl),
         shape: RoundedRectangleBorder(
@@ -285,7 +287,7 @@ Future<T?> showGameSheet<T>(
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.transparent,
+    backgroundColor: AppColors.transparent,
     barrierColor: AppColors.scrim,
     sheetAnimationStyle: AnimationStyle(
       duration: AppMotion.of(context, AppMotion.slow),
@@ -298,11 +300,11 @@ Future<T?> showGameSheet<T>(
       maxChildSize: 0.94,
       builder: (ctx, scroll) => Container(
         decoration: const BoxDecoration(
-          color: AppColors.bgDark,
+          color: AppColors.paperDeep,
           borderRadius:
               BorderRadius.vertical(top: Radius.circular(AppRadii.lg + 4)),
           border: Border(
-              top: BorderSide(color: AppColors.gold, width: 2.5)),
+              top: BorderSide(color: AppColors.ochreDeep, width: 2.5)),
         ),
         child: Column(children: [
           const SizedBox(height: AppSpacing.sm),
@@ -310,7 +312,7 @@ Future<T?> showGameSheet<T>(
             width: 44,
             height: 5,
             decoration: BoxDecoration(
-              color: AppColors.bgLine,
+              color: AppColors.paperLine,
               borderRadius: BorderRadius.circular(3),
             ),
           ),
@@ -362,17 +364,17 @@ void showGameSnack(BuildContext context, String message,
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: AppColors.bgDark,
-      elevation: 0,
+      backgroundColor: AppColors.paper,
+      elevation: 3,
       margin: const EdgeInsets.all(AppSpacing.lg),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.md),
         side: BorderSide(
-            color: isError ? AppColors.red : AppColors.gold, width: 2),
+            color: isError ? AppColors.cinnabar : AppColors.ochreDeep, width: 2),
       ),
       content: Row(children: [
         Icon(isError ? Icons.error_outline : Icons.check_circle_outline,
-            color: isError ? AppColors.red : AppColors.gold, size: 20),
+            color: isError ? AppColors.cinnabar : AppColors.ochreDeep, size: 20),
         const SizedBox(width: AppSpacing.md),
         Expanded(child: Text(message, style: AppTextStyles.bodyLarge)),
       ]),
@@ -394,7 +396,7 @@ class LoadingState extends StatelessWidget {
             width: 32,
             height: 32,
             child: CircularProgressIndicator(
-                color: AppColors.gold, strokeWidth: 3),
+                color: AppColors.ochreDeep, strokeWidth: 3),
           ),
           if (message != null) ...[
             const SizedBox(height: AppSpacing.md),
@@ -422,7 +424,7 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 44, color: AppColors.textMuted),
+          Icon(icon, size: 44, color: AppColors.inkMuted),
           const SizedBox(height: AppSpacing.md),
           Text(title,
               textAlign: TextAlign.center, style: AppTextStyles.titleMedium),
@@ -481,8 +483,8 @@ class LiveProgressBar extends StatefulWidget {
     super.key,
     required this.progressAt,
     this.height = 10,
-    this.gradient = AppGradients.gold,
-    this.track = AppColors.outline,
+    this.gradient = AppGradients.ochre,
+    this.track = AppColors.paperShade,
     this.marks = const [],
   });
 
@@ -566,7 +568,7 @@ class _BarPainter extends CustomPainter {
       // Brillo superior: le da volumen sin otro color.
       canvas.drawRect(
         Rect.fromLTWH(0, 0, w, size.height * 0.35),
-        Paint()..color = AppColors.white.withValues(alpha: 0.18),
+        Paint()..color = AppColors.paperHigh.withValues(alpha: 0.18),
       );
       canvas.restore();
     }
@@ -577,7 +579,7 @@ class _BarPainter extends CustomPainter {
       canvas.drawCircle(
         Offset(x, size.height / 2),
         size.height * 0.42,
-        Paint()..color = passed ? AppColors.outline : AppColors.textSecondary,
+        Paint()..color = passed ? AppColors.ink : AppColors.inkSoft,
       );
     }
   }
@@ -673,7 +675,7 @@ class ParticleBurst extends StatefulWidget {
   const ParticleBurst({
     super.key,
     this.count = 36,
-    this.colors = const [AppColors.gold, AppColors.parchment, AppColors.amber],
+    this.colors = const [AppColors.ochreDeep, AppColors.paper, AppColors.sienna],
     this.duration = const Duration(milliseconds: 1400),
     this.delay = Duration.zero,
     this.spread = 160,

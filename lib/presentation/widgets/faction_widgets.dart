@@ -20,10 +20,10 @@ IconData factionIcon(Faction f) => switch (f) {
 
 /// Acento de la facción. Ninguno es rojo: el rojo es solo para peligro.
 Color factionColor(Faction f) => switch (f) {
-      Faction.guild => AppColors.gold,
-      Faction.legions => AppColors.amber,
-      Faction.underworld => AppColors.sky,
-      Faction.patricians => AppColors.purple,
+      Faction.guild => AppColors.ochreDeep,
+      Faction.legions => AppColors.sienna,
+      Faction.underworld => AppColors.egyptianBlue,
+      Faction.patricians => AppColors.tyrian,
     };
 
 IconData unlockKindIcon(FactionUnlockKind k) => switch (k) {
@@ -72,18 +72,18 @@ class NpcPortrait extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c =
-        faction == null ? AppColors.textSecondary : factionColor(faction!);
+        faction == null ? AppColors.inkSoft : factionColor(faction!);
     final initial = Center(
       child: Text(name.isEmpty ? '?' : name.characters.first,
-          style: AppTextStyles.fredoka(size * 0.42,
-              color: AppColors.parchment, weight: FontWeight.bold)),
+          style: AppTextStyles.ui(size * 0.42,
+              color: AppColors.paper, weight: FontWeight.bold)),
     );
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: AppGradients.card,
+        gradient: AppGradients.paper,
         border: Border.all(color: c, width: 2.5),
       ),
       child: ClipOval(
@@ -131,7 +131,7 @@ class FactionUnlockList extends StatelessWidget {
                     u.isOpen(world)
                         ? unlockKindIcon(u.kind)
                         : Icons.lock_outline,
-                    color: u.isOpen(world) ? color : AppColors.textMuted,
+                    color: u.isOpen(world) ? color : AppColors.inkMuted,
                     size: 22),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -139,10 +139,10 @@ class FactionUnlockList extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(u.name,
-                            style: AppTextStyles.fredoka(14,
+                            style: AppTextStyles.ui(14,
                                 color: u.isOpen(world)
-                                    ? AppColors.textPrimary
-                                    : AppColors.textSecondary,
+                                    ? AppColors.ink
+                                    : AppColors.inkSoft,
                                 weight: FontWeight.bold)),
                         const SizedBox(height: 2),
                         Text(u.description, style: AppTextStyles.bodySmall),
@@ -151,7 +151,7 @@ class FactionUnlockList extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 u.isOpen(world)
                     ? const GameChip('Abierto',
-                        icon: Icons.check, color: AppColors.green)
+                        icon: Icons.check, color: AppColors.verdigris)
                     : GameChip(u.tier.label),
               ]),
             ),

@@ -78,7 +78,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     if (!snap.hasData) {
                       return const Center(
                           child:
-                              CircularProgressIndicator(color: AppColors.gold));
+                              CircularProgressIndicator(color: AppColors.ochreDeep));
                     }
                     return _DiagnosticsCard(
                       data: snap.data!,
@@ -98,7 +98,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         decoration: const BoxDecoration(
           gradient: AppGradients.header,
-          border: Border(bottom: BorderSide(color: AppColors.bgLine)),
+          border: Border(bottom: BorderSide(color: AppColors.paperLine)),
         ),
         child: Row(children: [
           GameBackButton(onTap: () => context.pop()),
@@ -128,7 +128,6 @@ class _PrefsCard extends ConsumerWidget {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           value: prefs.enabled,
-          activeThumbColor: AppColors.gold,
           title: Text('Recibir avisos', style: AppTextStyles.bodyLarge),
           subtitle: Text(
             'Nunca entre las 22 y las 8, salvo un evento de una misión que '
@@ -141,12 +140,11 @@ class _PrefsCard extends ConsumerWidget {
           },
         ),
         if (prefs.enabled) ...[
-          const Divider(color: AppColors.bgLine),
+          const Divider(color: AppColors.paperLine),
           for (final kind in NotificationKind.values)
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               value: !prefs.muted.contains(kind),
-              activeThumbColor: AppColors.gold,
               title: Text(kind.label, style: AppTextStyles.bodyLarge),
               subtitle: Text(kind.description,
                   style: AppTextStyles.bodySmall.copyWith(height: 1.35)),
@@ -172,11 +170,11 @@ class _DiagnosticsCard extends ConsumerWidget {
     final scheduler = ref.read(notificationSchedulerProvider);
     final fmt = DateFormat('d/MM HH:mm');
     final (permLabel, permColor) = switch (data.permission) {
-      NotificationPermission.granted => ('Concedido', AppColors.green),
-      NotificationPermission.denied => ('Denegado', AppColors.red),
+      NotificationPermission.granted => ('Concedido', AppColors.verdigris),
+      NotificationPermission.denied => ('Denegado', AppColors.cinnabar),
       NotificationPermission.notRequested => (
           'Todavía no se pidió',
-          AppColors.amber
+          AppColors.sienna
         ),
     };
 
@@ -188,7 +186,7 @@ class _DiagnosticsCard extends ConsumerWidget {
           Text('Permiso del sistema: ',
               style: AppTextStyles.bodyMedium.copyWith(fontSize: 12)),
           Text(permLabel,
-              style: AppTextStyles.fredoka(12,
+              style: AppTextStyles.ui(12,
                   color: permColor, weight: FontWeight.bold)),
         ]),
         const SizedBox(height: 6),
@@ -211,15 +209,15 @@ class _DiagnosticsCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(_iconFor(n.kind),
-                          size: 14, color: AppColors.textSecondary),
+                          size: 14, color: AppColors.inkSoft),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(n.title,
-                                  style: AppTextStyles.fredoka(12,
-                                      color: AppColors.textPrimary)),
+                                  style: AppTextStyles.ui(12,
+                                      color: AppColors.ink)),
                               Text(n.body,
                                   style: AppTextStyles.bodySmall
                                       .copyWith(height: 1.3)),
@@ -228,7 +226,7 @@ class _DiagnosticsCard extends ConsumerWidget {
                       const SizedBox(width: 8),
                       Text(fmt.format(n.at),
                           style:
-                              AppTextStyles.fredoka(12, color: AppColors.gold)),
+                              AppTextStyles.ui(12, color: AppColors.ochreDeep)),
                     ]),
               )),
         const SizedBox(height: 14),
@@ -253,8 +251,7 @@ class _DiagnosticsCard extends ConsumerWidget {
               label: 'RECARGAR',
               icon: Icons.refresh,
               fontSize: 13,
-              gradient: AppGradients.sky,
-              shadowColor: AppColors.skyDark,
+              variant: GameButtonVariant.info,
               onTap: onReload,
             ),
           ),
@@ -268,7 +265,7 @@ class _DiagnosticsCard extends ConsumerWidget {
             },
             child: Text('Cancelar todos los avisos',
                 style:
-                    AppTextStyles.fredoka(12, color: AppColors.textSecondary)),
+                    AppTextStyles.ui(12, color: AppColors.inkSoft)),
           ),
         ),
       ]),
@@ -323,10 +320,9 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
   }) =>
       SwitchListTile(
         contentPadding: EdgeInsets.zero,
-        title: Text(title, style: AppTextStyles.fredoka(14)),
+        title: Text(title, style: AppTextStyles.ui(14)),
         subtitle: Text(subtitle, style: AppTextStyles.bodyMedium),
         value: value,
-        activeThumbColor: AppColors.gold,
         onChanged: onChanged,
       );
 
@@ -418,13 +414,12 @@ class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           title:
-              Text('Compartir estadísticas', style: AppTextStyles.fredoka(14)),
+              Text('Compartir estadísticas', style: AppTextStyles.ui(14)),
           subtitle: Text(
               'Qué rutas jugás y cuándo volvés. Anónimo: sin tu nombre '
               'ni nada que te identifique.',
               style: AppTextStyles.bodyMedium),
           value: _enabled,
-          activeThumbColor: AppColors.gold,
           onChanged: (v) async {
             await ref.read(playerProgressProvider).setAnalyticsEnabled(v);
             ref.read(analyticsProvider).enabled = v;
@@ -447,10 +442,10 @@ class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
           child: TextButton.icon(
             onPressed: _copy,
             icon: const Icon(Icons.copy_rounded,
-                size: 16, color: AppColors.textSecondary),
+                size: 16, color: AppColors.inkSoft),
             label: Text('Copiar datos para el equipo',
                 style:
-                    AppTextStyles.fredoka(12, color: AppColors.textSecondary)),
+                    AppTextStyles.ui(12, color: AppColors.inkSoft)),
           ),
         ),
       ]),

@@ -51,7 +51,7 @@ class _Header extends StatelessWidget {
           AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm),
       decoration: const BoxDecoration(
         gradient: AppGradients.header,
-        border: Border(bottom: BorderSide(color: AppColors.bgLine)),
+        border: Border(bottom: BorderSide(color: AppColors.paperLine)),
       ),
       child: Row(children: [
         GameBackButton(onTap: onBack),
@@ -136,20 +136,20 @@ class _Summary extends StatelessWidget {
   Widget build(BuildContext context) {
     final ratio = total == 0 ? 0.0 : done / total;
     return GameCard(
-      borderColor: AppColors.gold,
+      borderColor: AppColors.ochreDeep,
       child: Row(children: [
-        const Icon(Icons.emoji_events, color: AppColors.gold, size: 40),
+        const Icon(Icons.emoji_events, color: AppColors.ochreDeep, size: 40),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic, children: [
               CountUpText(done,
-                  style: AppTextStyles.fredoka(28,
-                      color: AppColors.gold, weight: FontWeight.bold)),
+                  style: AppTextStyles.heading(28,
+                      color: AppColors.ochreDeep)),
               Text(' / $total',
-                  style: AppTextStyles.fredoka(16,
-                      color: AppColors.textSecondary)),
+                  style: AppTextStyles.ui(16,
+                      color: AppColors.inkSoft)),
             ]),
             const SizedBox(height: AppSpacing.sm),
             _Bar(value: ratio, height: 10),
@@ -183,15 +183,15 @@ class _AchievementRow extends StatelessWidget {
       child: GameCard(
         padding: const EdgeInsets.all(AppSpacing.md),
         borderColor:
-            unlocked ? AppColors.gold.withValues(alpha: 0.6) : AppColors.bgLine,
+            unlocked ? AppColors.ochreDeep.withValues(alpha: 0.6) : AppColors.paperLine,
         child: Row(children: [
           AchievementMedal(kind: def.kind, unlocked: unlocked, size: 46),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(hidden ? 'Logro secreto' : def.name,
-                  style: AppTextStyles.fredoka(15,
-                      color: unlocked ? AppColors.gold : AppColors.textPrimary,
+                  style: AppTextStyles.ui(15,
+                      color: unlocked ? AppColors.ochreDeep : AppColors.ink,
                       weight: FontWeight.bold)),
               const SizedBox(height: 2),
               Text(hidden ? 'Seguí la historia para descubrirlo.' : def.goal,
@@ -213,20 +213,20 @@ class _AchievementRow extends StatelessWidget {
                       GameChip('${r.denarios}',
                           icon: CurrencyType.denarios.icon,
                           color: unlocked
-                              ? AppColors.textMuted
-                              : AppColors.sky),
+                              ? AppColors.inkMuted
+                              : AppColors.egyptianBlue),
                     if (r.seals > 0)
                       GameChip('${r.seals} Sello',
                           icon: CurrencyType.seals.icon,
                           color: unlocked
-                              ? AppColors.textMuted
-                              : AppColors.purple),
+                              ? AppColors.inkMuted
+                              : AppColors.tyrian),
                     if (r.title != null)
                       GameChip('«${r.title}»',
                           icon: Icons.military_tech,
                           color: unlocked
-                              ? AppColors.textMuted
-                              : AppColors.amber),
+                              ? AppColors.inkMuted
+                              : AppColors.sienna),
                   ]),
                 ),
             ]),
@@ -234,7 +234,7 @@ class _AchievementRow extends StatelessWidget {
           if (unlocked)
             const Padding(
               padding: EdgeInsets.only(left: AppSpacing.sm),
-              child: Icon(Icons.check_circle, color: AppColors.gold, size: 22),
+              child: Icon(Icons.check_circle, color: AppColors.ochreDeep, size: 22),
             ),
         ]),
       ),
@@ -254,7 +254,7 @@ class _Bar extends StatelessWidget {
       borderRadius: BorderRadius.circular(height),
       child: Container(
         height: height,
-        color: AppColors.trackDark,
+        color: AppColors.paperShade,
         alignment: Alignment.centerLeft,
         child: TweenAnimationBuilder<double>(
           tween: Tween(begin: 0, end: value.clamp(0.0, 1.0)),
@@ -264,7 +264,7 @@ class _Bar extends StatelessWidget {
             widthFactor: v,
             child: Container(
               decoration: BoxDecoration(
-                gradient: AppGradients.gold,
+                gradient: AppGradients.ochre,
                 borderRadius: BorderRadius.circular(height),
               ),
             ),

@@ -138,7 +138,7 @@ class _SkillTreeScreenState extends ConsumerState<SkillTreeScreen> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: const BoxDecoration(
         gradient: AppGradients.header,
-        border: Border(bottom: BorderSide(color: AppColors.bgLine)),
+        border: Border(bottom: BorderSide(color: AppColors.paperLine)),
       ),
       child: Row(children: [
         GameBackButton(
@@ -231,21 +231,21 @@ class _SkillPickCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          const Icon(Icons.military_tech, color: AppColors.amber, size: 20),
+          const Icon(Icons.military_tech, color: AppColors.sienna, size: 20),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
                 picks == 1
                     ? 'Tenés 1 nivel para elegir'
                     : 'Tenés $picks niveles para elegir',
-                style: AppTextStyles.fredoka(15,
-                    color: AppColors.amber, weight: FontWeight.bold)),
+                style: AppTextStyles.ui(15,
+                    color: AppColors.sienna, weight: FontWeight.bold)),
           ),
         ]),
         const SizedBox(height: 4),
         Text('Se aplica a ${messenger.name}. Hasta nivel $kMaxSkillLevel.',
             style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textSecondary, fontSize: 12)),
+                .copyWith(color: AppColors.inkSoft, fontSize: 12)),
         const SizedBox(height: 10),
         Wrap(spacing: 8, runSpacing: 8, children: [
           for (final skill in SkillType.values)
@@ -267,14 +267,14 @@ class _IntroCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.purple.withValues(alpha: 0.10),
+          color: paperTint(AppColors.tyrian),
           borderRadius: BorderRadius.circular(12),
           border:
-              Border.all(color: AppColors.purple.withValues(alpha: 0.4), width: 1.5),
+              Border.all(color: AppColors.tyrian.withValues(alpha: 0.4), width: 1.5),
         ),
         child: Row(children: [
           const Icon(Icons.workspace_premium,
-              color: AppColors.purple, size: 20),
+              color: AppColors.tyrian, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -282,7 +282,7 @@ class _IntroCard extends StatelessWidget {
               'con Sellos del Gremio: contratos del día, rachas y notas S. '
               'Los Sellos son de la cuenta: los comparten todos tus mensajeros.',
               style: AppTextStyles.bodyMedium
-                  .copyWith(color: AppColors.textPrimary, height: 1.4),
+                  .copyWith(color: AppColors.ink, height: 1.4),
             ),
           ),
         ]),
@@ -317,19 +317,19 @@ class _MessengerSelector extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: selected
                       ? accent.withValues(alpha: 0.18)
-                      : AppColors.bgCard2,
+                      : AppColors.paperDeep,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                      color: selected ? accent : AppColors.bgLine, width: 2),
+                      color: selected ? accent : AppColors.paperLine, width: 2),
                 ),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   MessengerAvatar.from(m, size: 30),
                   const SizedBox(width: 8),
                   Text(m.name,
-                      style: AppTextStyles.fredoka(13,
+                      style: AppTextStyles.ui(13,
                           color: selected
-                              ? AppColors.textPrimary
-                              : AppColors.textSecondary,
+                              ? AppColors.ink
+                              : AppColors.inkSoft,
                           weight: FontWeight.bold)),
                 ]),
               ),
@@ -363,11 +363,11 @@ class _PathCard extends StatelessWidget {
   });
 
   Color get _color => switch (skill) {
-        SkillType.speed => AppColors.skillSpeed,
-        SkillType.stealth => AppColors.skillStealth,
-        SkillType.combat => AppColors.skillCombat,
-        SkillType.survival => AppColors.skillSurvival,
-        SkillType.contacts => AppColors.skillContacts,
+        SkillType.speed => AppColors.egyptianBlue,
+        SkillType.stealth => AppColors.tyrian,
+        SkillType.combat => AppColors.cinnabar,
+        SkillType.survival => AppColors.verdigris,
+        SkillType.contacts => AppColors.ochreDeep,
       };
 
   IconData get _icon => switch (skill) {
@@ -386,10 +386,10 @@ class _PathCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: AppGradients.card,
+        gradient: AppGradients.paper,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: level >= 6 ? AppColors.purple.withValues(alpha: 0.7) : _color.withValues(alpha: 0.5),
+            color: level >= 6 ? AppColors.tyrian.withValues(alpha: 0.7) : _color.withValues(alpha: 0.5),
             width: 2),
         boxShadow: const [
           BoxShadow(
@@ -423,25 +423,23 @@ class _PathCard extends StatelessWidget {
                     children: [
                       Row(children: [
                         Text(skill.label,
-                            style: AppTextStyles.fredoka(15,
-                                color: AppColors.textPrimary,
+                            style: AppTextStyles.ui(15,
+                                color: AppColors.ink,
                                 weight: FontWeight.bold)),
                         const SizedBox(width: 8),
                         GameChip('Nv.$level/10',
-                            color: level >= 6 ? AppColors.purple : _color),
+                            color: level >= 6 ? AppColors.tyrian : _color),
                       ]),
                       const SizedBox(height: 3),
                       Text('«${node.name}»',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                              color: AppColors.textSecondary,
-                              fontStyle: FontStyle.italic)),
+                          style: AppTextStyles.proseItalic(size: 13)),
                     ]),
               ),
               AnimatedRotation(
                 turns: expanded ? 0.5 : 0,
                 duration: AppMotion.of(context, AppMotion.base),
                 child: const Icon(Icons.expand_more,
-                    color: AppColors.textMuted, size: 24),
+                    color: AppColors.inkMuted, size: 24),
               ),
             ]),
           ),
@@ -467,14 +465,14 @@ class _PathCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                gradient: AppGradients.purple,
+                gradient: AppGradients.tyrian,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.outline, width: 2),
+                border: Border.all(color: AppColors.ink, width: 2),
               ),
               child: Center(
                 child: Text('CAMINO COMPLETADO',
-                    style: AppTextStyles.fredoka(13,
-                        color: AppColors.parchment,
+                    style: AppTextStyles.ui(13,
+                        color: AppColors.paper,
                         weight: FontWeight.bold,
                         letterSpacing: 1)),
               ),
@@ -490,7 +488,7 @@ class _PathCard extends StatelessWidget {
               ? const SizedBox(width: double.infinity)
               : Container(
             decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: AppColors.bgLine)),
+              border: Border(top: BorderSide(color: AppColors.paperLine)),
             ),
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
             child: Column(
@@ -542,7 +540,7 @@ class _NextLevelRow extends StatelessWidget {
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('Siguiente: «${next.name}» — ${next.perk}',
             style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textPrimary)),
+                .copyWith(color: AppColors.ink)),
         const SizedBox(height: 8),
         _LevelDelta(skill: skill, level: level, color: color),
         const SizedBox(height: 8),
@@ -551,7 +549,7 @@ class _NextLevelRow extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(5),
               child: Stack(children: [
-                Container(height: 8, color: AppColors.outline),
+                Container(height: 8, color: AppColors.paperShade),
                 TweenAnimationBuilder<double>(
                   tween: Tween(
                       begin: 0, end: (xp / kXpPerSkillLevel).clamp(0.0, 1.0)),
@@ -567,7 +565,7 @@ class _NextLevelRow extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text('$xp/$kXpPerSkillLevel XP',
-              style: AppTextStyles.fredoka(12,
+              style: AppTextStyles.ui(12,
                   color: GameChip.legibleText(color))),
         ]),
       ]);
@@ -578,19 +576,19 @@ class _NextLevelRow extends StatelessWidget {
     final canAfford = seals >= cost;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
-        const Icon(Icons.workspace_premium, color: AppColors.purple, size: 16),
+        const Icon(Icons.workspace_premium, color: AppColors.tyrian, size: 16),
         const SizedBox(width: 6),
         Expanded(
           child: Text('Ascenso: «${next.name}»',
-              style: AppTextStyles.fredoka(13, weight: FontWeight.bold)),
+              style: AppTextStyles.ui(13, weight: FontWeight.bold)),
         ),
       ]),
       const SizedBox(height: 2),
       Text(next.perk,
           style:
-              AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary)),
+              AppTextStyles.bodyMedium.copyWith(color: AppColors.ink)),
       const SizedBox(height: 8),
-      _LevelDelta(skill: skill, level: level, color: AppColors.purple),
+      _LevelDelta(skill: skill, level: level, color: AppColors.tyrian),
       const SizedBox(height: 4),
       // A partir de Nv.5 la XP deja de subir de nivel, pero se sigue ganando:
       // decirlo evita que el jugador crea que perdió el progreso.
@@ -603,8 +601,7 @@ class _NextLevelRow extends StatelessWidget {
           label: canAfford
               ? 'ASCENDER — $cost SELLOS'
               : 'NECESITÁS $cost SELLOS (tenés $seals)',
-          gradient: AppGradients.purple,
-          shadowColor: AppColors.purpleShadow,
+          variant: GameButtonVariant.secret,
           fontSize: 14,
           isLoading: ascending,
           onTap: canAfford && !ascending ? onAscend : null,
@@ -633,14 +630,14 @@ class _LevelDelta extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.bgCard2,
+        color: AppColors.paperDeep,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: color.withValues(alpha: 0.35), width: 1.5),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('QUÉ GANÁS',
-            style: AppTextStyles.fredoka(12,
-                color: AppColors.textSecondary, letterSpacing: 1.2)),
+            style: AppTextStyles.ui(12,
+                color: AppColors.inkSoft, letterSpacing: 1.2)),
         const SizedBox(height: 5),
         for (final d in deltas)
           Padding(
@@ -649,15 +646,15 @@ class _LevelDelta extends StatelessWidget {
               Expanded(
                 child: Text(d.label,
                     style: AppTextStyles.bodySmall
-                        .copyWith(color: AppColors.textSecondary)),
+                        .copyWith(color: AppColors.inkSoft)),
               ),
               Text(d.before,
-                  style: AppTextStyles.fredoka(12,
-                      color: AppColors.textMuted)),
+                  style: AppTextStyles.ui(12,
+                      color: AppColors.inkMuted)),
               const Icon(Icons.arrow_right_alt,
-                  size: 14, color: AppColors.textMuted),
+                  size: 14, color: AppColors.inkMuted),
               Text(d.after,
-                  style: AppTextStyles.fredoka(12,
+                  style: AppTextStyles.ui(12,
                       color: GameChip.legibleText(color),
                       weight: FontWeight.bold)),
             ]),
@@ -680,11 +677,11 @@ class _NodeRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isElite = node.level >= 6;
-    final accent = isElite ? AppColors.purple : color;
+    final accent = isElite ? AppColors.tyrian : color;
     final (circleColor, textColor) = switch (state) {
-      _NodeState.unlocked => (accent, AppColors.textPrimary),
-      _NodeState.next => (AppColors.gold, AppColors.textPrimary),
-      _NodeState.locked => (AppColors.bgLine, AppColors.textMuted),
+      _NodeState.unlocked => (accent, AppColors.ink),
+      _NodeState.next => (AppColors.ochreDeep, AppColors.ink),
+      _NodeState.locked => (AppColors.paperLine, AppColors.inkMuted),
     };
 
     return Padding(
@@ -703,7 +700,7 @@ class _NodeRow extends StatelessWidget {
             child: state == _NodeState.unlocked
                 ? Icon(Icons.check, size: 13, color: circleColor)
                 : Text('${node.level}',
-                    style: AppTextStyles.fredoka(12,
+                    style: AppTextStyles.ui(12,
                         color: GameChip.legibleText(circleColor),
                         weight: FontWeight.bold)),
           ),
@@ -714,7 +711,7 @@ class _NodeRow extends StatelessWidget {
             Row(children: [
               Expanded(
                 child: Text(node.name,
-                    style: AppTextStyles.fredoka(12,
+                    style: AppTextStyles.ui(12,
                         color: textColor, weight: FontWeight.bold)),
               ),
               // Cuánto cuesta cada nodo élite, no solo el próximo: así el
@@ -724,26 +721,26 @@ class _NodeRow extends StatelessWidget {
                 Icon(Icons.workspace_premium,
                     size: 12,
                     color: state == _NodeState.locked
-                        ? AppColors.textMuted
-                        : AppColors.purple),
+                        ? AppColors.inkMuted
+                        : AppColors.tyrian),
                 const SizedBox(width: 3),
                 Text('${sealCostForLevel[node.level] ?? '?'}',
-                    style: AppTextStyles.fredoka(12,
+                    style: AppTextStyles.ui(12,
                         color: state == _NodeState.locked
-                            ? AppColors.textMuted
-                            : AppColors.textPrimary,
+                            ? AppColors.inkMuted
+                            : AppColors.ink,
                         weight: FontWeight.bold)),
               ] else if (isElite) ...[
                 const SizedBox(width: 6),
                 const Icon(Icons.workspace_premium,
-                    size: 12, color: AppColors.purple),
+                    size: 12, color: AppColors.tyrian),
               ],
             ]),
             Text(node.perk,
                 style: AppTextStyles.bodySmall.copyWith(
                     color: state == _NodeState.locked
-                        ? AppColors.textMuted
-                        : AppColors.textSecondary)),
+                        ? AppColors.inkMuted
+                        : AppColors.inkSoft)),
           ]),
         ),
       ]),
@@ -762,7 +759,7 @@ class _AscendedDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final reduced = AppMotion.reduced(context);
     return GameDialog(
-      accent: AppColors.purple,
+      accent: AppColors.tyrian,
       actions: [
         SizedBox(
           width: double.infinity,
@@ -784,18 +781,18 @@ class _AscendedDialog extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                gradient: AppGradients.purple,
+                gradient: AppGradients.tyrian,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.outline, width: 3),
+                border: Border.all(color: AppColors.ink, width: 3),
                 boxShadow: [
                   BoxShadow(
-                      color: AppColors.purple.withValues(alpha: 0.5),
+                      color: AppColors.tyrian.withValues(alpha: 0.5),
                       blurRadius: 30,
                       spreadRadius: 4),
                 ],
               ),
               child: Icon(skillIconData(skill),
-                  color: AppColors.parchment, size: 38),
+                  color: AppColors.paper, size: 38),
             )
                 .animate()
                 .scale(
@@ -808,23 +805,22 @@ class _AscendedDialog extends StatelessWidget {
                 .then()
                 .shimmer(
                     duration: AppMotion.of(context, 700.ms),
-                    color: AppColors.parchment),
+                    color: AppColors.paper),
           ]),
         ),
         const SizedBox(height: AppSpacing.md),
         Text('¡SUBISTE DE NIVEL!',
-            style: AppTextStyles.fredoka(22,
-                color: AppColors.gold,
-                weight: FontWeight.bold,
+            style: AppTextStyles.heading(22,
+                color: AppColors.ochreDeep,
                 letterSpacing: 1)),
         const SizedBox(height: AppSpacing.sm),
         Text('${skill.label} Nv.${node.level} — «${node.name}»',
-            style: AppTextStyles.fredoka(15, weight: FontWeight.bold),
+            style: AppTextStyles.ui(15, weight: FontWeight.bold),
             textAlign: TextAlign.center),
         const SizedBox(height: 6),
         Text(node.perk,
             style:
-                AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+                AppTextStyles.bodyMedium.copyWith(color: AppColors.ink),
             textAlign: TextAlign.center),
       ]),
     );

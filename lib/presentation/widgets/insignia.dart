@@ -57,12 +57,12 @@ void paintWaxSeal(
   canvas.drawOval(
       Rect.fromCenter(
           center: c.translate(-r * 0.32, -r * 0.4), width: r * 0.42, height: r * 0.22),
-      Paint()..color = AppColors.white.withValues(alpha: 0.35));
+      Paint()..color = AppColors.paperHigh.withValues(alpha: 0.35));
   if (outline > 0) {
     canvas.drawPath(
         drop,
         Paint()
-          ..color = AppColors.outline
+          ..color = AppColors.ink
           ..style = PaintingStyle.stroke
           ..strokeWidth = outline
           ..strokeJoin = StrokeJoin.round);
@@ -152,8 +152,8 @@ class _CrestPainter extends CustomPainter {
       ..quadraticBezierTo(w * 0.1, h * 0.82, w * 0.08, h * 0.5)
       ..close();
     final color = factionColor(faction);
-    final dark = Color.lerp(color, AppColors.outline, 0.45)!;
-    canvas.drawPath(shield.shift(Offset(0, h * 0.03)), Paint()..color = AppColors.outline);
+    final dark = Color.lerp(color, AppColors.ink, 0.45)!;
+    canvas.drawPath(shield.shift(Offset(0, h * 0.03)), Paint()..color = AppColors.ink);
     canvas.drawPath(shield, Paint()..color = color);
     // Mitad derecha en sombra.
     canvas.save();
@@ -163,16 +163,16 @@ class _CrestPainter extends CustomPainter {
     canvas.drawPath(
         shield,
         Paint()
-          ..color = AppColors.outline
+          ..color = AppColors.ink
           ..style = PaintingStyle.stroke
           ..strokeWidth = (w * 0.06).clamp(1.5, 2.5)
           ..strokeJoin = StrokeJoin.round);
 
     final c = Offset(w * 0.5, h * 0.46);
     final s = w * 0.3;
-    final emblem = Paint()..color = AppColors.parchment;
+    final emblem = Paint()..color = AppColors.paper;
     final ink = Paint()
-      ..color = AppColors.parchment
+      ..color = AppColors.paper
       ..style = PaintingStyle.stroke
       ..strokeWidth = (w * 0.06).clamp(1.2, 3.0)
       ..strokeCap = StrokeCap.round;

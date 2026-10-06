@@ -28,15 +28,15 @@ extension CurrencyTypeX on CurrencyType {
       };
 
   Color get color => switch (this) {
-        CurrencyType.denarios => AppColors.sky,
-        CurrencyType.aureos => AppColors.gold,
-        CurrencyType.seals => AppColors.purple,
+        CurrencyType.denarios => AppColors.egyptianBlue,
+        CurrencyType.aureos => AppColors.ochreDeep,
+        CurrencyType.seals => AppColors.tyrian,
       };
 
   /// Color legible sobre navy: el púrpura de los Sellos no llega a 4.5:1,
   /// así que el texto usa un tono claro y el púrpura queda para borde e ícono.
   Color get textColor =>
-      this == CurrencyType.seals ? AppColors.textPrimary : color;
+      this == CurrencyType.seals ? AppColors.ink : color;
 
   String label(int amount) => switch (this) {
         CurrencyType.denarios => amount == 1 ? 'denario' : 'denarios',
@@ -119,12 +119,12 @@ class _CurrencyChipState extends State<CurrencyChip>
             duration: const Duration(milliseconds: 700),
             curve: Curves.easeOutCubic,
             builder: (_, v, __) => Text('$v',
-                style: AppTextStyles.fredoka(fontSize,
+                style: AppTextStyles.ui(fontSize,
                     color: type.textColor, weight: FontWeight.bold)),
           )
         else
           Text('$value',
-              style: AppTextStyles.fredoka(fontSize,
+              style: AppTextStyles.ui(fontSize,
                   color: type.textColor, weight: FontWeight.bold)),
       ]),
     );
@@ -263,7 +263,7 @@ class _CoinFlightState extends State<_CoinFlight>
                   height: 22,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.bgDark,
+                    color: AppColors.paperDeep,
                     border: Border.all(color: widget.type.color, width: 2),
                     boxShadow: [
                       BoxShadow(
@@ -312,7 +312,7 @@ class RewardAmount extends StatelessWidget {
         withLabel
             ? '$sign${amount.abs()} ${type.label(amount.abs())}'
             : '$sign${amount.abs()}',
-        style: AppTextStyles.fredoka(fontSize,
+        style: AppTextStyles.ui(fontSize,
             color: type.textColor, weight: FontWeight.bold),
       ),
     ]);
@@ -380,13 +380,13 @@ class _RewardToastBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.transparent,
+      color: AppColors.transparent,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          gradient: AppGradients.card,
+          gradient: AppGradients.paper,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.gold, width: 2),
+          border: Border.all(color: AppColors.ochreDeep, width: 2),
           boxShadow: const [
             BoxShadow(color: AppColors.shadowHard, blurRadius: 12, offset: Offset(0, 4)),
           ],
@@ -432,19 +432,19 @@ class GradeBadge extends StatelessWidget {
     // Letra oscura sobre las ceras claras y clara sobre las oscuras: así
     // pasa 4.5:1 en todas.
     final ink = color.computeLuminance() > 0.2
-        ? AppColors.outline
-        : AppColors.parchment;
+        ? AppColors.ink
+        : AppColors.paper;
     return Semantics(
       label: 'Nota $grade',
       excludeSemantics: true,
       child: WaxSeal(
         size: size,
         color: color,
-        shade: Color.lerp(color, AppColors.outline, 0.5)!,
-        light: Color.lerp(color, AppColors.white, 0.22)!,
+        shade: Color.lerp(color, AppColors.ink, 0.5)!,
+        light: Color.lerp(color, AppColors.paperHigh, 0.22)!,
         child: Text(
           grade,
-          style: AppTextStyles.fredoka(size * 0.42,
+          style: AppTextStyles.ui(size * 0.42,
               color: ink, weight: FontWeight.bold),
         ),
       ),

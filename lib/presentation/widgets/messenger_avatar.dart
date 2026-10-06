@@ -30,18 +30,18 @@ class MessengerPalette {
 }
 
 const List<MessengerPalette> _slotPalettes = [
-  // 0 — carmesí (el mensajero original)
-  MessengerPalette(Color(0xFF8B0000), Color(0xFF5E0000), AppColors.red,
-      [Color(0xFF1565C0), Color(0xFF0D47A1)]),
-  // 1 — púrpura
-  MessengerPalette(Color(0xFF4A0080), Color(0xFF320058), AppColors.purple,
-      [Color(0xFF6A1B9A), Color(0xFF4A148C)]),
-  // 2 — cielo
-  MessengerPalette(Color(0xFF1A5A78), Color(0xFF103C52), AppColors.sky,
-      [Color(0xFF15607D), Color(0xFF0A2E3E)]),
-  // 3 — verde oliva
-  MessengerPalette(Color(0xFF226633), Color(0xFF154020), AppColors.green,
-      [Color(0xFF1F5E3A), Color(0xFF0C2E1C)]),
+  // 0 — cinabrio sobre muro ocre (el mensajero original)
+  MessengerPalette(ArtColors.tunicCinnabar, ArtColors.tunicCinnabarShade,
+      AppColors.cinnabar, [ArtColors.wallOchre, ArtColors.wallOchreShade]),
+  // 1 — púrpura de Tiro sobre celeste
+  MessengerPalette(ArtColors.tunicTyrian, ArtColors.tunicTyrianShade,
+      AppColors.tyrian, [ArtColors.wallSky, ArtColors.wallSkyShade]),
+  // 2 — azul egipcio sobre cal
+  MessengerPalette(ArtColors.tunicBlue, ArtColors.tunicBlueShade,
+      AppColors.egyptianBlue, [ArtColors.wallLime, ArtColors.wallLimeShade]),
+  // 3 — verdigrís sobre rojo pompeyano
+  MessengerPalette(ArtColors.tunicVerdigris, ArtColors.tunicVerdigrisShade,
+      AppColors.verdigris, [ArtColors.wallPompeian, ArtColors.wallPompeianShade]),
 ];
 
 MessengerPalette _paletteFor(int slotIndex) =>
@@ -237,8 +237,8 @@ class MessengerPainter extends CustomPainter {
       w * 0.42,
       Paint()
         ..shader = RadialGradient(colors: [
-          AppColors.parchment.withValues(alpha: 0.18),
-          AppColors.parchment.withValues(alpha: 0),
+          AppColors.paper.withValues(alpha: 0.18),
+          AppColors.paper.withValues(alpha: 0),
         ]).createShader(
             Rect.fromCircle(center: Offset(w * 0.5, h * 0.3), radius: w * 0.42)),
     );
@@ -333,7 +333,7 @@ class MessengerPainter extends CustomPainter {
             Radius.circular(w * 0.03)),
         Paint()..color = ArtColors.leatherDark);
     canvas.drawCircle(Offset(cx + w * 0.26, h * 0.86), w * 0.022,
-        Paint()..color = AppColors.gold);
+        Paint()..color = AppColors.ochreDeep);
 
     _paintFibula(canvas, w, h, Offset(cx - w * 0.2, h * 0.545));
   }
@@ -345,7 +345,7 @@ class MessengerPainter extends CustomPainter {
       <= 1 => (ArtColors.iron, ArtColors.ironDark),
       2 => (ArtColors.bronze, ArtColors.bronzeDark),
       3 => (ArtColors.silver, ArtColors.silverDark),
-      _ => (AppColors.gold, AppColors.goldShadow),
+      _ => (AppColors.ochreDeep, AppColors.ink),
     };
     final r = w * 0.055;
     if (rank >= 5) {
@@ -361,14 +361,14 @@ class MessengerPainter extends CustomPainter {
     canvas.drawCircle(c, r, Paint()..color = metal.$2);
     canvas.drawCircle(c.translate(-r * 0.12, -r * 0.12), r * 0.82, Paint()..color = metal.$1);
     canvas.drawCircle(c.translate(-r * 0.3, -r * 0.3), r * 0.22,
-        Paint()..color = AppColors.white.withValues(alpha: 0.55));
+        Paint()..color = AppColors.paperHigh.withValues(alpha: 0.55));
     canvas.drawCircle(
       c,
       r,
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = w * 0.01
-        ..color = AppColors.outline.withValues(alpha: 0.7),
+        ..color = AppColors.ink.withValues(alpha: 0.7),
     );
   }
 
@@ -452,7 +452,7 @@ class MessengerPainter extends CustomPainter {
             Paint()..color = ArtColors.hairDark);
         if (!closedish) {
           canvas.drawCircle(e.translate(-r * 0.03, -r * 0.05), r * 0.045,
-              Paint()..color = AppColors.white.withValues(alpha: 0.8));
+              Paint()..color = AppColors.paperHigh.withValues(alpha: 0.8));
         }
       }
       if (mood == MessengerMood.tired) {
@@ -522,8 +522,8 @@ class MessengerPainter extends CustomPainter {
 
     // Alas del dios mensajero (rango 4-5), detrás de la copa.
     if (rank >= 4) {
-      final wing = Paint()..color = rank >= 5 ? AppColors.gold : AppColors.parchment;
-      final wingShade = Paint()..color = rank >= 5 ? AppColors.goldShadow : ArtColors.stoneShade;
+      final wing = Paint()..color = rank >= 5 ? AppColors.ochreDeep : AppColors.paper;
+      final wingShade = Paint()..color = rank >= 5 ? AppColors.ink : ArtColors.stoneShade;
       for (final side in [-1.0, 1.0]) {
         final base = Offset(c.dx + side * r * 0.62, brimY - r * 0.35);
         for (var i = 0; i < 3; i++) {
@@ -553,7 +553,7 @@ class MessengerPainter extends CustomPainter {
       final band = switch (rank) {
         3 => ArtColors.legionRed,
         4 => ArtColors.bronze,
-        _ => AppColors.gold,
+        _ => AppColors.ochreDeep,
       };
       canvas.drawRect(
           Rect.fromLTWH(crown.left, crown.center.dy + r * 0.08, crown.width, r * 0.16),

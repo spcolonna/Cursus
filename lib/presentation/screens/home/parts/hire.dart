@@ -17,11 +17,11 @@ class _UnlockSlotButtonState extends ConsumerState<_UnlockSlotButton> {
     final cost = widget.state.nextSlotCost;
     final payer = widget.state.messenger!;
     final canAfford = payer.aureos >= cost;
-    final accent = canAfford ? AppColors.gold : AppColors.textMuted;
+    final accent = canAfford ? AppColors.ochreDeep : AppColors.inkMuted;
 
     return GameCard(
       borderColor:
-          canAfford ? AppColors.gold.withValues(alpha: 0.6) : AppColors.bgLine,
+          canAfford ? AppColors.ochreDeep.withValues(alpha: 0.6) : AppColors.paperLine,
       semanticLabel: 'Contratar nuevo mensajero por $cost aureos',
       onTap: _loading
           ? null
@@ -36,24 +36,24 @@ class _UnlockSlotButtonState extends ConsumerState<_UnlockSlotButton> {
           height: 46,
           decoration: BoxDecoration(
             color: canAfford
-                ? AppColors.gold.withValues(alpha: 0.15)
-                : AppColors.bgCard2,
+                ? AppColors.ochreDeep.withValues(alpha: 0.15)
+                : AppColors.paperDeep,
             borderRadius: BorderRadius.circular(AppRadii.md - 2),
             border: Border.all(
-                color: canAfford ? AppColors.gold : AppColors.bgLine, width: 2),
+                color: canAfford ? AppColors.ochreDeep : AppColors.paperLine, width: 2),
           ),
           child: _loading
               ? const Padding(
                   padding: EdgeInsets.all(12),
                   child: CircularProgressIndicator(
-                      strokeWidth: 2.5, color: AppColors.gold))
+                      strokeWidth: 2.5, color: AppColors.ochreDeep))
               : Icon(Icons.person_add, color: accent, size: 24),
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('Contratar nuevo mensajero',
-                style: AppTextStyles.fredoka(14,
+                style: AppTextStyles.ui(14,
                     color: accent, weight: FontWeight.bold)),
             const SizedBox(height: 3),
             Text(
@@ -62,8 +62,8 @@ class _UnlockSlotButtonState extends ConsumerState<_UnlockSlotButton> {
                     : 'Necesitás $cost aureos (tenés ${payer.aureos})',
                 style: AppTextStyles.bodySmall.copyWith(
                     color: canAfford
-                        ? AppColors.textSecondary
-                        : AppColors.textMuted)),
+                        ? AppColors.inkSoft
+                        : AppColors.inkMuted)),
           ]),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -128,7 +128,7 @@ class _NewMessengerDialogState extends State<_NewMessengerDialog> {
   Widget build(BuildContext context) {
     final border = OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadii.sm + 2),
-        borderSide: const BorderSide(color: AppColors.bgLine));
+        borderSide: const BorderSide(color: AppColors.paperLine));
     return GameDialog(
       title: 'Nuevo mensajero',
       actions: [
@@ -175,20 +175,20 @@ class _NewMessengerDialogState extends State<_NewMessengerDialog> {
         TextField(
           controller: _ctrl,
           textCapitalization: TextCapitalization.words,
-          style: AppTextStyles.fredoka(15),
+          style: AppTextStyles.ui(15),
           onChanged: (_) {
             if (_showError) setState(() => _showError = false);
           },
           decoration: InputDecoration(
             hintText: 'Nombre del mensajero',
-            hintStyle: AppTextStyles.fredoka(14, color: AppColors.textMuted),
+            hintStyle: AppTextStyles.ui(14, color: AppColors.inkMuted),
             errorText: _showError ? 'Ponele un nombre' : null,
             filled: true,
-            fillColor: AppColors.bgCard2,
+            fillColor: AppColors.paperDeep,
             border: border,
             enabledBorder: border,
             focusedBorder: border.copyWith(
-                borderSide: const BorderSide(color: AppColors.gold, width: 2)),
+                borderSide: const BorderSide(color: AppColors.ochreDeep, width: 2)),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -244,19 +244,19 @@ class _GenderOption extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               color: selected
-                  ? AppColors.gold.withValues(alpha: 0.15)
-                  : AppColors.bgCard2,
+                  ? AppColors.ochreDeep.withValues(alpha: 0.15)
+                  : AppColors.paperDeep,
               borderRadius: BorderRadius.circular(AppRadii.sm + 2),
               border: Border.all(
-                  color: selected ? AppColors.gold : AppColors.bgLine,
+                  color: selected ? AppColors.ochreDeep : AppColors.paperLine,
                   width: selected ? 2 : 1.5),
             ),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               MessengerAvatar(gender: gender, slotIndex: slotIndex, size: 34),
               const SizedBox(height: 6),
               Text(label,
-                  style: AppTextStyles.fredoka(13,
-                      color: selected ? AppColors.gold : AppColors.textMuted,
+                  style: AppTextStyles.ui(13,
+                      color: selected ? AppColors.ochreDeep : AppColors.inkMuted,
                       weight: selected ? FontWeight.bold : FontWeight.normal)),
             ]),
           ),

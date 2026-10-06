@@ -47,6 +47,25 @@ class ArtColors {
   static const bandage = Color(0xFFEDE3CC);
   static const blush = Color(0x33C0392B);
 
+  // ─── Mensajeros por slot: túnica, sombra y el muro del retrato ───
+  // Muros de fresco (ocre, celeste, cal, rojo pompeyano) detrás de cada uno.
+  static const tunicCinnabar = Color(0xFFA4302B);
+  static const tunicCinnabarShade = Color(0xFF6E1C18);
+  static const tunicTyrian = Color(0xFF6B3E6E);
+  static const tunicTyrianShade = Color(0xFF4A2A4D);
+  static const tunicBlue = Color(0xFF2D5A9A);
+  static const tunicBlueShade = Color(0xFF1F3F6E);
+  static const tunicVerdigris = Color(0xFF3F7F72);
+  static const tunicVerdigrisShade = Color(0xFF2B5A50);
+  static const wallOchre = Color(0xFFDDB15C);
+  static const wallOchreShade = Color(0xFFBF8C35);
+  static const wallSky = Color(0xFF9DB7C4);
+  static const wallSkyShade = Color(0xFF6F93A8);
+  static const wallLime = Color(0xFFE3CFA4);
+  static const wallLimeShade = Color(0xFFC9B07E);
+  static const wallPompeian = Color(0xFFC9725A);
+  static const wallPompeianShade = Color(0xFFA4503C);
+
   // ─── Escenas: cielos por hora ───
   static const dawnTop = Color(0xFF3B4A7A);
   static const dawnBottom = Color(0xFFE8A27A);
