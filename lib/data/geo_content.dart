@@ -12,6 +12,8 @@ const _cities = <String, LonLat>{
   'Roma': LonLat(12.48, 41.90),
   'Ostia': LonLat(12.29, 41.75),
   'Tibur': LonLat(12.80, 41.96),
+  'Aricia': LonLat(12.67, 41.72),
+  'Forum Appii': LonLat(13.00, 41.47),
   'Praeneste': LonLat(12.90, 41.84),
   'Antium': LonLat(12.63, 41.45),
   'Tarracina': LonLat(13.25, 41.29),
@@ -45,7 +47,9 @@ const _cities = <String, LonLat>{
   '~valle_rodano': LonLat(4.80, 44.70),
 };
 
-const _appiaToCapua = ['Roma', 'Tarracina', 'Capua'];
+const _appiaToCapua = ['Roma', 'Aricia', 'Forum Appii', 'Tarracina', 'Capua'];
+const _appiaOut = ['Roma', 'Aricia', 'Forum Appii'];
+const _appiaBack = ['Forum Appii', 'Aricia', 'Roma'];
 
 const _routeWaypoints = <String, List<String>>{
   'real_01': ['Roma', 'Ostia'],
@@ -68,12 +72,22 @@ const _routeWaypoints = <String, List<String>>{
   'real_17': [..._appiaToCapua, 'Beneventum', 'Venusia', 'Tarentum', 'Brundisium'],
   'real_18': ['Ostia', '~mar_antium', '~mar_gaeta', 'Neapolis'],
   'real_19': ['Ostia', '~mar_tirreno', '~mar_elba', '~mar_liguria', '~mar_provenza', 'Massilia'],
+  'real_20': ['Roma', 'Tibur'],
+  'real_21': _appiaToCapua,
+  // Arco 2: la Appia de Lucius.
+  'lucius_3': ['Roma', 'Aricia'],
+  'lucius_4_family': _appiaOut,
+  'lucius_4_legion': _appiaOut,
+  'lucius_4_book': _appiaOut,
+  'lucius_5_family': _appiaBack,
+  'lucius_5_legion': _appiaBack,
+  'lucius_5_book': _appiaBack,
 };
 
 const _seaRoutes = {'real_18', 'real_19'};
 
 const _roads = <String, List<String>>{
-  'Via Appia': ['Roma', 'Tarracina', 'Capua', 'Beneventum', 'Venusia', 'Tarentum', 'Brundisium'],
+  'Via Appia': ['Roma', 'Aricia', 'Forum Appii', 'Tarracina', 'Capua', 'Beneventum', 'Venusia', 'Tarentum', 'Brundisium'],
   'Via Aurelia': ['Roma', 'Pisae', 'Luna', 'Genua', 'Nicaea', 'Massilia'],
   'Via Flaminia': ['Roma', 'Narnia', 'Ariminum'],
 };

@@ -300,10 +300,18 @@ class _BodyState extends ConsumerState<_Body> {
 
         // ── Capítulo de historia disponible
         if (state.nextStoryMission != null) ...[
-          _StoryChapterCard(config: state.nextStoryMission!)
+          _StoryChapterCard(
+                  config: state.nextStoryMission!,
+                  arcTitle: state.storyArcTitle)
               .animate(delay: next())
               .fadeIn(duration: AppMotion.of(context, AppMotion.base))
               .slideY(begin: 0.06, end: 0),
+          const SizedBox(height: AppSpacing.lg),
+        ] else if (state.lockedStory != null) ...[
+          // La historia sigue, pero pide más rango: que se sepa qué falta.
+          _LockedStoryCard(step: state.lockedStory!)
+              .animate(delay: next())
+              .fadeIn(duration: AppMotion.of(context, AppMotion.base)),
           const SizedBox(height: AppSpacing.lg),
         ],
 

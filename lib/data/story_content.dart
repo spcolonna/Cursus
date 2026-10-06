@@ -5,23 +5,51 @@
 // ramifica según los flags que el jugador acumula. Editá acá sin tocar lógica.
 //
 // Arco 1: "La Sombra del Senado" — 5 capítulos, 3 finales.
+// Arco 2: "La Taberna del Buey" — 5 capítulos, 3 finales (story_lucius.dart).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import '../domain/entities/entities.dart';
 import '../domain/entities/world.dart';
 import 'game_content.dart';
+import 'story_lucius.dart';
 
 export '../domain/entities/content.dart';
+export 'story_lucius.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // MOTOR — reglas de selección de capítulos
 // ═══════════════════════════════════════════════════════════════
 
+/// Arcos de historia, en el orden en que se juegan.
+const List<StoryArcDef> storyArcs = [
+  StoryArcDef(
+    id: kArcClaudius,
+    title: 'La Sombra del Senado',
+    stageCount: 5,
+    minRank: 2,
+  ),
+  StoryArcDef(
+    id: kArcLucius,
+    title: 'La Taberna del Buey',
+    stageCount: 5,
+    minRank: 3,
+    requiredArc: kArcClaudius,
+  ),
+];
+
+/// Todos los capítulos de todos los arcos.
+List<StoryMissionConfig> get allStoryChapters =>
+    [...storyArcClaudius, ...storyArcLucius];
+
+/// Todos los eventos de historia.
+List<RealEventConfig> get allStoryEvents =>
+    [...storyEventPool, ...luciusEventPool];
+
 /// Capítulo que corresponde jugar para un arco/stage según los flags.
 StoryMissionConfig? storyMissionFor(
     String arcId, int stage, Set<String> flags) {
   final atStage =
-      storyArcClaudius.where((m) => m.arcId == arcId && m.stage == stage);
+      allStoryChapters.where((m) => m.arcId == arcId && m.stage == stage);
   return atStage.where((m) {
         if (m.requiredFlag != null && !flags.contains(m.requiredFlag)) {
           return false;
@@ -37,12 +65,13 @@ StoryMissionConfig? storyMissionFor(
 }
 
 /// Cantidad de capítulos del arco (índices 0..n-1).
-int arcStageCount(String arcId) => 5;
+int arcStageCount(String arcId) =>
+    storyArcs.where((a) => a.id == arcId).firstOrNull?.stageCount ?? 0;
 
 /// Evento de historia por id (los eventos de historia usan la misma
 /// estructura que los del pool real).
 RealEventConfig? storyEventById(String id) =>
-    storyEventPool.where((e) => e.id == id).firstOrNull;
+    allStoryEvents.where((e) => e.id == id).firstOrNull;
 
 // ═══════════════════════════════════════════════════════════════
 // ARCO 1 — "La Sombra del Senado"
@@ -533,6 +562,17 @@ const List<RealEventConfig> storyEventPool = [
         outcomePartial: 'Memorizás lo esencial — los nombres, las sumas, las fechas — y entregás con el sello aceptablemente recompuesto. Esa noche no dormís: en tu cabeza, dos senadores pelean y vos cobrás entrada.',
         outcomeFail: 'Con los nervios, olvidás la mitad de los detalles apenas entregás. Pero los nombres no: Claudius, Petro, la red. Con los nombres alcanza. La Viuda de la Subura completa cualquier historia si le traés el principio.',
       ),
+      RealOptionConfig(
+        id: 'opt_varus_protocol', text: 'Hacés lo que Varus te dijo para este caso',
+        riskLevel: 1, timeCostMinutes: 20, requiredSkills: {},
+        requiredFlag: 'told_varus',
+        repDelta: {Faction.guild: 3},
+        setFlags: ['path_varus'],
+        journalNote: 'Varus me había dicho qué hacer si una carta de Claudius se abría sola. Lo hice. Confiar temprano me ahorró elegir de noche.',
+        outcomeSuccess: 'Varus te lo había dicho el primer día: "Si se abre, no la leas: contá las líneas y recordá los nombres." Contás, recordás, recomponés el sello con la cera que él mismo te dio para esto. Nadie en lo de Tiro nota nada.',
+        outcomePartial: 'Seguís el protocolo de Varus al pie de la letra, aunque la cera que te dio está vieja y el sello queda opaco. Pasa la mirada de Tiro, que tiene sueño. La copia de los nombres ya va camino a la red.',
+        outcomeFail: 'El protocolo dice una cosa y los nervios otra: contás mal las líneas y tenés que volver a empezar. Llegás tarde a lo de Tiro y con el sello apenas tibio. Varus va a saber todo igual; Tiro, quizás también.',
+      ),
     ],
   ),
 
@@ -595,6 +635,15 @@ const List<RealEventConfig> storyEventPool = [
         outcomePartial: 'Dudan. "Registralo." Te palpan de armas y rollos — la copia va en la bota, donde nadie con apuro busca. Te sueltan con un empujón y una amenaza de oficio. Caminás sin apurarte hasta la esquina. En la esquina, corrés.',
         outcomeFail: 'El del medio sonríe más: "Entonces no te necesitamos entero." Zafás del primer manotazo de milagro y la persecución es brutal. Llegás a lo de Petro con la túnica rota y el mensaje intacto. Contá la milagrosa después: ahora, entregá.',
       ),
+      RealOptionConfig(
+        id: 'opt_northman_debt', text: 'Reconocés al norteño entre los tres',
+        riskLevel: 2, timeCostMinutes: 10, requiredSkills: {},
+        requiredFlag: 'refused_northman',
+        journalNote: 'Entre los hombres de Claudius estaba el norteño al que le dije que no. Me dejó pasar. Hay gente que respeta un no más que un sí comprado.',
+        outcomeSuccess: 'El de la izquierda es el norteño del templo, el que te ofreció plata por mirar el sello. Te reconoce. "Este no se vende", les dice a los otros, y baja la espada. "No vale la pena." Pasás entre los tres sin que nadie te toque.',
+        outcomePartial: 'El norteño te reconoce y duda. No te defiende, pero tampoco te ataca: se queda quieto y abre un hueco en el cerco. Lo aprovechás. A tus espaldas, los otros dos le gritan cosas en un idioma que no entendés.',
+        outcomeFail: 'El norteño te reconoce y por un momento parece que va a ayudarte. Después recuerda quién le paga. Te deja una ventaja de tres pasos, nada más, y te persigue sin muchas ganas. Con tres pasos alcanza, justo.',
+      ),
     ],
   ),
 
@@ -619,6 +668,16 @@ const List<RealEventConfig> storyEventPool = [
         outcomeSuccess: '"No quiero tu plata", dice Marco, y mira al río igual. "Quiero poder decirle a Varus que no te vi. Andate rápido, que mentir me sale mal." Cruzás. Hay amistades que sobreviven hasta a las lealtades.',
         outcomePartial: 'Marco acepta la bolsa sin mirarte y la tira al Tíber entera. "Ahí está tu paga. Ahora los dos perdimos algo esta noche." Te deja pasar. El chapoteo te acompaña hasta la Basílica.',
         outcomeFail: 'Marco rechaza la plata con un asco que duele más que un golpe. "¿Ahora sobornás colegas? Claudius te enseña rápido." Te deja pasar solo porque pelear le daría náuseas. El expediente pesa el doble el resto del camino.',
+      ),
+      RealOptionConfig(
+        id: 'opt_marco_who_told', text: '"Varus no supo nada por mí. Preguntale quién le contó."',
+        riskLevel: 2, timeCostMinutes: 10, requiredSkills: {},
+        requiredFlag: 'kept_secret',
+        repDelta: {Faction.guild: 1},
+        journalNote: 'Le pregunté a Marco quién le había contado a Varus. No supo responder. Ahora la red tiene una duda, y la duda no es mía.',
+        outcomeSuccess: 'Marco abre la boca y la cierra. Vos nunca dijiste nada, y él lo sabe. Entonces alguien más habla con Varus, alguien que conoce tus pasos. "Andá", te dice, ya pensando en otra cosa. "Tengo que averiguar algo."',
+        outcomePartial: 'La pregunta lo frena, pero no lo convence del todo: "Alguien le contó, y vos sos el que está acá." Te deja pasar igual, mirando por encima de tu hombro como si buscara a otro. La sospecha cambió de dirección.',
+        outcomeFail: 'Marco no quiere preguntas: quiere el expediente o una razón. La pregunta le suena a excusa. Discuten en el puente hasta que pasa una patrulla y los dos se separan sin mirarse. Pasaste, pero la amistad quedó en el puente.',
       ),
     ],
   ),
@@ -645,6 +704,16 @@ const List<RealEventConfig> storyEventPool = [
         outcomeSuccess: 'Le vendés al agente una versión con los nombres correctos y las sumas cambiadas: cierta donde importa poco, falsa donde importa todo. Cobrás dos veces por el mismo secreto. La Viuda, cuando se entere — porque se va a enterar — va a aplaudir.',
         outcomePartial: 'La venta doble sale, pero el agente es menos tonto de lo que viste: paga la mitad "hasta verificar". Igual: dos pagas por una carta. La matemática de la Subura te empieza a gustar.',
         outcomeFail: 'A mitad de la "edición" improvisada, el agente huele el truco y corta la charla. Se va sin pagar y con sospechas. Ahora Petro sabe que alguien vende... y que ese alguien es creativo. La Viuda mejor que escuche tu versión primero.',
+      ),
+      RealOptionConfig(
+        id: 'opt_known_price', text: '"Claudius ya pagó por mirar. Mi precio es público."',
+        riskLevel: 3, timeCostMinutes: 10, requiredSkills: {},
+        requiredFlag: 'sold_look_claudius',
+        repDelta: {Faction.underworld: 1},
+        journalNote: 'Le dije al agente de Petro que Claudius ya me había comprado un vistazo. Mi precio se volvió una referencia. Eso también es reputación.',
+        outcomeSuccess: 'Al agente le brillan los ojos: si Claudius ya pagó, el secreto es caro de verdad. Sube la oferta sin que se la pidas. Le decís que la Viuda tiene la primera opción, y él se va contento de haber quedado en lista. Así se cotiza en la Subura.',
+        outcomePartial: 'El agente toma nota del dato y no ofrece nada más: se va a pensar. Lo bueno es que ahora Petro sabe que Claudius pagó. Lo malo es que Claudius se va a enterar de que lo contaste.',
+        outcomeFail: 'Decirlo fue un error: el agente entiende que se te puede comprar y te ofrece una miseria, a ver si picás. No picás. Te vas con el orgullo intacto y la sensación de haber regalado información gratis.',
       ),
     ],
   ),
@@ -698,6 +767,16 @@ const List<RealEventConfig> storyEventPool = [
         outcomeSuccess: 'Claudius se queda un instante inmóvil... y suelta una risa corta, auténtica, la primera que le escuchás. "Insolente y con memoria. Si algún día Varus te aburre, mi puerta tiene mala memoria para los rencores." Perder con estilo también es patricio.',
         outcomePartial: 'La frase le llega: aprieta apenas la mandíbula y te despide con un gesto. En la política romana, hacer callar a un senador un segundo entero es victoria de mensajero.',
         outcomeFail: 'La frase suena mejor en tu cabeza que en el Foro. "Los mensajeros con filosofía llegan tarde", responde seco, y te despide como a un vendedor de higos. Te vas con la carta entregada y la lengua mordida.',
+      ),
+      RealOptionConfig(
+        id: 'opt_return_coin', text: 'Le devolvés la moneda que te pagó el norteño',
+        riskLevel: 2, timeCostMinutes: 0, requiredSkills: {},
+        requiredFlag: 'sold_look_claudius',
+        repDelta: {Faction.guild: 1},
+        journalNote: 'Le devolví a Claudius la moneda del norteño. Ya no le debo nada, ni siquiera ese vistazo.',
+        outcomeSuccess: 'Junto con la carta le dejás en la mano la moneda que te dio su hombre en el templo. Claudius la mira un rato largo. "Saldado", dice, y por primera vez te habla como a un igual. Cerraste la cuenta antes de que la cerrara él.',
+        outcomePartial: 'Claudius toma la moneda sin mirarla y se la da a su esclavo, como si fuera una propina. El gesto duele, pero la deuda queda saldada. Bajás la escalinata más liviano.',
+        outcomeFail: 'La moneda se te cae en la escalinata y rueda tres gradas hacia abajo. Un esclavo la junta y se la da a Claudius, que sonríe apenas. "Hasta para devolver sos torpe." Saldado igual. Con público.',
       ),
     ],
   ),
@@ -854,14 +933,29 @@ const Map<String, String> flagDescriptions = {
   'path_varus': 'Elegiste al gremio. Varus lo tendrá presente.',
   'path_claudius': 'Elegiste al Senado. Claudius abre sus puertas.',
   'path_underworld': 'Elegiste los bajos fondos. Roma tiene otra cara ahora.',
-  'ending_varus': 'La Sombra del Senado terminó del lado del gremio.',
-  'ending_claudius': 'La Sombra del Senado terminó del lado de Claudius.',
+  'ending_varus': 'La Sombra del Senado terminó del lado del gremio: '
+      'Varus te abre el correo exprés y el cambio de contratos.',
+  'ending_claudius': 'La Sombra del Senado terminó del lado de Claudius: '
+      'se abrió la ruta a su villa de Tibur.',
   'ending_underworld':
       'La Sombra del Senado terminó del lado de los bajos fondos.',
   'claudius_vetoed': 'Claudius ya no te va a ofrecer trabajo.',
   'varus_cold': 'Varus te sigue dando misiones, pero ya no te mira igual.',
   'route_nocturna_unlocked':
       'Se abrió la Ruta Nocturna: encargos que no existen de día.',
+
+  // ── Arco 2: La Taberna del Buey
+  'lucius_family':
+      'Elegiste a la gente de la lista. Lucius no lo va a olvidar.',
+  'lucius_legion':
+      'Elegiste a la legión: el libro por el perdón de Gaius.',
+  'lucius_book': 'Te quedaste con el libro. Doscientos nombres van con vos.',
+  'ending_lucius_family':
+      'El Buey es posta de la red: en la Appia llegás menos cansado.',
+  'ending_lucius_legion':
+      'Llevás el correo de la Décima: se abrió la ruta militar a Capua.',
+  'ending_lucius_book':
+      'La Viuda te abrió el mercado de la noche: hay un mapa nuevo en la tienda.',
 };
 
 /// Texto para mostrar de un flag recién activado (null si es interno).

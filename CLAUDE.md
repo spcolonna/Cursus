@@ -32,6 +32,7 @@ lib/
 │   ├── entities/geo.dart         GeoAtlas: proyección del mapa, trazado de cada ruta (Italia o Roma)
 │   ├── repositories/             contratos abstractos + GameContentCatalog (contenido inyectado)
 │   ├── usecases/usecases.dart    use cases del loop (ResolveEvent, CompleteMission, AscendSkill…)
+│   ├── usecases/event_selection.dart  pickEventsForMission: pool + consecuencias, memoria, eventos de una vez
 │   ├── usecases/progression_usecases.dart  GetProgression (migra), RecordProgress, EquipTitle
 │   ├── usecases/weekly_usecases.dart       GetWeekly, RecordWeeklyProgress, ClaimWeeklyCommission
 │   └── usecases/analytics_usecases.dart    TrackSession (sesiones y días activos)
@@ -39,7 +40,10 @@ lib/
 ├── infrastructure/analytics/      AnalyticsService (fachada + opt-out), sinks de consola y buffer local
 ├── infrastructure/audio/sfx_service.dart  enum Sfx + pool de players (los WAV salen de tool/gen_sfx.py)
 ├── data/game_content.dart        CONTENIDO: tutorial, rutas fase 1, pool de eventos reales
-├── data/story_content.dart       CONTENIDO: arcos narrativos (arc_claudius, 5 caps, 3 finales)
+├── data/story_content.dart       CONTENIDO: arcos (storyArcs), arc_claudius y el motor de capítulos
+├── data/story_lucius.dart        CONTENIDO: arc_lucius "La Taberna del Buey" (5 caps, 3 finales)
+├── data/story_rewards.dart       CONTENIDO: premios de los finales (rutas real_20/21, postas)
+├── data/consequence_content.dart CONTENIDO: eventos que solo salen si el jugador hizo algo antes
 ├── data/progression_content.dart CONTENIDO: 26 logros con premios y títulos
 ├── data/faction_content.dart    CONTENIDO: rutas de facción, favores por escalón, encargos semanales
 ├── data/npc_content.dart        CONTENIDO: NPCs con retrato (id = nombre del archivo en assets/art/npcs)
@@ -97,7 +101,7 @@ Para búsquedas amplias (¿dónde se usa X?, ¿existe Y?), delegá en el subagen
 
 ## Estado real (2026-07)
 
-Implementado: mapas de ruta, escenarios de evento, mensajero ilustrado y árbol visual por código (ilustraciones opcionales encima), 17 SFX; loop core con timer real, paga por ruta, 26 logros con títulos equipables y celebraciones, escalones de facción con rutas y favores, encargos semanales, tutorial de 4 pruebas, 3+ rutas, pool de eventos con prosa propia, arco `arc_claudius`, reputación/flags/diario, árbol de skills 1-10 con Sellos, contratos diarios, paga del gremio, tienda, multi-mensajero (4 slots).
+Implementado: mapas de ruta, escenarios de evento, mensajero ilustrado y árbol visual por código (ilustraciones opcionales encima), 17 SFX; loop core con timer real, paga por ruta, 26 logros con títulos equipables y celebraciones, escalones de facción con rutas y favores, encargos semanales, tutorial de 4 pruebas, 22 rutas, pool de eventos con prosa propia y selección con memoria, 9 eventos de consecuencia, arcos `arc_claudius` y `arc_lucius` con finales que abren rutas/postas/tienda, reputación/flags/diario, árbol de skills 1-10 con Sellos, contratos diarios, paga del gremio, tienda, multi-mensajero (4 slots).
 
 También: avisos locales (eventos, entrega, ocioso, contratos; el tap abre la misión) y auto-resolución de eventos a los 60 min.
 

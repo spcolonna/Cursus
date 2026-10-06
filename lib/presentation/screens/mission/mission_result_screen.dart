@@ -629,7 +629,9 @@ class _WhatChanged extends StatelessWidget {
           Wrap(spacing: 8, runSpacing: 8, children: [
             if (completion.fatigueDelta != 0)
               GameChip(
-                '${completion.fatigueDelta} de fatiga al llegar',
+                completion.restStop == null
+                    ? '${completion.fatigueDelta} de fatiga al llegar'
+                    : '${completion.fatigueDelta} de fatiga: ${completion.restStop}',
                 icon: Icons.self_improvement,
                 color: AppColors.green,
                 size: GameChipSize.medium,

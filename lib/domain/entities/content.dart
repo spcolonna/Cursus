@@ -98,6 +98,9 @@ class RealMissionConfig {
   final Faction? patron;
   /// Reputación con [patron] necesaria para que te la ofrezcan.
   final int minReputation;
+  /// Con este flag la ruta se ofrece aunque falte la reputación: es el
+  /// premio de un final de arco ("Varus te abre el correo exprés").
+  final String? openedByFlag;
 
   const RealMissionConfig({
     required this.id,
@@ -115,13 +118,16 @@ class RealMissionConfig {
     this.requiredFlag,
     this.patron,
     this.minReputation = 0,
+    this.openedByFlag,
   });
 
   /// ¿Se la ofrecen a un mensajero de [rank] con este [world]?
   bool isOfferedTo(int rank, WorldState world) =>
       requiredRank <= rank &&
       (requiredFlag == null || world.hasFlag(requiredFlag!)) &&
-      (patron == null || world.repOf(patron!) >= minReputation);
+      (patron == null ||
+          world.repOf(patron!) >= minReputation ||
+          (openedByFlag != null && world.hasFlag(openedByFlag!)));
 
   int get dangerLevel => (danger * 5).round().clamp(1, 5);
 
@@ -149,6 +155,23 @@ class RealEventConfig {
   /// Personaje con retrato (`NpcDef.id`) que aparece en el evento.
   final String? npcId;
 
+  // ── Cuándo puede salir (ver `pickEventsForMission`) ──
+  /// Solo sale si el jugador tiene este flag: es una consecuencia de algo
+  /// que hizo antes. Las consecuencias pesan triple en el sorteo.
+  final String? requiredFlag;
+
+  /// No sale si el jugador tiene este flag.
+  final String? forbiddenFlag;
+
+  /// Reputación mínima por facción para que salga.
+  final Map<Faction, int>? minReputation;
+
+  /// Peso relativo en el sorteo (1 = normal).
+  final int weight;
+
+  /// Sale una sola vez por partida (las consecuencias, casi siempre).
+  final bool once;
+
   const RealEventConfig({
     required this.id,
     required this.title,
@@ -156,7 +179,15 @@ class RealEventConfig {
     required this.options,
     this.category = EventCategory.road,
     this.npcId,
+    this.requiredFlag,
+    this.forbiddenFlag,
+    this.minReputation,
+    this.weight = 1,
+    this.once = false,
   });
+
+  /// Es la vuelta de una decisión anterior.
+  bool get isConsequence => requiredFlag != null;
 }
 
 /// Personaje recurrente con retrato. El retrato va en
@@ -269,6 +300,8 @@ class StoryMissionConfig {
   // Variantes de capítulo: se elige la primera cuyo flag matchea.
   final String? requiredFlag;
   final String? forbiddenFlag;
+  /// Rango del mensajero principal que pide el capítulo (0 = el del arco).
+  final int minRank;
   /// Variante que se juega si ninguna otra matchea (p. ej. el evento que
   /// decide el camino se resolvió sin dejar flag). Una por stage ramificado.
   final bool isDefaultVariant;
@@ -276,7 +309,7 @@ class StoryMissionConfig {
   final List<String>? setFlagsOnComplete;
   final Map<Faction, int>? repDeltaOnComplete;
   // Solo capítulos finales:
-  final String? endingId;    // 'end_varus' | 'end_claudius' | 'end_underworld'
+  final String? endingId;    // 'end_varus', 'end_lucius_family'...
   final String? endingTitle; // título que gana el jugador
 
   const StoryMissionConfig({
@@ -296,6 +329,7 @@ class StoryMissionConfig {
     this.requiredFlag,
     this.forbiddenFlag,
     this.isDefaultVariant = false,
+    this.minRank = 0,
     this.setFlagsOnComplete,
     this.repDeltaOnComplete,
     this.endingId,
@@ -303,4 +337,43 @@ class StoryMissionConfig {
   });
 
   bool get isFinal => endingId != null;
+}
+
+/// Un arco de historia: una cadena de capítulos con su propia puerta.
+class StoryArcDef {
+  final String id;
+  final String title;
+
+  /// Cantidad de capítulos (stages 0..n-1).
+  final int stageCount;
+
+  /// Rango del mensajero principal para empezarlo.
+  final int minRank;
+
+  /// Arco que hay que terminar antes (con cualquier final).
+  final String? requiredArc;
+
+  const StoryArcDef({
+    required this.id,
+    required this.title,
+    required this.stageCount,
+    required this.minRank,
+    this.requiredArc,
+  });
+}
+
+/// Una posta amiga en el camino: con [flag], las rutas de [routeIds] cansan
+/// [fatigueRelief] puntos menos al llegar.
+class RestStop {
+  final String flag;
+  final String name;
+  final Set<String> routeIds;
+  final int fatigueRelief;
+
+  const RestStop({
+    required this.flag,
+    required this.name,
+    required this.routeIds,
+    required this.fatigueRelief,
+  });
 }

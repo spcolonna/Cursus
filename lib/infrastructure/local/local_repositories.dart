@@ -25,13 +25,13 @@ const _uuid = Uuid();
 final Map<String, (EventCategory, String?)> _eventArtById = {
   for (final e in tutorialEvents) e.id: (e.category, e.npcId),
   for (final e in allRealEvents) e.id: (e.category, e.npcId),
-  for (final e in storyEventPool) e.id: (e.category, e.npcId),
+  for (final e in allStoryEvents) e.id: (e.category, e.npcId),
 };
 
 final Map<String, String> _configIdByTitle = {
   for (final e in tutorialEvents) e.title: e.id,
   for (final e in allRealEvents) e.title: e.id,
-  for (final e in storyEventPool) e.title: e.id,
+  for (final e in allStoryEvents) e.title: e.id,
 };
 
 class _WriteQueue {
@@ -477,12 +477,14 @@ class LocalMissionRepository implements MissionRepository {
 
   @override
   Future<Mission> createMission(GameRoute route, String messengerId,
-      {bool revealEvents = false, double payFactor = 1.0}) async {
+      {bool revealEvents = false,
+      double payFactor = 1.0,
+      List<String>? eventIds}) async {
     final now = DateTime.now();
     final deadline = now.add(Duration(minutes: route.durationMinutes));
     final cfg = allRealMissions.firstWhere(
             (m) => m.id == route.id, orElse: () => allRealMissions.first);
-    final events = _generateRealEvents(cfg, now, deadline);
+    final events = _generateRealEvents(cfg, now, deadline, eventIds: eventIds);
 
     final mission = Mission(
       id: _uuid.v4(), routeId: route.id,
@@ -500,18 +502,17 @@ class LocalMissionRepository implements MissionRepository {
   }
 
   @override
-  Future<Mission> createStoryMission(
-      StoryMissionConfig config, String messengerId) async {
+  Future<Mission> createStoryMission(StoryMissionConfig config,
+      String messengerId, List<RealEventConfig> storyEvents) async {
     final now = DateTime.now();
     final deadline = now.add(Duration(minutes: config.durationMinutes));
     final totalSec = config.durationMinutes * 60;
 
     // Eventos fijos de historia, repartidos en orden a lo largo de la misión.
     final events = <MissionEvent>[];
-    for (int i = 0; i < config.fixedEventIds.length; i++) {
-      final ec = storyEventById(config.fixedEventIds[i]);
-      if (ec == null) continue;
-      final slotSec = totalSec / (config.fixedEventIds.length + 1);
+    for (int i = 0; i < storyEvents.length; i++) {
+      final ec = storyEvents[i];
+      final slotSec = totalSec / (storyEvents.length + 1);
       final triggerAt = now.add(Duration(seconds: (slotSec * (i + 1)).round()));
       events.add(MissionEvent(
         id: _uuid.v4(),
@@ -556,18 +557,27 @@ class LocalMissionRepository implements MissionRepository {
   }
 
   List<MissionEvent> _generateRealEvents(
-      RealMissionConfig cfg, DateTime start, DateTime end) {
+      RealMissionConfig cfg, DateTime start, DateTime end,
+      {List<String>? eventIds}) {
     final rng = Random();
-    final count =
-        cfg.minEvents + rng.nextInt((cfg.maxEvents - cfg.minEvents + 1).clamp(1, 10));
+    final List<RealEventConfig> picked;
+    if (eventIds != null) {
+      // Ya elegidos por el dominio (pickEventsForMission), en orden.
+      picked = [
+        for (final id in eventIds)
+          if (allRealEvents.where((e) => e.id == id).firstOrNull case final e?) e
+      ];
+    } else {
+      final count = cfg.minEvents +
+          rng.nextInt((cfg.maxEvents - cfg.minEvents + 1).clamp(1, 10));
+      final pool = allRealEvents
+          .where((e) => cfg.eventPoolIds.contains(e.id))
+          .toList()
+        ..shuffle(rng);
+      picked = pool.take(count).toList();
+    }
     final duration = end.difference(start);
-    final slot = duration ~/ (count + 1);
-
-    final pool = allRealEvents
-        .where((e) => cfg.eventPoolIds.contains(e.id))
-        .toList()
-      ..shuffle(rng);
-    final picked = pool.take(count).toList();
+    final slot = duration ~/ (picked.length + 1);
 
     return picked.asMap().entries.map((entry) {
       final i = entry.key;
@@ -891,6 +901,8 @@ class LocalWorldRepository implements WorldRepository {
     'patronDays': {
       for (final e in s.patronDays.entries) e.key.index.toString(): e.value
     },
+    'recentEvents': s.recentEvents,
+    'seenEvents': s.seenEvents.toList(),
   };
 
   WorldState _fromJson(Map<String, dynamic> j) => WorldState(
@@ -916,6 +928,10 @@ class LocalWorldRepository implements WorldRepository {
           in ((j['patronDays'] as Map<String, dynamic>?) ?? const {}).entries)
         Faction.values[int.parse(e.key)]: e.value as String
     },
+    // Anteriores a la Fase 5: sin memoria de eventos, el sorteo arranca limpio.
+    recentEvents:
+        ((j['recentEvents'] as List?) ?? const []).cast<String>().toList(),
+    seenEvents: ((j['seenEvents'] as List?) ?? const []).cast<String>().toSet(),
   );
 }
 // ─── Progresión (estadísticas, logros, títulos) ───────────────────────────────

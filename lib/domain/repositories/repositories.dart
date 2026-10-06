@@ -40,11 +40,14 @@ abstract class MissionRepository {
   // Las rutas pueden pedir flags de historia (la nocturna) o reputación con
   // la facción que las encarga.
   Future<List<GameRoute>> getAvailableRoutes(int messengerRank, WorldState world);
+  /// [eventIds] son los eventos ya elegidos (ver `pickEventsForMission`);
+  /// sin ellos, se sortean del pool de la ruta.
   Future<Mission> createMission(GameRoute route, String messengerId,
-      {bool revealEvents, double payFactor});
+      {bool revealEvents, double payFactor, List<String>? eventIds});
   Future<Mission> createTutorialMission(int index, String messengerId);
   // Misión de historia: eventos fijos, arcId/epilogue seteados.
-  Future<Mission> createStoryMission(StoryMissionConfig config, String messengerId);
+  Future<Mission> createStoryMission(StoryMissionConfig config,
+      String messengerId, List<RealEventConfig> events);
 }
 
 abstract class GuildRepository {

@@ -22,6 +22,7 @@ const List<RealMissionConfig> factionMissions = [
     requiredRank: 2,
     patron: Faction.guild,
     minReputation: 30,
+    openedByFlag: 'ending_varus',
     lore: 'La valija de los pedidos urgentes. Caballo de relevo en cada posta '
         'y nadie pregunta por qué tanta prisa.',
     packageOptions: [
@@ -102,6 +103,7 @@ const List<FactionUnlock> factionUnlocks = [
     tier: FactionTier.respected,
     kind: FactionUnlockKind.perk,
     perk: FactionPerk.contractReroll,
+    orFlag: 'ending_varus',
     name: 'Cambiar un contrato',
     description: 'Una vez por día podés cambiar un contrato del tablón por otro.',
   ),
@@ -110,6 +112,7 @@ const List<FactionUnlock> factionUnlocks = [
     tier: FactionTier.respected,
     kind: FactionUnlockKind.route,
     ref: 'real_16',
+    orFlag: 'ending_varus',
     name: 'Correo exprés a Neapolis',
     description: 'La valija urgente del Gremio. Corta y bien paga.',
   ),

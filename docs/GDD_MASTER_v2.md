@@ -95,7 +95,27 @@ Flutter, arquitectura limpia (`domain/` → `infrastructure/` → `presentation/
 1. **Prosa específica por opción.** ✅ Hecho: todos los eventos del pool real y de historia tienen textos propios de éxito/parcial/fallo por opción. Hay tests que lo verifican, más reglas de calidad: ninguna opción normal repite perfil (riesgo + costo + skill) dentro del mismo evento, y todo evento del pool común ofrece una salida prudente y una peligrosa.
 2. **Ampliar a ~15 rutas y ~20 eventos** dentro de la época romana, con variedad de duraciones (30 min a 72h) para que siempre haya una misión que encaje en el momento del día del jugador.
 3. **Migrar el contenido de `game_content.dart` a JSON data-driven** (assets versionados). Beneficios: escribir contenido sin recompilar, preparar contenido remoto (Fase 4) y habilitar futuras épocas como "packs de datos".
-4. **Arcos de personaje:** cadenas de 3-5 misiones con continuidad (ej. la conspiración del Senador Claudius) que se desbloquean por rank. La historia como zanahoria de progresión.
+4. **Arcos de personaje:** ✅ Hecho. Cadenas de 5 capítulos con continuidad que se desbloquean por rank. La historia como zanahoria de progresión.
+
+### 3.1 Arcos
+
+| Arco | Se abre con | Capítulos | Finales y lo que abre cada uno |
+|---|---|---|---|
+| **La Sombra del Senado** (Claudius) | tutorial terminado y rango 2 | 5 | **Varus:** correo exprés y cambiar contratos sin esperar la reputación del Gremio. **Claudius:** ruta a su villa de Tibur. **Bajos Fondos:** Ruta Nocturna. |
+| **La Taberna del Buey** (Lucius) | cualquier final del arco 1 y rango 3; los capítulos IV y V piden rango 4 | 5 (el I tiene una entrada por cada final del arco 1) | **Familia:** el Buey pasa a ser posta, con −10 de fatiga al llegar por la Appia. **Legión:** +3 Legiones y ruta militar a Capua. **Libro:** +3 Bajos Fondos y Mapa del contrabandista en la tienda (200 Denarios). |
+
+- **Capítulo cerrado por rango.** Si el próximo capítulo pide más rango, el Home lo muestra cerrado con el rango que falta: la historia también es una razón para subir.
+- **Opciones secretas.** Las decisiones de los capítulos I y II del arco 1 vuelven en los III-V (`told_varus`, `kept_secret`, `sold_look_claudius`, `refused_northman`). En el arco 2, haber ayudado a un desertor del camino, el veto de Claudius y la frialdad de Varus abren opciones propias.
+- **Ningún premio de final suma al score** (cap de +25%). Abren rutas, cambian la fatiga o venden información.
+
+### 3.2 Lo que hiciste vuelve
+
+Los eventos de cada misión los elige `pickEventsForMission` (`domain/usecases/event_selection.dart`), ya no un sorteo plano:
+
+- **Consecuencias.** 9 eventos que solo salen si el jugador hizo algo antes (huir de los bandidos, dejar al viajero herido, vender un vistazo del sello, ayudar al correo rival, a la nena perdida, escuchar a la sibila, irse del templo acusado, denunciar al contrabandista o llevarle carga). Pueden salir en cualquier ruta real, pesan triple en el sorteo, salen una sola vez por partida y como mucho una por misión.
+- **Sin repetir.** Los últimos 6 eventos que salieron quedan afuera mientras haya otros en el pool.
+- **Opciones de facción.** Algunos eventos comunes tienen una opción que pide reputación (salvoconducto de la legión, la seña de la Subura, el nombre de una casa patricia, el aviso del Gremio). Se ve cerrada, con el motivo, hasta que la facción te respeta.
+- **Ningún flag sin consumidor.** Cada flag que otorga una decisión abre un evento, una opción, un capítulo, una ruta, una posta o un ítem. Un test lo verifica.
 
 Épocas 2+ (Medieval, Napoleónica, etc.): backlog explícito. No se diseña ni se implementa nada de eso hasta que la época romana esté completa y retenga.
 
@@ -333,6 +353,7 @@ Todo se ve completo sin ilustraciones: lo que no está dibujado a mano se pinta 
 
 ### Historial
 
+- **v2.5 (2026-10-06):** profundidad narrativa (§3.1 y §3.2). Arco 2 "La Taberna del Buey" (Lucius, 5 capítulos, 14 eventos, 3 finales con premio), los tres finales del arco 1 abren algo, opciones secretas en los capítulos III-V, 9 eventos de consecuencia y opciones de facción en eventos comunes. Motor de selección de eventos con peso, memoria y eventos de una vez (con migración del mundo), historia en varios arcos y capítulo cerrado por rango en el Home.
 - **v2.4 (2026-10-06):** arte y sonido (§8). Mapa de Italia y de Roma con la ruta en vivo, escenarios de evento por categoría con cielo según la hora, mensajero con capa, petasos y cara según su estado, árbol de caminos visual con sellos de cera, notas y facciones como insignias, monedas que vuelan, 17 efectos sintetizados. Los eventos guardan su id de contenido, escenario y personaje (con migración), y toda pieza acepta una ilustración que reemplaza al dibujo por código (ART_PROMPTS.md).
 - **v2.3 (2026-10-06):** analytics. Diccionario de eventos y métricas de retención definidos en código, sesión con corte a los 30 min, registro local de días activos, exportación para la beta y opt-out (§9, ANALYTICS.md).
 - **v2.2 (2026-10-05):** paga por ruta, 26 logros con títulos y celebraciones; reputación con escalones que abren rutas (las primeras de rango 4 y 5), tarifa de facción y cambio de contrato; encargos semanales con NPCs (§4.6-4.7).

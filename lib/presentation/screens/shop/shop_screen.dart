@@ -48,6 +48,8 @@ class ShopItem {
   final int?
       dinariosReward; // if category == aureosPacks, how many aureos given
   final int? aureosReward;
+  /// Solo se vende con este flag de historia (premio de un final).
+  final String? requiredFlag;
 
   const ShopItem({
     required this.id,
@@ -62,6 +64,7 @@ class ShopItem {
     this.isLimited = false,
     this.dinariosReward,
     this.aureosReward,
+    this.requiredFlag,
   });
 }
 
@@ -120,6 +123,20 @@ final shopCatalogue = <ShopItem>[
     icon: Icons.map,
     color: AppColors.gold,
     tag: 'POPULAR',
+  ),
+  // Final "El que lleva el libro" (arco 2): el mercado de la noche de la
+  // Viuda vende el mismo mapa en Denarios. Solo información: no suma score.
+  const ShopItem(
+    id: 'boost_events_black',
+    name: 'Mapa del contrabandista',
+    description: 'El mapa de la Viuda: revela el próximo evento de tu próxima misión.',
+    category: ShopCategory.boosters,
+    price: 200,
+    currency: PriceCurrency.denarios,
+    icon: Icons.map_outlined,
+    color: AppColors.purple,
+    tag: 'MERCADO NEGRO',
+    requiredFlag: 'ending_lucius_book',
   ),
 
   // ── Habilidades (Denarios) ────────────────────────────────────────────────
@@ -306,12 +323,18 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     );
   }
 
-  List<ShopItem> get _items =>
-      shopCatalogue.where((i) => i.category == _activeTab).toList();
+  List<ShopItem> get _items {
+    final flags = ref.watch(worldProvider).valueOrNull?.flags ?? const {};
+    return shopCatalogue
+        .where((i) => i.category == _activeTab)
+        .where((i) => i.requiredFlag == null || flags.contains(i.requiredFlag))
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     final home = ref.watch(homeProvider).valueOrNull;
+    final items = _items;
     // Billetera común: la del principal. El efecto va al mensajero elegido.
     final messenger = home?.messenger;
     final target = home?.slotFor(_targetId)?.messenger;
@@ -336,15 +359,15 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(14, 12, 14, 32),
-              itemCount: _items.length,
+              itemCount: items.length,
               itemBuilder: (_, i) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: _ShopCard(
-                  item: _items[i],
+                  item: items[i],
                   messenger: messenger,
-                  price: _priceFor(_items[i], target),
-                  justBought: _purchasedId == _items[i].id,
-                  onBuy: () => _buy(_items[i], target),
+                  price: _priceFor(items[i], target),
+                  justBought: _purchasedId == items[i].id,
+                  onBuy: () => _buy(items[i], target),
                 )
                     .animate(delay: AppMotion.stagger * i.clamp(0, 8))
                     .fadeIn(duration: AppMotion.of(context, AppMotion.base))
@@ -443,7 +466,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       'boost_health_full' => 'Salud restaurada al 100%',
       'boost_fatigue' => 'Fatiga eliminada',
       'boost_speed' => 'Sandalias listas: tu próxima misión durará 20% menos',
-      'boost_events' =>
+      'boost_events' || 'boost_events_black' =>
         'Mapa listo: tu próxima misión revelará el evento por venir',
       'skill_speed_1' ||
       'skill_stealth_1' ||

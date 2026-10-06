@@ -135,6 +135,8 @@ final claimChecklistRewardUseCaseProvider =
 final acceptMissionUseCaseProvider = Provider((ref) => AcceptMissionUseCase(
   ref.read(missionRepositoryProvider),
   ref.read(messengerRepositoryProvider),
+  world: ref.read(worldRepositoryProvider),
+  content: ref.read(gameContentProvider),
 ));
 final acceptTutorialMissionUseCaseProvider = Provider((ref) => AcceptTutorialUseCase(
   ref.read(missionRepositoryProvider),
@@ -149,6 +151,7 @@ final resolveEventUseCaseProvider = Provider((ref) => ResolveEventUseCase(
 final acceptStoryMissionUseCaseProvider = Provider((ref) => AcceptStoryMissionUseCase(
   ref.read(missionRepositoryProvider),
   ref.read(messengerRepositoryProvider),
+  ref.read(gameContentProvider),
 ));
 final advanceMissionUseCaseProvider = Provider((ref) => AdvanceMissionUseCase(
   ref.read(missionRepositoryProvider),

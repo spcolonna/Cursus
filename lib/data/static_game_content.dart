@@ -9,8 +9,10 @@ import 'game_content.dart' as base;
 import 'game_content_expansion.dart';
 import 'geo_content.dart';
 import 'npc_content.dart';
+import 'consequence_content.dart' as consequences;
 import 'progression_content.dart';
 import 'story_content.dart' as story;
+import 'story_rewards.dart' as rewards;
 
 /// Catálogo con el contenido estático de `lib/data/`.
 class StaticGameContent implements GameContentCatalog {
@@ -24,6 +26,9 @@ class StaticGameContent implements GameContentCatalog {
   String get mainArcId => story.kArcClaudius;
 
   @override
+  List<StoryArcDef> get arcs => story.storyArcs;
+
+  @override
   int arcStageCount(String arcId) => story.arcStageCount(arcId);
 
   @override
@@ -33,7 +38,7 @@ class StaticGameContent implements GameContentCatalog {
 
   @override
   StoryMissionConfig? storyMissionById(String id) =>
-      story.storyArcClaudius.where((c) => c.id == id).firstOrNull;
+      story.allStoryChapters.where((c) => c.id == id).firstOrNull;
 
   @override
   RealEventConfig? eventById(String id) =>
@@ -42,6 +47,12 @@ class StaticGameContent implements GameContentCatalog {
 
   @override
   List<AchievementDef> get achievements => allAchievements;
+
+  @override
+  List<RealEventConfig> get consequenceEvents => consequences.consequenceEvents;
+
+  @override
+  List<RestStop> get restStops => rewards.restStops;
 
   @override
   RealMissionConfig? routeById(String id) =>

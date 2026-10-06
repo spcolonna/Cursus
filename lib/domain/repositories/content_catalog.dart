@@ -10,8 +10,11 @@ abstract class GameContentCatalog {
   /// Pruebas del tutorial, en orden.
   List<TutorialMission> get tutorialMissions;
 
-  /// Arco principal de la historia.
+  /// Arco principal de la historia (el primero).
   String get mainArcId;
+
+  /// Arcos de historia, en el orden en que se juegan.
+  List<StoryArcDef> get arcs;
 
   /// Cantidad de capítulos del arco (índices 0..n-1).
   int arcStageCount(String arcId);
@@ -27,6 +30,13 @@ abstract class GameContentCatalog {
 
   /// Logros del juego, en el orden en que se muestran.
   List<AchievementDef> get achievements;
+
+  /// Eventos que solo salen como consecuencia de una decisión anterior.
+  /// Pueden salir en cualquier ruta real, además del pool de la ruta.
+  List<RealEventConfig> get consequenceEvents;
+
+  /// Postas amigas que alivian la fatiga en ciertas rutas.
+  List<RestStop> get restStops;
 
   /// Ruta real por id (para saber su patrón y su duración nominal).
   RealMissionConfig? routeById(String id);

@@ -79,13 +79,16 @@ class _MissionRepo implements MissionRepository {
       [];
   @override
   Future<Mission> createMission(GameRoute r, String id,
-          {bool revealEvents = false, double payFactor = 1.0}) =>
+          {bool revealEvents = false,
+      double payFactor = 1.0,
+      List<String>? eventIds}) =>
       throw UnimplementedError();
   @override
   Future<Mission> createTutorialMission(int i, String id) =>
       throw UnimplementedError();
   @override
-  Future<Mission> createStoryMission(StoryMissionConfig c, String id) =>
+  Future<Mission> createStoryMission(
+          StoryMissionConfig c, String id, List<RealEventConfig> events) =>
       throw UnimplementedError();
 }
 

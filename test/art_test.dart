@@ -115,7 +115,7 @@ void main() {
     test('cada npcId de un evento existe', () {
       final events = [
         ...allRealEvents.map((e) => (e.id, e.npcId)),
-        ...storyEventPool.map((e) => (e.id, e.npcId)),
+        ...allStoryEvents.map((e) => (e.id, e.npcId)),
         ...tutorialEvents.map((e) => (e.id, e.npcId)),
       ];
       for (final (id, npc) in events) {

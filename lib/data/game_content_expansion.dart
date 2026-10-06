@@ -5,8 +5,10 @@
 // Español rioplatense, sin emojis, sin anacronismos (ver .claude/skills/historia).
 // ═══════════════════════════════════════════════════════════════
 
+import 'consequence_content.dart';
 import 'faction_content.dart';
 import 'game_content.dart';
+import 'story_rewards.dart';
 import '../domain/entities/entities.dart';
 import '../domain/entities/world.dart';
 
@@ -14,13 +16,17 @@ import '../domain/entities/world.dart';
 // EXPANSION MISSIONS — real_04 .. real_15
 // ═══════════════════════════════════════════════════════════════
 
-/// Todas las rutas jugables: base + expansión + las de facción.
-List<RealMissionConfig> get allRealMissions =>
-    [...phase1Missions, ...expansionMissions, ...factionMissions];
+/// Todas las rutas jugables: base + expansión + facción + premios de arcos.
+List<RealMissionConfig> get allRealMissions => [
+      ...phase1Missions,
+      ...expansionMissions,
+      ...factionMissions,
+      ...storyRewardMissions,
+    ];
 
-/// Todo el pool de eventos del camino: base + expansión.
+/// Todo el pool de eventos del camino: base + expansión + consecuencias.
 List<RealEventConfig> get allRealEvents =>
-    [...realEventPool, ...expansionEvents];
+    [...realEventPool, ...expansionEvents, ...consequenceEvents];
 
 const List<RealMissionConfig> expansionMissions = [
   RealMissionConfig(
@@ -306,6 +312,15 @@ const List<RealEventConfig> expansionEvents = [
         outcomePartial: 'El recaudador mira el salvoconducto largo rato, comparándolo con uno viejo que guarda. Al final te deja pasar, no sin dejar constancia de la demora.',
         outcomeFail: 'El salvoconducto es de un gremio que ya no existe hace dos años. El recaudador se ríe, no de mala manera, y te cobra el portazgo completo por la ocurrencia.',
       ),
+      RealOptionConfig(
+        id: 'opt_tax_patron', text: 'Nombrás a la casa patricia que te encarga',
+        riskLevel: 1, timeCostMinutes: 15, requiredSkills: {},
+        minReputation: {Faction.patricians: 30},
+        lockedHint: 'Ningún patricio te presta su nombre todavía.',
+        outcomeSuccess: 'Decís el nombre de la casa como quien dice la hora. El recaudador borra algo de su tablilla con el pulgar, sella tu carga sin mirarla y hasta te desea buen viaje. Hay apellidos que pesan más que cualquier portazgo.',
+        outcomePartial: 'El nombre funciona, pero el recaudador quiere verlo escrito. Le mostrás la carta de encargo, la lee dos veces, la huele, y al final te deja pasar. Un cuarto de hora para comprobar que no mentías.',
+        outcomeFail: 'El recaudador conoce la casa... y le debe plata. Te demora por puro rencor hasta que llega su superior, que sí sabe con quién conviene estar bien. Pasás con disculpas y tarde.',
+      ),
     ],
   ),
   RealEventConfig(
@@ -467,6 +482,16 @@ const List<RealEventConfig> expansionEvents = [
         outcomePartial: 'El intercambio funciona a medias: te da un vaticinio, pero envuelto en tantos símbolos que vas a tardar el resto del viaje en descifrarlo.',
         outcomeFail: 'Tu historia no le interesa lo suficiente. La sibila vuelve a sus murmullos como si no hubieras hablado. Te vas sin nada, ni siquiera un eco.',
       ),
+      RealOptionConfig(
+        id: 'opt_oracle_birds', text: '"Leí los pájaros una vez. Hablemos claro."',
+        riskLevel: 1, timeCostMinutes: 20, requiredSkills: {},
+        requiredFlag: 'read_the_birds',
+        setFlags: ['heard_the_sibyl'],
+        journalNote: 'La sibila de Cumas sabía que yo había leído los pájaros del augur. Me habló claro, como a un colega.',
+        outcomeSuccess: 'La sibila se ríe con todos los dientes que le quedan. "El que le robó el presagio al augur." Te dice el verso entero y después, en prosa, qué significa. Es la primera vez que un oráculo te ahorra tiempo.',
+        outcomePartial: 'Te reconoce y se divierte, pero no regala nada: te dice el verso y una pista, no más. "Lo demás lo leés vos, que sabés." Te vas con un acertijo y con la sensación de haber hablado de igual a igual.',
+        outcomeFail: 'Te reconoce y le parece una insolencia que te le pongas a la par. Te dice el verso al revés, a propósito, y se mete en la cueva. Te quedás veinte minutos dándolo vuelta. Algo se entiende.',
+      ),
     ],
   ),
   RealEventConfig(
@@ -560,6 +585,15 @@ const List<RealEventConfig> expansionEvents = [
         outcomePartial: 'Tu lectura es buena pero no perfecta: encontrás el paso firme a costa de un rodeo extra entre las rocas más grandes.',
         outcomeFail: 'Confiás en una roca que parecía firme y no lo era. El tropiezo no te tira, pero te obliga a rehacer media trepada por otro lado.',
       ),
+      RealOptionConfig(
+        id: 'opt_storm_ridge', text: 'Pasás por la cresta, como aquella noche de tormenta',
+        riskLevel: 2, timeCostMinutes: 20, requiredSkills: {},
+        requiredFlag: 'walked_the_storm',
+        journalNote: 'Crucé el derrumbe por la cresta. Después de aquella tormenta, unas piedras quietas no me asustan.',
+        outcomeSuccess: 'La cresta es angosta y el viento empuja, pero vos ya cruzaste un paso con el cielo cayéndose encima. Esto es un paseo. Bajás del otro lado antes de que los arrieros terminen de discutir el camino viejo.',
+        outcomePartial: 'La cresta aguanta, aunque una piedra suelta te hace bailar un segundo largo sobre el vacío. El cuerpo se acordó de la tormenta antes que vos. Pasás, con las rodillas protestando.',
+        outcomeFail: 'Esta vez no hay tormenta y te confiás. Un tramo se desgrana bajo la sandalia y bajás medio paso de culo, abrazado al paquete. Llegás abajo raspado y entero. La montaña también se acuerda de vos.',
+      ),
     ],
   ),
   RealEventConfig(
@@ -591,6 +625,16 @@ const List<RealEventConfig> expansionEvents = [
         outcomeSuccess: 'Rompés el sello con dedos de cirujano y lo volvés a cerrar sin que se note. Lo que leíste no era para vos, pero ahora lo sabés igual. Guardás silencio, y el rollo, donde estaba.',
         outcomePartial: 'Alcanzás a leer la mitad antes de que pasos cercanos te obliguen a cerrarlo de golpe. El sello queda un poco torcido, y la mitad del mensaje, sin sentido claro.',
         outcomeFail: 'El sello se rompe mal y queda evidente que alguien lo abrió. Lo dejás donde estaba de todos modos, esperando que nadie relacione el desastre con vos.',
+      ),
+      RealOptionConfig(
+        id: 'opt_spy_known_face', text: 'Reconocés al hombre del norte entre la gente',
+        riskLevel: 2, timeCostMinutes: 30, requiredSkills: {},
+        requiredFlag: 'refused_spy',
+        repDelta: {Faction.legions: 1},
+        journalNote: 'El rollo de la plaza lo soltó el mismo hombre que quiso comprar mi sello en la posada. Lo señalé a la guardia.',
+        outcomeSuccess: 'Es él: el de las manos limpias que te ofreció la bolsa en la posada. Se lo señalás al primer vigil con el rollo en la mano. Lo agarran en la esquina. El optio te da las gracias y te pregunta si querés trabajar para ellos.',
+        outcomePartial: 'Lo reconocés y lo seguís con la mirada mientras buscás un guardia. Cuando volvés con uno, el hombre ya no está. Entregás el rollo con una descripción precisa. Algo es algo.',
+        outcomeFail: 'Lo señalás demasiado pronto y él te ve. Se escurre entre los puestos y vos perdés media hora explicándole a un vigil desconfiado por qué tenés un rollo ajeno. Te creen, al final. A él no lo encuentran.',
       ),
     ],
   ),
@@ -713,6 +757,15 @@ const List<RealEventConfig> expansionEvents = [
         outcomeSuccess: 'El arriero, con más vino que miedo, te cuenta la historia real: un accidente viejo, nada sobrenatural. Cruzás al día siguiente, sin supersticiones encima.',
         outcomePartial: 'El arriero cuenta tres versiones distintas de la misma historia, cada vez más exagerada. Cruzás igual, con más dudas que certezas.',
         outcomeFail: 'El arriero se ofende de que dudes de la leyenda y se niega a contarte nada más. Cruzás el tramo con la misma incertidumbre de siempre, solo que más tarde.',
+      ),
+      RealOptionConfig(
+        id: 'opt_ghost_offering', text: 'Dejás una ofrenda en la piedra, como te enseñó el augur',
+        riskLevel: 2, timeCostMinutes: 30, requiredSkills: {},
+        requiredFlag: 'paid_the_augur',
+        journalNote: 'Dejé pan y sal en la piedra del tramo sin nombre. El augur del cruce tenía razón: los caminos también cobran.',
+        outcomeSuccess: 'Pan, sal y una moneda sobre la piedra tallada, como hacía el augur del cruce. Los arrieros te ven hacerlo y uno escupe a un costado, aprobando. Dos te acompañan hasta el otro lado. La noche pasa sin un ruido de más.',
+        outcomePartial: 'Dejás la ofrenda y cruzás solo. El tramo está quieto, demasiado quieto, pero nada te sale al paso. Llegás al otro lado con la nuca erizada y el paquete seco.',
+        outcomeFail: 'La ofrenda la dejás, pero un zorro se la lleva antes de que des diez pasos. Lo tomás como mala señal y cruzás corriendo, tropezando con cada raíz. Ningún fantasma; muchas raíces.',
       ),
     ],
   ),

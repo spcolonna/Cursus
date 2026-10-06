@@ -57,7 +57,9 @@ class _Missions implements MissionRepository {
   Future<List<Mission>> getCompletedMissions() async => completed;
   @override
   Future<Mission> createMission(GameRoute r, String id,
-      {bool revealEvents = false, double payFactor = 1.0}) async {
+      {bool revealEvents = false,
+      double payFactor = 1.0,
+      List<String>? eventIds}) async {
     createdRoute = r;
     createdPayFactor = payFactor;
     return _mission(routeId: r.id, minutes: r.durationMinutes);
@@ -78,7 +80,8 @@ class _Missions implements MissionRepository {
   Future<Mission> createTutorialMission(int i, String id) =>
       throw UnimplementedError();
   @override
-  Future<Mission> createStoryMission(StoryMissionConfig c, String id) =>
+  Future<Mission> createStoryMission(
+          StoryMissionConfig c, String id, List<RealEventConfig> events) =>
       throw UnimplementedError();
 }
 

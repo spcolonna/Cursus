@@ -88,6 +88,9 @@ class FactionUnlock {
   final String? ref;
   final FactionPerk? perk;
 
+  /// Con este flag se abre aunque falte reputación (premio de un final).
+  final String? orFlag;
+
   const FactionUnlock({
     required this.faction,
     required this.tier,
@@ -96,9 +99,12 @@ class FactionUnlock {
     required this.description,
     this.ref,
     this.perk,
+    this.orFlag,
   });
 
-  bool isOpen(WorldState w) => factionTier(w.repOf(faction)).atLeast(tier);
+  bool isOpen(WorldState w) =>
+      factionTier(w.repOf(faction)).atLeast(tier) ||
+      (orFlag != null && w.hasFlag(orFlag!));
 }
 
 /// ¿Tiene el jugador [perk] con [faction] (o con cualquiera, si es null)?
@@ -116,6 +122,9 @@ int patronRepFor(String grade) => switch (grade) {
       'A' || 'B' => 1,
       _ => 0,
     };
+
+/// Cuántos eventos recientes recuerda el sorteo para no repetirlos.
+const int kRecentEventMemory = 6;
 
 class JournalEntry {
   final DateTime date;
@@ -143,6 +152,13 @@ class WorldState {
   /// entrega en su ruta: tope de una vez por día para que no se infle.
   final Map<Faction, String> patronDays;
 
+  /// Últimos eventos del camino que salieron (ids, el más nuevo al final):
+  /// el sorteo evita repetirlos.
+  final List<String> recentEvents;
+
+  /// Eventos de una sola vez que ya salieron.
+  final Set<String> seenEvents;
+
   const WorldState({
     required this.reputation,
     required this.flags,
@@ -150,6 +166,8 @@ class WorldState {
     required this.arcProgress,
     required this.completedArcs,
     this.patronDays = const {},
+    this.recentEvents = const [],
+    this.seenEvents = const {},
   });
 
   factory WorldState.initial() => WorldState(
@@ -175,6 +193,8 @@ class WorldState {
     Map<String, int>? arcProgress,
     Set<String>? completedArcs,
     Map<Faction, String>? patronDays,
+    List<String>? recentEvents,
+    Set<String>? seenEvents,
   }) =>
       WorldState(
         reputation: reputation ?? this.reputation,
@@ -183,7 +203,19 @@ class WorldState {
         arcProgress: arcProgress ?? this.arcProgress,
         completedArcs: completedArcs ?? this.completedArcs,
         patronDays: patronDays ?? this.patronDays,
+        recentEvents: recentEvents ?? this.recentEvents,
+        seenEvents: seenEvents ?? this.seenEvents,
       );
+
+  /// Anota los eventos que salieron en una misión nueva. [once] son los que
+  /// no se repiten nunca.
+  WorldState recordEvents(Iterable<String> ids, {Iterable<String> once = const []}) {
+    final recent = [...recentEvents, ...ids];
+    if (recent.length > kRecentEventMemory) {
+      recent.removeRange(0, recent.length - kRecentEventMemory);
+    }
+    return copyWith(recentEvents: recent, seenEvents: {...seenEvents, ...once});
+  }
 
   /// Aplica deltas de reputación (clamp -100..100). Si una facción sube de
   /// escalón, el diario lo anota: es la memoria de por qué se abrió algo.

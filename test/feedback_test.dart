@@ -7,7 +7,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:the_messenger/data/static_game_content.dart';
 
-import 'package:the_messenger/data/game_content.dart';
+import 'package:the_messenger/data/game_content_expansion.dart';
 import 'package:the_messenger/data/story_content.dart';
 import 'package:the_messenger/domain/entities/entities.dart';
 import 'package:the_messenger/domain/entities/notifications.dart';
@@ -72,13 +72,16 @@ class _FakeMissionRepo implements MissionRepository {
       [];
   @override
   Future<Mission> createMission(GameRoute r, String id,
-          {bool revealEvents = false, double payFactor = 1.0}) =>
+          {bool revealEvents = false,
+      double payFactor = 1.0,
+      List<String>? eventIds}) =>
       throw UnimplementedError();
   @override
   Future<Mission> createTutorialMission(int i, String id) =>
       throw UnimplementedError();
   @override
-  Future<Mission> createStoryMission(StoryMissionConfig c, String id) =>
+  Future<Mission> createStoryMission(
+          StoryMissionConfig c, String id, List<RealEventConfig> events) =>
       throw UnimplementedError();
 }
 
@@ -326,12 +329,12 @@ void main() {
       // Si un flag no tiene descripción, la sección "Lo que cambió" no puede
       // contarlo y la decisión se siente sin consecuencia.
       final flagsEnContenido = <String>{};
-      for (final e in [...realEventPool, ...storyEventPool]) {
+      for (final e in [...allRealEvents, ...allStoryEvents]) {
         for (final o in e.options) {
           flagsEnContenido.addAll(o.setFlags ?? const []);
         }
       }
-      for (final c in storyArcClaudius) {
+      for (final c in allStoryChapters) {
         flagsEnContenido.addAll(c.setFlagsOnComplete ?? const []);
       }
 
@@ -441,7 +444,7 @@ void main() {
       // Si dos opciones cuestan lo mismo y arriesgan lo mismo, elegir no
       // significa nada. Las opciones secretas quedan afuera: su valor es
       // haberlas desbloqueado con la historia, no el intercambio de riesgo.
-      for (final e in [...realEventPool, ...storyEventPool]) {
+      for (final e in [...allRealEvents, ...allStoryEvents]) {
         final perfiles = e.options
             .where((o) => o.requiredFlag == null)
             .map((o) => '${o.riskLevel}/${o.timeCostMinutes}/'
@@ -456,7 +459,7 @@ void main() {
       // Se aplica al pool que se repite misión tras misión. Los eventos de
       // arco quedan exentos a propósito: en el clímax de una historia es
       // legítimo que no haya ninguna opción cómoda.
-      for (final e in realEventPool) {
+      for (final e in allRealEvents) {
         final riesgos = e.options.map((o) => o.riskLevel).toList();
         expect(riesgos.reduce((a, b) => a < b ? a : b), lessThanOrEqualTo(2),
             reason: '${e.id} no tiene ninguna salida prudente');
@@ -467,17 +470,17 @@ void main() {
 
     test('las opciones secretas piden un flag que alguien otorga', () {
       final otorgados = <String>{};
-      for (final e in [...realEventPool, ...storyEventPool]) {
+      for (final e in [...allRealEvents, ...allStoryEvents]) {
         for (final o in e.options) {
           otorgados.addAll(o.setFlags ?? const []);
         }
       }
-      for (final c in storyArcClaudius) {
+      for (final c in allStoryChapters) {
         otorgados.addAll(c.setFlagsOnComplete ?? const []);
       }
 
       final pedidos = <String>{};
-      for (final e in [...realEventPool, ...storyEventPool]) {
+      for (final e in [...allRealEvents, ...allStoryEvents]) {
         for (final o in e.options) {
           if (o.requiredFlag != null) pedidos.add(o.requiredFlag!);
         }

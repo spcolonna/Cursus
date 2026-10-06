@@ -6,6 +6,7 @@ import '../entities/world.dart';
 import '../entities/content.dart';
 import '../entities/notifications.dart';
 import '../entities/progression.dart';
+import 'event_selection.dart';
 import 'forecast.dart';
 import '../repositories/content_catalog.dart';
 import '../repositories/repositories.dart';
@@ -45,10 +46,41 @@ class MessengerSlot {
   });
 }
 
+/// Lo que toca jugar en la historia: el arco, su capítulo y el rango que pide.
+class StoryStep {
+  final StoryArcDef arc;
+  final StoryMissionConfig chapter;
+  final int requiredRank;
+  const StoryStep(this.arc, this.chapter, this.requiredRank);
+}
+
+/// Próximo capítulo de la historia según el mundo, o null si no queda
+/// ninguno abierto. Los arcos se juegan en orden: uno que pide otro arco
+/// terminado espera a que se cierre.
+StoryStep? nextStoryStep(GameContentCatalog content, WorldState world) {
+  for (final arc in content.arcs) {
+    if (world.arcCompleted(arc.id)) continue;
+    if (arc.requiredArc != null && !world.arcCompleted(arc.requiredArc!)) {
+      continue;
+    }
+    final stage = world.arcProgress[arc.id] ?? 0;
+    if (stage >= arc.stageCount) continue;
+    final chapter = content.storyMissionFor(arc.id, stage, world.flags);
+    if (chapter == null) continue;
+    return StoryStep(arc, chapter, max(arc.minRank, chapter.minRank));
+  }
+  return null;
+}
+
 class HomeState {
   final List<MessengerSlot> slots;
   // Próximo capítulo de historia disponible (lo juega el mensajero principal).
   final StoryMissionConfig? nextStoryMission;
+  /// Título del arco de [nextStoryMission].
+  final String? storyArcTitle;
+  /// Capítulo que sigue pero pide más rango: el Home lo muestra cerrado,
+  /// para que el jugador sepa que la historia sigue y qué le falta.
+  final StoryStep? lockedStory;
   /// Eventos que se resolvieron solos mientras el jugador no estaba mirando.
   /// El Home tiene que avisarlo: pasó algo y no fue decisión suya.
   final List<AutoResolvedEvent> autoResolved;
@@ -56,6 +88,8 @@ class HomeState {
   const HomeState({
     required this.slots,
     this.nextStoryMission,
+    this.storyArcTitle,
+    this.lockedStory,
     this.autoResolved = const [],
   });
 
@@ -161,24 +195,25 @@ class GetHomeStateUseCase {
     }
 
     // Historia: próximo capítulo, si el mensajero principal está libre.
-    StoryMissionConfig? nextStory;
+    StoryStep? step;
     final primary = messengers.first;
     final primaryBusy =
         activeMissions.any((x) => x.messengerId == primary.id);
-    if (primary.tutorialComplete &&
-        primary.rank >= 2 &&
-        !primaryBusy &&
-        !world.arcCompleted(_content.mainArcId)) {
-      final arc = _content.mainArcId;
-      final stage = world.arcProgress[arc] ?? 0;
-      if (stage < _content.arcStageCount(arc)) {
-        nextStory = _content.storyMissionFor(arc, stage, world.flags);
-      }
+    if (primary.tutorialComplete && !primaryBusy) {
+      step = nextStoryStep(_content, world);
     }
+    final open = step != null && primary.rank >= step.requiredRank;
+    // El primer capítulo de todos no se anuncia cerrado: recién salido del
+    // tutorial, el jugador tiene que aprender las rutas primero.
+    final teaser = step != null &&
+        !open &&
+        (step.chapter.stage > 0 || step.arc.requiredArc != null);
 
     return HomeState(
       slots: slots,
-      nextStoryMission: nextStory,
+      nextStoryMission: open ? step.chapter : null,
+      storyArcTitle: step?.arc.title,
+      lockedStory: teaser ? step : null,
       autoResolved: autoResolved,
     );
   }
@@ -197,22 +232,26 @@ class RepairArcStateUseCase {
   /// Devuelve true si tuvo que reparar algo.
   Future<bool> execute() async {
     var world = await _world.getState();
-    final arc = _content.mainArcId;
-    if (world.arcCompleted(arc)) return false;
-    final stage = world.arcProgress[arc] ?? 0;
-    if (stage >= _content.arcStageCount(arc)) return false;
+    var repaired = false;
+    for (final arc in _content.arcs) {
+      if (world.arcCompleted(arc.id)) continue;
+      final stage = world.arcProgress[arc.id] ?? 0;
+      // Solo los arcos en curso: uno sin empezar todavía no tiene camino.
+      if (stage == 0 || stage >= arc.stageCount) continue;
 
-    final chapter = _content.storyMissionFor(arc, stage, world.flags);
-    final missing = chapter?.requiredFlag;
-    if (missing == null || world.hasFlag(missing)) return false;
+      final chapter = _content.storyMissionFor(arc.id, stage, world.flags);
+      final missing = chapter?.requiredFlag;
+      if (missing == null || world.hasFlag(missing)) continue;
 
-    world = world.applyChoiceEffects(
-      setFlags: [missing],
-      journalNote: 'Las cosas se acomodaron solas mientras no mirabas. '
-          'El camino siguió por donde siguió.',
-    );
-    await _world.saveState(world);
-    return true;
+      world = world.applyChoiceEffects(
+        setFlags: [missing],
+        journalNote: 'Las cosas se acomodaron solas mientras no mirabas. '
+            'El camino siguió por donde siguió.',
+      );
+      repaired = true;
+    }
+    if (repaired) await _world.saveState(world);
+    return repaired;
   }
 }
 
@@ -350,7 +389,16 @@ class AcceptTutorialUseCase {
 class AcceptMissionUseCase {
   final MissionRepository _mission;
   final MessengerRepository _messenger;
-  AcceptMissionUseCase(this._mission, this._messenger);
+  // Con el mundo y el catálogo, los eventos se eligen con
+  // [pickEventsForMission]; sin ellos, el repositorio sortea del pool.
+  final WorldRepository? _world;
+  final GameContentCatalog? _content;
+  final Random _rng;
+  AcceptMissionUseCase(this._mission, this._messenger,
+      {WorldRepository? world, GameContentCatalog? content, Random? rng})
+      : _world = world,
+        _content = content,
+        _rng = rng ?? Random();
 
   Future<Mission> execute(GameRoute route, {String? messengerId}) async {
     final messengers = await _messenger.getAllMessengers();
@@ -373,10 +421,35 @@ class AcceptMissionUseCase {
     }
     final revealEvents = boosts.remove('boost_events'); // Mapa del explorador
 
+    // Qué eventos salen: el pool de la ruta más las consecuencias de lo que
+    // el jugador hizo antes.
+    List<String>? eventIds;
+    final world = await _world?.getState();
+    final cfg = _content?.routeById(route.id);
+    if (world != null && cfg != null) {
+      final content = _content!;
+      final count = cfg.minEvents +
+          _rng.nextInt((cfg.maxEvents - cfg.minEvents + 1).clamp(1, 10));
+      final picked = pickEventsForMission(
+        pool: [
+          for (final id in cfg.eventPoolIds)
+            if (content.eventById(id) case final e?) e,
+          ...content.consequenceEvents,
+        ],
+        count: count,
+        world: world,
+        rng: _rng,
+      );
+      eventIds = [for (final e in picked) e.id];
+      await _world!.saveState(world.recordEvents(eventIds,
+          once: [for (final e in picked) if (e.once) e.id]));
+    }
+
     // La paga se fija con la ruta NOMINAL: ir más rápido no cobra menos.
     final mission = await _mission.createMission(
       effectiveRoute, messenger.id,
       revealEvents: revealEvents,
+      eventIds: eventIds,
       payFactor:
           routePayFactor(route.durationMinutes, route.danger) * route.payBonus);
     await _messenger.saveMessenger(messenger.copyWith(
@@ -392,17 +465,28 @@ class AcceptMissionUseCase {
 class AcceptStoryMissionUseCase {
   final MissionRepository _mission;
   final MessengerRepository _messenger;
-  AcceptStoryMissionUseCase(this._mission, this._messenger);
+  final GameContentCatalog _content;
+  AcceptStoryMissionUseCase(this._mission, this._messenger, this._content);
 
   Future<Mission> execute(StoryMissionConfig config) async {
     final messenger = (await _messenger.getAllMessengers()).first;
+    final arc = _content.arcs.where((a) => a.id == config.arcId).firstOrNull;
+    final rank = max(arc?.minRank ?? 0, config.minRank);
+    if (messenger.rank < rank) {
+      throw Exception('Este capítulo pide rango $rank.');
+    }
     if (messenger.status == MessengerStatus.injured || messenger.health <= 0) {
       throw Exception('Tu mensajero está herido. Curate en la tienda antes de salir.');
     }
     if (messenger.status != MessengerStatus.idle) {
       throw Exception('Tu mensajero principal está ocupado.');
     }
-    final mission = await _mission.createStoryMission(config, messenger.id);
+    final events = [
+      for (final id in config.fixedEventIds)
+        if (_content.eventById(id) case final e?) e,
+    ];
+    final mission =
+        await _mission.createStoryMission(config, messenger.id, events);
     await _messenger
         .saveMessenger(messenger.copyWith(status: MessengerStatus.onMission));
     return mission;
@@ -477,6 +561,9 @@ class ApplyShopItemUseCase {
       // Boosts persistentes: se consumen al aceptar la próxima misión.
       'boost_speed' || 'boost_events' =>
         target.copyWith(activeBoosts: {...target.activeBoosts, itemId}),
+      // El mapa del mercado negro es el mismo mapa, pagado en Denarios.
+      'boost_events_black' =>
+        target.copyWith(activeBoosts: {...target.activeBoosts, 'boost_events'}),
       // Los Sellos son de la billetera común.
       'seal_single' => target.copyWith(seals: target.seals + 1),
       'seal_pack_10' => target.copyWith(seals: target.seals + 10),
@@ -757,6 +844,8 @@ class MissionCompletion {
   final String? endingId;
   /// El mensajero terminó herido (salud en 0).
   final bool injured;
+  /// Posta amiga que alivió la fatiga al llegar ([RestStop]).
+  final String? restStop;
 
   const MissionCompletion({
     required this.result,
@@ -769,6 +858,7 @@ class MissionCompletion {
     this.endingTitle,
     this.endingId,
     this.injured = false,
+    this.restStop,
   });
 }
 
@@ -897,6 +987,16 @@ class CompleteMissionUseCase {
       }
     }
 
+    // Posta amiga en el camino (premio de un final): se llega más entero.
+    RestStop? restStop;
+    if (mission.arcId == null && !mission.isTutorial) {
+      final world = await _world.getState();
+      restStop = _content.restStops
+          .where((r) =>
+              r.routeIds.contains(mission.routeId) && world.hasFlag(r.flag))
+          .firstOrNull;
+    }
+
     var fatigueDelta = 0;
     var injured = false;
     if (messenger != null) {
@@ -913,7 +1013,8 @@ class CompleteMissionUseCase {
       injured = messenger.health <= 0;
       final newStatus =
           injured ? MessengerStatus.injured : MessengerStatus.idle;
-      final newFatigue = (messenger.fatigue - 10).clamp(0, 100);
+      final newFatigue =
+          (messenger.fatigue - 10 - (restStop?.fatigueRelief ?? 0)).clamp(0, 100);
       fatigueDelta = newFatigue - messenger.fatigue;
       await _messenger.saveMessenger(messenger.copyWith(
         status: newStatus,
@@ -938,6 +1039,7 @@ class CompleteMissionUseCase {
       endingTitle: endingTitle,
       endingId: endingId,
       injured: injured,
+      restStop: restStop?.name,
     );
   }
 }

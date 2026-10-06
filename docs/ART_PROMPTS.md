@@ -100,7 +100,22 @@ Estos cubren todos los eventos. Conviene hacerlos primero.
 | `endings/end_claudius.jpg` | A young messenger in fine patrician livery stands on the steps of a marble villa overlooking Rome, the senator's hand on the shoulder. Ambition, gold light. |
 | `endings/end_underworld.jpg` | A messenger counting coins in the shadows of the Subura, a ledger of secrets open on the table, a golden wolf brooch glinting. Dangerous freedom. |
 
-El arco de Lucius (Fase 5) suma 5 capítulos y 3 finales con el mismo formato.
+## 6b. Arco de Lucius: capítulos (11) y finales (3)
+
+| Archivo | Prompt |
+|---|---|
+| `story/lucius_1_varus.jpg`, `story/lucius_1_claudius.jpg`, `story/lucius_1_underworld.jpg` | A bald innkeeper with thick forearms and a leather apron leans on the counter of a warm Roman tavern, the Ox, talking low to a young messenger. A trapdoor to the cellar in the floor, wine jars on shelves. (Las tres entradas pueden usar la misma imagen.) |
+| `story/lucius_2.jpg` | A frightened young deserter with a scar on his hand hides behind barrels in a tavern cellar, lit by a single oil lamp, while legionaries' shadows pass on the street above through a grate. |
+| `story/lucius_3.jpg` | A messenger opens a thick ledger on a table in a roadside inn at Aricia at night: long lists of names by candlelight, the Via Appia visible through the window. |
+| `story/lucius_4_family.jpg` | A small Roman inn at Forum Appii at dusk, neighbors with clubs and torches guarding the door, a woman with a stern face at the threshold. |
+| `story/lucius_4_legion.jpg` | A half century of legionaries marching on the Via Appia toward a column of black smoke rising from a burning inn, a centurion with a transverse crest at the front. |
+| `story/lucius_4_book.jpg` | Four hooded men block a road through a dark forest, a messenger clutching a ledger strapped to the chest. |
+| `story/lucius_5_family.jpg` | A dozen innkeepers around the big table of a closed tavern at night, cups raised, a ledger burning in the hearth. |
+| `story/lucius_5_legion.jpg` | At the Porta Capena at dawn, a young soldier in a fresh tunic of the Tenth Legion swears an oath beside a messenger, a centurion holding a standard with a bull. |
+| `story/lucius_5_book.jpg` | The back table of a candlelit Subura tavern, four buyers in rich cloaks around a ledger, an older woman with a gold she-wolf brooch presiding. |
+| `endings/end_lucius_family.jpg` | The Ox tavern with a new post-house sign over the door, travelers' mules tied outside, warm light, the innkeeper waving. Belonging. |
+| `endings/end_lucius_legion.jpg` | A messenger riding along the Via Appia with a bronze bull plaque on the chest, legion milestones and a camp in the distance. Duty. |
+| `endings/end_lucius_book.jpg` | A messenger in a dark alley of the Subura unfolding a hand-drawn smuggler's map, coins on the table, a she-wolf brooch glinting. Secrets as currency. |
 
 ## 7. Retratos (12)
 
