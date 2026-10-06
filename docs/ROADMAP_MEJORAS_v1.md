@@ -1,4 +1,4 @@
-# THE MESSENGER — Roadmap de mejoras v1
+# CURSUS — Roadmap de mejoras v1
 
 Complementa al [GDD_MASTER_v2.md](GDD_MASTER_v2.md). Fases ordenadas por dependencia: cada una desbloquea la siguiente. Estimaciones para un dev solo, tiempo parcial.
 

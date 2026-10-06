@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-07-28  
 **Versión app:** `1.0.0+2`  
-**Base:** plan de análisis *The Messenger* (vertical slice → engagement multi-nivel)
+**Base:** plan de análisis *Cursus* (vertical slice → engagement multi-nivel)
 
 Este documento lista **todo lo que se agregó o tocó** para que puedas playtestear y auditar sin re-descubrir el diff.  
 **No incluye** Firebase / FCM / battle pass / época 2 (gated por retención en el GDD).

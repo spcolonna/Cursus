@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/brand.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -54,31 +55,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo
-              Container(
-                width: 140,
-                height: 140,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.gold.withValues(alpha: 0.4), width: 3),
-                  boxShadow: [BoxShadow(color: AppColors.gold.withValues(alpha: 0.2), blurRadius: 40, spreadRadius: 10)],
-                  color: AppColors.bgCard,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(18),
-                  child: Image.asset(
-                    'assets/images/logo-removebg.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              )
+              const BrandSeal(size: 140)
               .animate()
               .scale(begin: const Offset(0.3, 0.3), end: const Offset(1, 1), duration: 700.ms, curve: Curves.elasticOut)
               .fade(duration: 400.ms),
 
               const SizedBox(height: 24),
 
-              Text('THE MESSENGER', style: AppTextStyles.displayLarge)
+              const BrandMark(size: 40, layout: BrandLayout.wordmark)
               .animate(delay: 500.ms)
               .fadeIn(duration: 600.ms)
               .slideY(begin: 0.3, end: 0),

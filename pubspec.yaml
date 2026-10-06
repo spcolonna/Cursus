@@ -1,5 +1,5 @@
 name: the_messenger
-description: The Messenger - Historical courier game
+description: Cursus — Cartas de Roma
 publish_to: 'none'
 version: 1.0.0+2
 
@@ -41,6 +41,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
 
 flutter:
   uses-material-design: true
@@ -55,8 +57,30 @@ flutter:
     - assets/art/scenes/
     - assets/fonts/OFL-Fredoka.txt
     - assets/fonts/OFL-Nunito.txt
+    - assets/fonts/OFL-Marcellus.txt
+    - assets/fonts/OFL-Figtree.txt
+    - assets/fonts/OFL-Literata.txt
   # Fuentes empaquetadas (OFL): el juego no depende de la red para su tipografía.
   fonts:
+    - family: Marcellus
+      fonts:
+        - asset: assets/fonts/Marcellus-Regular.ttf
+    - family: Figtree
+      fonts:
+        - asset: assets/fonts/Figtree-Regular.ttf
+        - asset: assets/fonts/Figtree-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Figtree-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Figtree-Bold.ttf
+          weight: 700
+    - family: Literata
+      fonts:
+        - asset: assets/fonts/Literata-Regular.ttf
+        - asset: assets/fonts/Literata-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Literata-Italic.ttf
+          style: italic
     - family: Fredoka
       fonts:
         - asset: assets/fonts/Fredoka-Regular.ttf
@@ -77,3 +101,19 @@ flutter:
           weight: 700
         - asset: assets/fonts/Nunito-ExtraBold.ttf
           weight: 800
+
+# Ícono y launch screen: salen de BrandSealPainter (tool/gen_icon_test.dart).
+flutter_launcher_icons:
+  image_path: assets/icon/icon.png
+  ios: true
+  remove_alpha_ios: true
+  android: true
+  adaptive_icon_background: "#F2E8D5"
+  adaptive_icon_foreground: assets/icon/icon_foreground.png
+
+flutter_native_splash:
+  color: "#F2E8D5"
+  image: assets/icon/splash_seal.png
+  android_12:
+    color: "#F2E8D5"
+    image: assets/icon/splash_seal.png

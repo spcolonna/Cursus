@@ -117,7 +117,7 @@ Cualquier cambio de diseño se compara **por cohorte**: la semana anterior al ca
 
 La app ya manda todo a `AnalyticsService`. Firebase es un sink más.
 
-1. **Crear el proyecto** en console.firebase.google.com, con apps iOS (`com.example.theMessenger`; conviene cambiar el bundle ID antes) y Android.
+1. **Crear el proyecto** en console.firebase.google.com, con apps iOS (bundle ID `com.spcolonna.cursus`) y Android.
 2. **Configurar Flutter:**
    ```bash
    dart pub global activate flutterfire_cli

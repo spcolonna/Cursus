@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Genera los efectos de sonido de The Messenger (solo stdlib).
+"""Genera los efectos de sonido de Cursus (solo stdlib).
 
 Uso:  python3 tool/gen_sfx.py            → escribe assets/audio/sfx_*.wav
 

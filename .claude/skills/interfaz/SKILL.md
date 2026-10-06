@@ -1,9 +1,9 @@
 ---
 name: interfaz
-description: Diseñar o modificar UI de The Messenger — pantallas, widgets, colores, tipografía, layout, animaciones, diálogos, estados vacíos y de carga. Usar siempre que se toque lib/presentation/ (theme, widgets, screens) o cuando se pida "una pantalla nueva", "que se vea mejor", "arreglar el contraste", "un botón/card/chip".
+description: Diseñar o modificar UI de Cursus — pantallas, widgets, colores, tipografía, layout, animaciones, diálogos, estados vacíos y de carga. Usar siempre que se toque lib/presentation/ (theme, widgets, screens) o cuando se pida "una pantalla nueva", "que se vea mejor", "arreglar el contraste", "un botón/card/chip".
 ---
 
-# Interfaz de The Messenger
+# Interfaz de Cursus
 
 Identidad: **navy profundo + oro/pergamino**, Fredoka (títulos) + Nunito (cuerpo), botones 3D con sombra dura offset, rojo **solo** para peligro, fondo día/noche según hora real. La identidad ya funciona: los problemas son de contraste y consistencia, no de estilo.
 

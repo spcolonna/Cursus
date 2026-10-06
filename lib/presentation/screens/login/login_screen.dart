@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/brand.dart';
+import '../../widgets/event_scene.dart';
+import '../../../domain/entities/entities.dart';
 
 /// Entrada por modo invitado — sin credenciales dummy (GDD §7).
 class LoginScreen extends ConsumerStatefulWidget {
@@ -47,13 +50,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Scaffold(
       backgroundColor: AppColors.bgDeep,
       body: Stack(fit: StackFit.expand, children: [
-        Image.asset(
-          'assets/images/bg_login.jpg',
-          fit: BoxFit.cover,
-          cacheWidth: 1080,
-          errorBuilder: (_, __, ___) =>
-              const ColoredBox(color: AppColors.bgDeep),
-        ),
+        // El camino a la hora real; en la Fase I3 pasa a ser el cielo vivo.
+        const EventScene(category: EventCategory.road),
         const DecoratedBox(
             decoration: BoxDecoration(gradient: AppGradients.coverScrim)),
         SafeArea(
@@ -68,12 +66,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 60),
-                  Image.asset(
-                    'assets/images/logo-removebg.png',
-                    width: 200,
-                    height: 200,
-                    fit: BoxFit.contain,
-                  )
+                  const BrandSeal(size: 180)
                       .animate()
                       .scale(
                         begin: const Offset(0.5, 0.5),
@@ -81,7 +74,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         curve: Curves.elasticOut,
                       ),
                   const SizedBox(height: 20),
-                  Text('THE MESSENGER', style: AppTextStyles.displayLarge)
+                  const BrandMark(size: 40, layout: BrandLayout.wordmark)
                       .animate(delay: 200.ms)
                       .fadeIn(duration: 500.ms)
                       .slideY(begin: 0.2, end: 0),

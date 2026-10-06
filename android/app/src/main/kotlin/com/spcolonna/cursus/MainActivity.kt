@@ -1,4 +1,4 @@
-package com.example.the_messenger
+package com.spcolonna.cursus
 
 import io.flutter.embedding.android.FlutterActivity
 

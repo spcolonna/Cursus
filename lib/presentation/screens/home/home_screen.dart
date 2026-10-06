@@ -10,6 +10,7 @@ import '../../widgets/messenger_avatar.dart';
 import '../../widgets/primeros_pasos.dart';
 import '../../widgets/route_map.dart';
 import '../../widgets/art_image.dart';
+import '../../widgets/brand.dart';
 import '../../widgets/event_scene.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/entities/guild.dart';
@@ -190,14 +191,11 @@ class _TopBar extends StatelessWidget {
       child: Row(children: [
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('THE MESSENGER',
+            Text(kGameName.toUpperCase(),
                 maxLines: 1,
                 overflow: TextOverflow.fade,
                 softWrap: false,
-                style: AppTextStyles.fredoka(17,
-                    color: AppColors.gold,
-                    weight: FontWeight.bold,
-                    letterSpacing: 2)),
+                style: AppTextStyles.brandWordmark(18, AppColors.gold)),
             Text('Roma · 50 a.C.',
                 style:
                     AppTextStyles.fredoka(12, color: AppColors.textSecondary)),

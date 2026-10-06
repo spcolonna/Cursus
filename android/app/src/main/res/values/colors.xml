@@ -2,4 +2,5 @@
 <resources>
     <!-- AppColors.bgDeep: sin destello blanco al abrir la app. -->
     <color name="launch_background">#0A1628</color>
+	<color name="ic_launcher_background">#F2E8D5</color>
 </resources>

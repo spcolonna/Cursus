@@ -1,6 +1,6 @@
 ---
 name: balance
-description: Ajustar números y economía de The Messenger — fórmula de resolución de eventos, notas y paga de misiones, XP y niveles de skill, perks del árbol, Sellos del Gremio, fatiga, precios de tienda, contratos diarios y paga de racha. Usar antes de tocar usecases.dart, skill_tree.dart, guild.dart o cualquier constante numérica de gameplay.
+description: Ajustar números y economía de Cursus — fórmula de resolución de eventos, notas y paga de misiones, XP y niveles de skill, perks del árbol, Sellos del Gremio, fatiga, precios de tienda, contratos diarios y paga de racha. Usar antes de tocar usecases.dart, skill_tree.dart, guild.dart o cualquier constante numérica de gameplay.
 ---
 
 # Balance y economía

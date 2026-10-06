@@ -1,4 +1,4 @@
-# THE MESSENGER — GDD Maestro v2.0
+# CURSUS — GDD Maestro v2.0
 
 **Documento vivo.** Describe (A) el juego que existe hoy en el código, y (B) la dirección aprobada hacia donde lo llevamos. Nada especulativo: lo que no está aprobado va al Apéndice como backlog. Reemplaza como guía de trabajo al `The_Messenger_GDD_v1.docx` (que queda como archivo histórico de la visión original).
 
@@ -8,7 +8,7 @@
 
 ## 1. Visión y pilares
 
-**The Messenger es el juego que vive en tu día.** Encarnás a un mensajero en la Roma del 50 a.C. Tus misiones transcurren en **tiempo real de reloj**: aceptás una entrega de 2 horas y tu mensajero viaja esas 2 horas, aunque cierres la app. En el camino pasan cosas — patrullas, tormentas, bandidos — y cada una te pide una decisión de 1 minuto que puede salvar o arruinar la entrega.
+**Cursus es el juego que vive en tu día.** Encarnás a un mensajero en la Roma del 50 a.C. Tus misiones transcurren en **tiempo real de reloj**: aceptás una entrega de 2 horas y tu mensajero viaja esas 2 horas, aunque cierres la app. En el camino pasan cosas — patrullas, tormentas, bandidos — y cada una te pide una decisión de 1 minuto que puede salvar o arruinar la entrega.
 
 No competimos por horas de atención: competimos por **momentos**. El jugador ideal abre el juego 3-4 veces al día, 1-3 minutos por vez, y entre sesiones el juego sigue "pasando" — eso genera anticipación, no ansiedad.
 

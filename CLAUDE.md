@@ -1,4 +1,4 @@
-# The Messenger — guía para Claude
+# Cursus — guía para Claude
 
 Juego móvil Flutter. Mensajero en la Roma del 50 a.C.: las misiones corren en **tiempo real de reloj**, los eventos son decisiones de 2-3 opciones. Sesiones de 1-3 min, 3-4 por día.
 
@@ -66,6 +66,7 @@ lib/
     ├── widgets/route_map.dart            RouteMapView (en vivo) y RouteMapThumbnail
     ├── widgets/event_scene.dart          EventBackdrop / EventScene: escenario del evento por categoría
     ├── widgets/insignia.dart             WaxSeal, FactionCrest
+    ├── widgets/brand.dart                marca Cursus: BrandSealPainter (también genera el ícono), BrandMark
     ├── widgets/skill_tree_board.dart     árbol de caminos visual (5 columnas, sellos 6-10)
     ├── widgets/celebration_host.dart     logros, rangos y escalones de facción sobre toda la app
     ├── providers/providers.dart  Riverpod: DI + notifiers (home, guild, world, titles…)
@@ -115,6 +116,7 @@ flutter run
 flutter test              # test/domain_test.dart
 flutter analyze
 python3 tool/gen_sfx.py   # regenera assets/audio/sfx_*.wav
+flutter test tool/gen_icon_test.dart && dart run flutter_launcher_icons && dart run flutter_native_splash:create   # ícono y launch screen
 ```
 
 ## Convenciones

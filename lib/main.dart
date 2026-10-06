@@ -14,7 +14,7 @@ void main() async {
 
   // Las fuentes van empaquetadas: su licencia OFL tiene que figurar en la app.
   LicenseRegistry.addLicense(() async* {
-    for (final family in const ['Fredoka', 'Nunito']) {
+    for (final family in const ['Fredoka', 'Nunito', 'Marcellus', 'Figtree', 'Literata']) {
       final text = await rootBundle.loadString('assets/fonts/OFL-$family.txt');
       yield LicenseEntryWithLineBreaks([family], text);
     }
@@ -91,7 +91,7 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'The Messenger',
+      title: 'Cursus',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       routerConfig: appRouter,

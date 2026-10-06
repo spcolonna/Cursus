@@ -9,6 +9,18 @@ export 'motion.dart';
 // ─── Paleta principal: Navy · Oro · Marrón/Ámbar · Rojo (solo peligro)
 // Máx. 4 colores. Sin neón, sin gradientes locos.
 class AppColors {
+  // ─── Pigmentos de Cursus ("Fresco al atardecer") ───
+  // La paleta nueva de la marca. En la Fase I2 reemplaza a los tokens navy.
+  static const paper        = Color(0xFFF2E8D5);  // cal
+  static const paperDeep    = Color(0xFFE6D8BE);
+  static const ink          = Color(0xFF231A16);  // tinta
+  static const cinnabar     = Color(0xFFA8322D);  // marca y peligro
+  static const cinnabarDeep = Color(0xFF6E1C18);
+  static const cinnabarLight= Color(0xFFC9483F);
+  static const ochre        = Color(0xFFD9A441);  // acción principal
+  static const egyptianBlue = Color(0xFF2F5D9E);
+  static const verdigris    = Color(0xFF3F7F72);
+
   // Fondos
   static const bgDeep   = Color(0xFF0A1628);
   static const bgDark   = Color(0xFF0F1E36);
@@ -276,6 +288,24 @@ class AppTextStyles {
       fontWeight: weight,
     );
   }
+
+  /// Wordmark de la marca: capitales romanas con mucho aire.
+  static TextStyle brandWordmark(double size, Color color) => TextStyle(
+        fontFamily: 'Marcellus',
+        fontSize: size,
+        height: 1,
+        letterSpacing: size * 0.18,
+        color: color,
+      );
+
+  /// Bajada de la marca ("CARTAS DE ROMA").
+  static TextStyle brandTagline(double size, Color color) => TextStyle(
+        fontFamily: 'Figtree',
+        fontWeight: FontWeight.w600,
+        fontSize: size < minSize ? minSize : size,
+        letterSpacing: size * 0.27,
+        color: color,
+      );
 
   static TextStyle get displayLarge =>
       fredoka(32, color: AppColors.gold, weight: FontWeight.bold, letterSpacing: 1);
