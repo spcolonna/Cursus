@@ -50,6 +50,8 @@ void main() async {
   AppFeedback.configure(sfx: sfx, haptics: await progress.isHapticsEnabled());
   AppMotion.userPrefersReduced.value = await progress.isReduceMotion();
   await container.read(iapServiceProvider).init();
+  container.read(analyticsProvider).enabled =
+      await progress.isAnalyticsEnabled();
 
   runApp(UncontrolledProviderScope(
     container: container,
@@ -57,8 +59,33 @@ void main() async {
   ));
 }
 
-class TheMessengerApp extends StatelessWidget {
+class TheMessengerApp extends ConsumerStatefulWidget {
   const TheMessengerApp({super.key});
+
+  @override
+  ConsumerState<TheMessengerApp> createState() => _TheMessengerAppState();
+}
+
+class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    // Sesiones para la retención: abrir y volver de segundo plano.
+    final sessions = ref.read(trackSessionUseCaseProvider);
+    sessions.open();
+    _lifecycle = AppLifecycleListener(
+      onResume: () => sessions.open(),
+      onPause: () => sessions.pause(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

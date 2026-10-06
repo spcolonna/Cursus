@@ -8,6 +8,7 @@
 
 import '../../feedback/feedback.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +17,7 @@ import 'package:intl/intl.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/widgets.dart';
+import '../../../domain/entities/analytics.dart';
 import '../../../domain/entities/notifications.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -66,14 +68,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 SectionHeader(title: 'SONIDO Y MOVIMIENTO'),
                 const _SfxToggleCard(),
                 const SizedBox(height: 20),
+                SectionHeader(title: 'DATOS DE USO'),
+                const _UsageDataCard(),
+                const SizedBox(height: 20),
                 SectionHeader(title: 'DIAGNÓSTICO'),
                 FutureBuilder<_Diagnostics>(
                   future: _diagnostics,
                   builder: (context, snap) {
                     if (!snap.hasData) {
                       return const Center(
-                          child: CircularProgressIndicator(
-                              color: AppColors.gold));
+                          child:
+                              CircularProgressIndicator(color: AppColors.gold));
                     }
                     return _DiagnosticsCard(
                       data: snap.data!,
@@ -169,8 +174,10 @@ class _DiagnosticsCard extends ConsumerWidget {
     final (permLabel, permColor) = switch (data.permission) {
       NotificationPermission.granted => ('Concedido', AppColors.green),
       NotificationPermission.denied => ('Denegado', AppColors.red),
-      NotificationPermission.notRequested =>
-        ('Todavía no se pidió', AppColors.amber),
+      NotificationPermission.notRequested => (
+          'Todavía no se pidió',
+          AppColors.amber
+        ),
     };
 
     return GameCard(
@@ -194,7 +201,6 @@ class _DiagnosticsCard extends ConsumerWidget {
           style: AppTextStyles.bodySmall.copyWith(height: 1.35),
         ),
         const SizedBox(height: 12),
-
         if (data.pending.isEmpty)
           Text('Nada en la cola. Aceptá una misión para que se programen.',
               style: AppTextStyles.bodyMedium.copyWith(fontSize: 12))
@@ -221,11 +227,10 @@ class _DiagnosticsCard extends ConsumerWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(fmt.format(n.at),
-                          style: AppTextStyles.fredoka(12,
-                              color: AppColors.gold)),
+                          style:
+                              AppTextStyles.fredoka(12, color: AppColors.gold)),
                     ]),
               )),
-
         const SizedBox(height: 14),
         Row(children: [
           Expanded(
@@ -361,6 +366,92 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
             AppMotion.userPrefersReduced.value = v;
             setState(() => _reduceMotion = v);
           },
+        ),
+      ]),
+    );
+  }
+}
+
+// ─── Datos de uso ─────────────────────────────────────────────────────────────
+/// Opt-out de estadísticas y, para la beta, lo que el dispositivo sabe de
+/// sus propias sesiones, con un botón para copiarlo y mandarlo.
+class _UsageDataCard extends ConsumerStatefulWidget {
+  const _UsageDataCard();
+
+  @override
+  ConsumerState<_UsageDataCard> createState() => _UsageDataCardState();
+}
+
+class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
+  bool _enabled = true;
+  RetentionLog? _log;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final enabled = await ref.read(playerProgressProvider).isAnalyticsEnabled();
+    final log = await ref.read(retentionRepositoryProvider).load();
+    if (!mounted) return;
+    setState(() {
+      _enabled = enabled;
+      _log = log;
+    });
+  }
+
+  Future<void> _copy() async {
+    final json = await ref.read(analyticsBufferProvider).export(_log);
+    await Clipboard.setData(ClipboardData(text: json));
+    if (!mounted) return;
+    showGameSnack(context, 'Datos copiados. Pegalos en un mensaje.');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final log = _log;
+    final day = log?.dayIndex(DateTime.now()) ?? 0;
+    return GameCard(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title:
+              Text('Compartir estadísticas', style: AppTextStyles.fredoka(14)),
+          subtitle: Text(
+              'Qué rutas jugás y cuándo volvés. Anónimo: sin tu nombre '
+              'ni nada que te identifique.',
+              style: AppTextStyles.bodyMedium),
+          value: _enabled,
+          activeThumbColor: AppColors.gold,
+          onChanged: (v) async {
+            await ref.read(playerProgressProvider).setAnalyticsEnabled(v);
+            ref.read(analyticsProvider).enabled = v;
+            setState(() => _enabled = v);
+          },
+        ),
+        if (log != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Día ${day + 1} desde que empezaste · '
+            '${log.daysActive} '
+            '${log.daysActive == 1 ? 'día jugado' : 'días jugados'} · '
+            '${log.totalSessions} '
+            '${log.totalSessions == 1 ? 'sesión' : 'sesiones'}',
+            style: AppTextStyles.bodySmall,
+          ),
+        ],
+        const SizedBox(height: 6),
+        Center(
+          child: TextButton.icon(
+            onPressed: _copy,
+            icon: const Icon(Icons.copy_rounded,
+                size: 16, color: AppColors.textSecondary),
+            label: Text('Copiar datos para el equipo',
+                style:
+                    AppTextStyles.fredoka(12, color: AppColors.textSecondary)),
+          ),
         ),
       ]),
     );

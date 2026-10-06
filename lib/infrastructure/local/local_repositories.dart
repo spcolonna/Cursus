@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
+import '../../domain/entities/analytics.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/entities/guild.dart';
 import '../../domain/entities/notifications.dart';
@@ -938,5 +939,30 @@ class LocalWeeklyRepository implements WeeklyRepository {
   Future<void> save(WeeklyState state) async {
     final p = await SharedPreferences.getInstance();
     await p.setString(_kWeekly, jsonEncode(state.toJson()));
+  }
+}
+
+// ─── Retención (días activos del dispositivo) ────────────────────────────────
+class LocalRetentionRepository implements RetentionRepository {
+  static const _kRetention = 'retention_v2';
+
+  @override
+  Future<RetentionLog?> load() async {
+    final p = await SharedPreferences.getInstance();
+    final raw = p.getString(_kRetention);
+    if (raw == null) return null;
+    try {
+      return RetentionLog.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (_) {
+      // Corrupto: se guarda aparte y se arranca de nuevo desde hoy.
+      await p.setString('${_kRetention}_corrupt_backup', raw);
+      return null;
+    }
+  }
+
+  @override
+  Future<void> save(RetentionLog log) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setString(_kRetention, jsonEncode(log.toJson()));
   }
 }

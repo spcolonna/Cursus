@@ -5,6 +5,7 @@ import '../entities/world.dart';
 import '../entities/content.dart';
 import '../entities/progression.dart';
 import '../entities/weekly.dart';
+import '../entities/analytics.dart';
 
 abstract class AuthRepository {
   Future<User?> getCurrentUser();
@@ -115,4 +116,17 @@ abstract class NotificationScheduler {
 abstract class WeeklyRepository {
   Future<WeeklyState?> load();
   Future<void> save(WeeklyState state);
+}
+
+/// Adónde van los eventos de analytics (Firebase, consola, buffer local).
+/// Nunca debe tirar: medir no puede romper una acción del jugador.
+abstract class AnalyticsSink {
+  Future<void> log(AnalyticsEvent event);
+  Future<void> setUserProperty(String name, String? value);
+}
+
+/// Días activos y sesiones de este dispositivo. null = primera apertura.
+abstract class RetentionRepository {
+  Future<RetentionLog?> load();
+  Future<void> save(RetentionLog log);
 }

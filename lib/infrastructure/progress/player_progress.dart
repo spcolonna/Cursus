@@ -15,6 +15,7 @@ class PlayerProgress {
   static const _kSfxEnabled = 'sfx_enabled_v1';
   static const _kHapticsEnabled = 'haptics_enabled_v1';
   static const _kReduceMotion = 'reduce_motion_v1';
+  static const _kAnalytics = 'analytics_enabled_v1';
 
   // Checklist task ids (GDD §7)
   static const taskFirstRealRoute = 'first_real_route';
@@ -127,6 +128,17 @@ class PlayerProgress {
   Future<void> setReduceMotion(bool reduce) async {
     final p = await SharedPreferences.getInstance();
     await p.setBool(_kReduceMotion, reduce);
+  }
+
+  /// Compartir estadísticas de uso anónimas (opt-out, encendido por defecto).
+  Future<bool> isAnalyticsEnabled() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getBool(_kAnalytics) ?? true;
+  }
+
+  Future<void> setAnalyticsEnabled(bool enabled) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_kAnalytics, enabled);
   }
 
   String _dayKey() {

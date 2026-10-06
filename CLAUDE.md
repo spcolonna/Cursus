@@ -5,6 +5,7 @@ Juego móvil Flutter. Mensajero en la Roma del 50 a.C.: las misiones corren en *
 **Docs de diseño (fuente de verdad, leer solo la sección que haga falta):**
 - [docs/GDD_MASTER_v2.md](docs/GDD_MASTER_v2.md) — §5 árbol de skills, §6 economía, §7 onboarding, §8 UX/legibilidad.
 - [docs/ROADMAP_MEJORAS_v1.md](docs/ROADMAP_MEJORAS_v1.md) — fases y criterios de salida.
+- [docs/ANALYTICS.md](docs/ANALYTICS.md) — eventos, métricas de retención y cómo enchufar Firebase. Todo evento nuevo sale de una factory de `AnalyticsEvent`.
 
 ## Skills de este proyecto (usalas antes de improvisar)
 
@@ -26,11 +27,14 @@ lib/
 │   ├── entities/content.dart     tipos del contenido (TutorialMission, RealEventConfig, StoryMissionConfig…)
 │   ├── entities/progression.dart paga por ruta, PlayerStats, AchievementDef, ProgressionState
 │   ├── entities/weekly.dart      encargos semanales: WeeklyCommissionDef, WeeklyState, semana ISO
+│   ├── entities/analytics.dart   diccionario de eventos (AnalyticsEvent), RetentionLog, D_n/stickiness
 │   ├── repositories/             contratos abstractos + GameContentCatalog (contenido inyectado)
 │   ├── usecases/usecases.dart    use cases del loop (ResolveEvent, CompleteMission, AscendSkill…)
 │   ├── usecases/progression_usecases.dart  GetProgression (migra), RecordProgress, EquipTitle
-│   └── usecases/weekly_usecases.dart       GetWeekly, RecordWeeklyProgress, ClaimWeeklyCommission
+│   ├── usecases/weekly_usecases.dart       GetWeekly, RecordWeeklyProgress, ClaimWeeklyCommission
+│   └── usecases/analytics_usecases.dart    TrackSession (sesiones y días activos)
 ├── infrastructure/local/local_repositories.dart   SharedPreferences (sin backend)
+├── infrastructure/analytics/      AnalyticsService (fachada + opt-out), sinks de consola y buffer local
 ├── data/game_content.dart        CONTENIDO: tutorial, rutas fase 1, pool de eventos reales
 ├── data/story_content.dart       CONTENIDO: arcos narrativos (arc_claudius, 5 caps, 3 finales)
 ├── data/progression_content.dart CONTENIDO: 26 logros con premios y títulos

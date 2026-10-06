@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/static_game_content.dart';
 import '../../data/story_content.dart';
+import '../../domain/entities/analytics.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/entities/guild.dart';
 import '../../domain/entities/progression.dart';
@@ -12,7 +13,9 @@ import '../../domain/repositories/repositories.dart';
 import '../../domain/usecases/usecases.dart';
 import '../../domain/usecases/progression_usecases.dart';
 import '../../domain/usecases/weekly_usecases.dart';
+import '../../domain/usecases/analytics_usecases.dart';
 import '../../domain/entities/notifications.dart';
+import '../../infrastructure/analytics/analytics_service.dart';
 import '../../infrastructure/local/local_repositories.dart';
 import '../../infrastructure/notifications/notification_service.dart';
 import '../../infrastructure/audio/sfx_service.dart';
@@ -33,6 +36,19 @@ final notificationSchedulerProvider =
     Provider<NotificationScheduler>((_) => LocalNotificationService());
 final playerProgressProvider = Provider<PlayerProgress>((_) => PlayerProgress());
 final sfxServiceProvider = Provider<SfxService>((_) => SfxService());
+
+// ─── Analytics (ver docs/ANALYTICS.md) ────────────────────────────────────────
+final retentionRepositoryProvider =
+    Provider<RetentionRepository>((_) => LocalRetentionRepository());
+final analyticsBufferProvider =
+    Provider<LocalBufferAnalyticsSink>((_) => LocalBufferAnalyticsSink());
+/// Para sumar Firebase: agregar su sink a esta lista.
+final analyticsProvider = Provider<AnalyticsService>((ref) => AnalyticsService([
+      ConsoleAnalyticsSink(),
+      ref.read(analyticsBufferProvider),
+    ]));
+final trackSessionUseCaseProvider = Provider((ref) => TrackSessionUseCase(
+    ref.read(retentionRepositoryProvider), ref.read(analyticsProvider)));
 final iapServiceProvider = Provider<IapService>((ref) => IapService(
       onPurchased: (productId) async {
         final itemId = IapProducts.shopItemIdForProduct(productId);
@@ -262,9 +278,43 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     await ref.read(getProgressionUseCaseProvider).execute();
     final autoResolved =
         await ref.read(autoResolveExpiredEventsUseCaseProvider).execute();
-    return ref
+    if (autoResolved.isNotEmpty) {
+      _track(AnalyticsEvent.eventsAutoResolved(autoResolved.length));
+    }
+    final home = await ref
         .read(getHomeStateUseCaseProvider)
         .execute(autoResolved: autoResolved);
+    final analytics = ref.read(analyticsProvider);
+    analytics.setUserProperty('player_rank', '${home.messenger?.rank ?? 1}');
+    analytics.setUserProperty('messengers', '${home.slots.length}');
+    return home;
+  }
+
+  void _track(AnalyticsEvent e) => ref.read(analyticsProvider).track(e);
+
+  Messenger? _messenger(String? id) {
+    final slots = state.valueOrNull?.slots ?? const <MessengerSlot>[];
+    if (slots.isEmpty) return null;
+    return slots
+            .where((s) => s.messenger.id == id)
+            .firstOrNull
+            ?.messenger ??
+        slots.first.messenger;
+  }
+
+  int get _busy =>
+      state.valueOrNull?.slots.where((s) => s.activeMission != null).length ??
+      0;
+
+  void _trackAccept(Mission? m, String kind) {
+    if (m == null) return;
+    _track(AnalyticsEvent.missionAccept(
+      routeId: m.routeId,
+      kind: kind,
+      rank: _messenger(m.messengerId)?.rank ?? 1,
+      minutes: m.deadlineAt.difference(m.startedAt).inMinutes,
+      busy: _busy,
+    ));
   }
 
   /// Reprograma los avisos de TODAS las misiones activas a partir del estado
@@ -297,6 +347,8 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     final mission = await ref.read(acceptTutorialMissionUseCaseProvider)
         .execute(index, messengerId: messengerId);
     await refresh();
+    _track(AnalyticsEvent.tutorialStep(index));
+    _trackAccept(mission, 'tutorial');
     await syncAllNotifications();
     return mission;
   }
@@ -305,6 +357,7 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     final mission = await ref.read(acceptMissionUseCaseProvider)
         .execute(route, messengerId: messengerId);
     await refresh();
+    _trackAccept(mission, 'real');
     await syncAllNotifications();
     return mission;
   }
@@ -327,6 +380,17 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     await ref.read(progressionProvider.notifier).record(
         change: (s) => s.copyWith(eventsResolved: s.eventsResolved + 1));
     await refresh();
+    _track(AnalyticsEvent.eventResolved(
+      event: event.title,
+      outcome: result.outcome.type.name,
+      risk: result.effectiveRisk,
+      score: result.score,
+    ));
+    final m = _messenger(mission.messengerId);
+    for (final skill in result.leveledUpSkills) {
+      _track(AnalyticsEvent.skillLevel(
+          skill: skill.name, level: m?.skillLevel(skill) ?? 0, via: 'xp'));
+    }
     // Subir de nivel por XP también cuenta para "Subí una habilidad".
     if (result.leveledUpSkills.isNotEmpty) {
       await ref
@@ -342,6 +406,9 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     final mission =
         await ref.read(acceptStoryMissionUseCaseProvider).execute(config);
     await refresh();
+    _track(AnalyticsEvent.storyChapter(
+        arcId: config.arcId, chapter: config.stage + 1, variant: config.id));
+    _trackAccept(mission, 'story');
     await syncAllNotifications();
     return mission;
   }
@@ -355,6 +422,8 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     );
     await ref.read(progressionProvider.notifier).record();
     await refresh();
+    _track(AnalyticsEvent.skillLevel(
+        skill: skill.name, level: messenger.skillLevel(skill), via: 'pick'));
     return messenger;
   }
 
@@ -367,6 +436,8 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     );
     await ref.read(progressionProvider.notifier).record();
     await refresh();
+    _track(AnalyticsEvent.skillLevel(
+        skill: skill.name, level: messenger.skillLevel(skill), via: 'ascend'));
     return messenger;
   }
 
@@ -378,6 +449,7 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
       mission: mission, messengerId: messengerId,
     );
     await refresh();
+    _track(AnalyticsEvent.skipToEvent(result.cost));
     // Adelantar mueve startedAt y deadlineAt: lo programado ya no sirve.
     await syncAllNotifications();
     return result;
@@ -393,14 +465,32 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     );
     await ref.read(progressionProvider.notifier).record();
     await refresh();
+    _track(AnalyticsEvent.slotUnlock(state.valueOrNull?.slots.length ?? 0));
     return messenger;
   }
 
   Future<MissionCompletion?> completeMissionByTime(String messengerId) async {
     final active =
         await ref.read(missionRepositoryProvider).getActiveMissionFor(messengerId);
+    final tutorialWasDone = state.valueOrNull?.tutorialDone ?? true;
     final completion =
         await ref.read(completeMissionUseCaseProvider).execute(messengerId);
+    if (completion != null && active != null) {
+      _track(AnalyticsEvent.missionComplete(
+        routeId: active.routeId,
+        kind: active.isTutorial
+            ? 'tutorial'
+            : active.arcId != null
+                ? 'story'
+                : 'real',
+        grade: completion.result.grade,
+        denarios: completion.denariosDelta,
+      ));
+      if (completion.endingTitle != null) {
+        _track(AnalyticsEvent.arcComplete(
+            arcId: active.arcId ?? '', ending: completion.endingTitle!));
+      }
+    }
     if (completion != null) {
       await ref
           .read(guildProvider.notifier)
@@ -429,6 +519,9 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
       }
     }
     await refresh();
+    if (!tutorialWasDone && (state.valueOrNull?.tutorialDone ?? false)) {
+      _track(AnalyticsEvent.tutorialComplete());
+    }
     await syncAllNotifications();
     return completion;
   }
@@ -439,6 +532,7 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
         .read(advanceMissionUseCaseProvider)
         .execute(messengerId, minutes);
     if (updated == null) return;
+    _track(AnalyticsEvent.rewardedAd('advance_$minutes'));
     await refresh();
     await syncAllNotifications();
     // Reiniciar ticker de progreso
@@ -459,6 +553,7 @@ class GuildNotifier extends AsyncNotifier<GuildState> {
 
   Future<({DailyPayReward reward, int day})> claimDailyPay() async {
     final result = await ref.read(claimDailyPayUseCaseProvider).execute();
+    ref.read(analyticsProvider).track(AnalyticsEvent.dailyPay(result.day));
     await ref.read(progressionProvider.notifier).record(
         change: (s) => s.recordDailyPay(DateTime.now()));
     await refresh();
@@ -470,6 +565,7 @@ class GuildNotifier extends AsyncNotifier<GuildState> {
     final result =
         await ref.read(claimContractUseCaseProvider).execute(templateId);
     state = AsyncData(result.state);
+    ref.read(analyticsProvider).track(AnalyticsEvent.contractClaim(templateId));
     await ref.read(progressionProvider.notifier).record(
         change: (s) => s.copyWith(
               contractsClaimed: s.contractsClaimed + 1,
@@ -483,6 +579,7 @@ class GuildNotifier extends AsyncNotifier<GuildState> {
   Future<void> reroll(String templateId) async {
     state = AsyncData(
         await ref.read(rerollContractUseCaseProvider).execute(templateId));
+    ref.read(analyticsProvider).track(AnalyticsEvent.contractReroll());
   }
 
   Future<void> recordDelivery(String grade) async {
@@ -556,6 +653,7 @@ class WeeklyNotifier extends AsyncNotifier<WeeklyState> {
   Future<WeeklyCommissionDef> claim(String id) async {
     final result = await ref.read(claimWeeklyUseCaseProvider).execute(id);
     state = AsyncData(result.state);
+    ref.read(analyticsProvider).track(AnalyticsEvent.weeklyClaim(id));
     await ref.read(worldProvider.notifier).refresh();
     await ref.read(progressionProvider.notifier).record(
         change: (s) =>
@@ -749,6 +847,13 @@ class CelebrationQueue extends Notifier<List<Celebration>> {
 
   void enqueue(ProgressionUpdate update) {
     if (update.isEmpty) return;
+    final analytics = ref.read(analyticsProvider);
+    if (update.rankReached != null) {
+      analytics.track(AnalyticsEvent.rankUp(update.rankReached!));
+    }
+    for (final a in update.unlocked) {
+      analytics.track(AnalyticsEvent.achievement(a.id));
+    }
     state = [
       ...state,
       // El rango primero: es el momento grande; los logros, después.
@@ -759,6 +864,10 @@ class CelebrationQueue extends Notifier<List<Celebration>> {
 
   void enqueueFactions(Map<Faction, FactionTier> ups) {
     if (ups.isEmpty) return;
+    for (final e in ups.entries) {
+      ref.read(analyticsProvider).track(AnalyticsEvent.factionTier(
+          faction: e.key.name, tier: e.value.name));
+    }
     state = [
       ...state,
       for (final e in ups.entries) Celebration.faction(e.key, e.value),

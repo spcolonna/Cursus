@@ -284,7 +284,7 @@ Navy profundo + oro/pergamino, tipografías **Fredoka** (títulos) + **Nunito** 
 
 - **Hoy:** Flutter + Riverpod + go_router, todo local (SharedPreferences con migración de esquemas `_v2`). Sin backend.
 - **Camino técnico:** la arquitectura limpia ya deja el enchufe listo — Fase 4 crea `firebase_repositories.dart` y cambia los providers (documentado en el README). Orden: notificaciones locales (sin backend) → IAP (sin backend) → Firebase (auth, perfil en la nube, contenido remoto, FCM, Analytics).
-- **Analytics:** al integrar Firebase, instrumentar desde el día 1: sesiones/día, funnel del tutorial, misiones aceptadas/completadas por duración, respuesta a notificaciones, conversión de paywall.
+- **Analytics (v2.3):** instrumentado. 22 eventos (sesión, embudo del tutorial, loop, historia, progresión, gremio, tienda), registro local de días activos y opt-out en Ajustes. Hoy salen a consola y a un buffer que el tester copia desde Ajustes; Firebase se enchufa como un sink más. Definiciones, diccionario, embudos y umbrales de decisión: [ANALYTICS.md](ANALYTICS.md).
 
 **KPIs objetivo (para validar el diseño):**
 
@@ -292,6 +292,8 @@ Navy profundo + oro/pergamino, tipografías **Fredoka** (títulos) + **Nunito** 
 |---|---|
 | Retención D1 | ≥ 40% |
 | Retención D7 | ≥ 20% (meta del GDD v1) |
+| Retención D30 | ≥ 6% |
+| Stickiness (DAU/MAU) | ≥ 20% |
 | Sesiones/día (jugador activo) | ≥ 3 |
 | Respuesta a push de evento en < 60 min | ≥ 50% |
 | Conversión a pagador (mes 3) | 2-3% |
@@ -314,6 +316,7 @@ Navy profundo + oro/pergamino, tipografías **Fredoka** (títulos) + **Nunito** 
 
 ### Historial
 
+- **v2.3 (2026-10-06):** analytics. Diccionario de eventos y métricas de retención definidos en código, sesión con corte a los 30 min, registro local de días activos, exportación para la beta y opt-out (§9, ANALYTICS.md).
 - **v2.2 (2026-10-05):** paga por ruta, 26 logros con títulos y celebraciones; reputación con escalones que abren rutas (las primeras de rango 4 y 5), tarifa de facción y cambio de contrato; encargos semanales con NPCs (§4.6-4.7).
 
 - **v2.1 (2026-07-27):** feedback visible de todo lo que hace el jugador. Retrato del mensajero por género/slot/rango/estado en todas las pantallas; contadores de moneda animados y compartidos; pronóstico narrativo antes de decidir (con chip de riesgo, que antes no se mostraba) y desglose "por qué pasó" después; sección "lo que cambió" al entregar (reputación, diario, flags traducidos a lenguaje narrativo, título de arco, XP y fatiga); notificaciones locales completas con pantalla de Ajustes y diagnóstico; auto-resolución a los 60 min alineada al diseño; árbol con efectos numéricos.

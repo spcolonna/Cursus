@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../feedback/feedback.dart';
+import '../../../domain/entities/analytics.dart';
 import '../../providers/providers.dart';
 import '../../widgets/messenger_avatar.dart';
 import '../../theme/app_theme.dart';
@@ -394,6 +395,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             denariosCost: item.currency == PriceCurrency.denarios ? price : 0,
             aureosCost: item.currency == PriceCurrency.aureos ? price : 0,
           );
+      ref.read(analyticsProvider).track(AnalyticsEvent.shopItem(
+            itemId: item.id,
+            currency: item.currency.name,
+            price: price,
+          ));
     } catch (e) {
       if (mounted) showErrorSnack(context, e);
       return;
@@ -490,6 +496,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   Future<void> _creditIap(ShopItem item) async {
     try {
       await ref.read(creditPurchaseUseCaseProvider).execute(item.id);
+      ref.read(analyticsProvider).track(AnalyticsEvent.iapCredited(item.id));
     } catch (e) {
       if (mounted) showErrorSnack(context, e);
       return;
