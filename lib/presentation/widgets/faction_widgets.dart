@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/world.dart';
+import '../../domain/entities/content.dart';
 import '../theme/app_theme.dart';
+import 'art_image.dart';
 import 'components.dart';
+import 'insignia.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Piezas de facción: insignia, color, retrato de NPC y la escalera de favores
@@ -38,41 +41,43 @@ FactionTier? nextTier(FactionTier t) => switch (t) {
     };
 
 // ─── Insignia ─────────────────────────────────────────────────────────────────
+/// Escudo de la facción en un cuadrado de [size] (el escudo es más alto que
+/// ancho y se centra).
 class FactionBadge extends StatelessWidget {
   final Faction faction;
   final double size;
   const FactionBadge({super.key, required this.faction, this.size = 40});
 
   @override
-  Widget build(BuildContext context) {
-    final c = factionColor(faction);
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: c.withValues(alpha: 0.15),
-        border: Border.all(color: c, width: size > 36 ? 2.5 : 2),
-      ),
-      child: Icon(factionIcon(faction), color: c, size: size * 0.5),
-    );
-  }
+  Widget build(BuildContext context) => SizedBox(
+        width: size,
+        height: size,
+        child: Center(child: FactionCrest(faction: faction, size: size * 0.86)),
+      );
 }
 
 // ─── Retrato de NPC ───────────────────────────────────────────────────────────
-/// Medallón con la inicial; el borde dice para quién trabaja. (La Fase 4
-/// lo cambia por la ilustración, con este como respaldo.)
+/// Retrato del personaje (`assets/art/npcs/<id>.png`) en un medallón con el
+/// borde de su facción. Sin ilustración, la inicial.
 class NpcPortrait extends StatelessWidget {
   final String name;
   final Faction? faction;
   final double size;
+
+  /// Id del personaje. Por defecto sale del nombre ('Décimo' → 'decimo').
+  final String? npcId;
   const NpcPortrait(
-      {super.key, required this.name, this.faction, this.size = 48});
+      {super.key, required this.name, this.faction, this.size = 48, this.npcId});
 
   @override
   Widget build(BuildContext context) {
     final c =
         faction == null ? AppColors.textSecondary : factionColor(faction!);
+    final initial = Center(
+      child: Text(name.isEmpty ? '?' : name.characters.first,
+          style: AppTextStyles.fredoka(size * 0.42,
+              color: AppColors.parchment, weight: FontWeight.bold)),
+    );
     return Container(
       width: size,
       height: size,
@@ -81,10 +86,12 @@ class NpcPortrait extends StatelessWidget {
         gradient: AppGradients.card,
         border: Border.all(color: c, width: 2.5),
       ),
-      alignment: Alignment.center,
-      child: Text(name.isEmpty ? '?' : name.characters.first,
-          style: AppTextStyles.fredoka(size * 0.42,
-              color: AppColors.parchment, weight: FontWeight.bold)),
+      child: ClipOval(
+        child: ArtImage(
+          asset: ArtPaths.npc(npcId ?? NpcDef.idFromName(name)),
+          fallback: initial,
+        ),
+      ),
     );
   }
 }

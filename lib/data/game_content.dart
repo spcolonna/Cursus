@@ -88,6 +88,7 @@ const List<TutorialEvent> tutorialEvents = [
   // ── Misión 1 ─────────────────────────────────────────────────
   TutorialEvent(
     id: 'tut_evt_01a',
+    category: EventCategory.patrol,
     title: 'El guardia te detiene',
     description: 'El guardia de la Puerta Sur te mira de arriba abajo. "¿Quién te manda, chico?"',
     decisionWindowMinutes: 2,
@@ -118,6 +119,7 @@ const List<TutorialEvent> tutorialEvents = [
   // ── Misión 2 ─────────────────────────────────────────────────
   TutorialEvent(
     id: 'tut_evt_02a',
+    category: EventCategory.forum,
     title: 'Callejón concurrido',
     description: 'El camino directo está bloqueado por un mercado improvisado. Hay dos rutas.',
     decisionWindowMinutes: 3,
@@ -147,6 +149,8 @@ const List<TutorialEvent> tutorialEvents = [
 
   TutorialEvent(
     id: 'tut_evt_02b',
+    category: EventCategory.inn,
+    npcId: 'lucius',
     title: 'Lucius desconfía',
     description: 'El tabernero Lucius te mira fijo. "No conozco tu cara. ¿Por qué debería confiar en vos?"',
     decisionWindowMinutes: 3,
@@ -177,6 +181,7 @@ const List<TutorialEvent> tutorialEvents = [
   // ── Misión 3 ─────────────────────────────────────────────────
   TutorialEvent(
     id: 'tut_evt_03a',
+    category: EventCategory.forum,
     title: 'Alguien te sigue',
     description: 'Notás a un hombre con capucha que apareció en dos esquinas distintas. Puede ser coincidencia.',
     decisionWindowMinutes: 5,
@@ -206,6 +211,7 @@ const List<TutorialEvent> tutorialEvents = [
 
   TutorialEvent(
     id: 'tut_evt_03b',
+    category: EventCategory.forum,
     title: 'El portero del Senador',
     description: 'La villa de Claudius tiene un portero enorme que no te deja pasar. "El Senador no recibe mensajeros sin cita."',
     decisionWindowMinutes: 5,
@@ -235,6 +241,8 @@ const List<TutorialEvent> tutorialEvents = [
 
   TutorialEvent(
     id: 'tut_evt_03c',
+    category: EventCategory.forum,
+    npcId: 'claudius',
     title: 'El Senador hace preguntas',
     description: 'Claudius acepta el mensaje pero antes de dejarte ir pregunta: "¿Quién más sabe de esto?"',
     decisionWindowMinutes: 5,
@@ -265,6 +273,7 @@ const List<TutorialEvent> tutorialEvents = [
   // ── Misión 4 ─────────────────────────────────────────────────
   TutorialEvent(
     id: 'tut_evt_04a',
+    category: EventCategory.patrol,
     title: 'Patrulla nocturna',
     description: 'Una patrulla de cuatro legionarios bloquea el camino. El toque de queda rige después del ocaso.',
     decisionWindowMinutes: 5,
@@ -294,6 +303,7 @@ const List<TutorialEvent> tutorialEvents = [
 
   TutorialEvent(
     id: 'tut_evt_04b',
+    category: EventCategory.patrol,
     title: 'Perro del campamento',
     description: 'Un perro enorme encadenado en la entrada ladra descontrolado. El guardia dentro tarda en aparecer.',
     decisionWindowMinutes: 3,
@@ -323,6 +333,8 @@ const List<TutorialEvent> tutorialEvents = [
 
   TutorialEvent(
     id: 'tut_evt_04c',
+    category: EventCategory.patrol,
+    npcId: 'sexto',
     title: 'El Centurión pide confirmar identidad',
     description: '"Las órdenes son auténticas, pero necesito confirmar que vos sos quien dice ser. ¿Quién es tu superior?"',
     decisionWindowMinutes: 5,
@@ -444,6 +456,7 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_patrol',
+    category: EventCategory.patrol,
     title: 'Patrulla romana',
     description: 'Un grupo de legionarios bloquea el paso. Inspeccionan a todos los viajeros. Tu carga podría levantar sospechas.',
     options: [
@@ -496,6 +509,7 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_storm',
+    category: EventCategory.storm,
     title: 'Tormenta en el paso',
     description: 'Un frente de tormenta brutal cubre el camino. El viento derriba árboles y la lluvia convierte el sendero en barro.',
     options: [
@@ -529,6 +543,7 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_bridge',
+    category: EventCategory.river,
     title: 'Puente cortado',
     description: 'El puente principal sobre el río está destruido. Las crecidas de los últimos días se llevaron la mitad.',
     options: [
@@ -559,6 +574,7 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_bandits',
+    category: EventCategory.bandits,
     title: 'Emboscada en el camino',
     description: 'Un grupo de bandidos sale de entre los árboles. Saben que llevás algo valioso. Te rodean con calma.',
     options: [
@@ -606,6 +622,7 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_injured',
+    category: EventCategory.road,
     title: 'Tropezás en el camino',
     description: 'Una piedra suelta en el sendero te hace tropezar. Caés con fuerza. El tobillo duele, pero el paquete parece estar bien.',
     options: [
@@ -643,6 +660,7 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_bandits_revenge',
+    category: EventCategory.bandits,
     title: 'Te estaban esperando',
     description: 'Más adelante, el camino se angosta entre dos lomas. Ahí están otra vez: los mismos bandidos, el doble de hombres, y el jefe al frente con una sonrisa sin apuro. "El que corre, vuelve a pasar."',
     options: [
@@ -677,6 +695,7 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_wounded_traveler',
+    category: EventCategory.road,
     title: 'El viajero caído',
     description: 'Al costado del camino, un hombre mayor yace junto a su mula muerta. Respira con dificultad y levanta una mano al verte. Llevás una entrega con plazo. Él no tiene a nadie más.',
     options: [
@@ -712,6 +731,7 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_letter_bribe',
+    category: EventCategory.inn,
     title: 'El precio de la curiosidad',
     description: 'En la posada, un hombre de manos limpias y acento del norte se sienta a tu mesa sin invitación. "Sé lo que llevás. Solo quiero leerlo. Nadie va a enterarse, y esto..." — desliza una bolsita que suena a plata — "...es tuyo."',
     options: [
@@ -748,6 +768,7 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_pickpocket',
+    category: EventCategory.forum,
     title: 'Manos rápidas',
     description: 'Un tirón seco en el cinturón: un chico de no más de diez años sale corriendo con tu bolsa de monedas entre codos y canastos. El correo lo tenés encima. La plata, ya no.',
     options: [
@@ -781,6 +802,8 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_rival_messenger',
+    category: EventCategory.road,
+    npcId: 'marco',
     title: 'El colega caído',
     description: 'Sentado contra un mojón, un mensajero de otra red se agarra el tobillo hinchado. Te reconoce el morral al instante. "Colega... mi entrega vence hoy en el mismo pueblo al que vas. Llevala vos. Te debo una que no te imaginás."',
     options: [
@@ -816,6 +839,7 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_merchant_offer',
+    category: EventCategory.forum,
     title: 'El carro del mercader',
     description: 'Un mercader con demasiados anillos te ofrece viajar en su carro: "Llegás en la mitad del tiempo. Solo te pido que si alguien pregunta, vos no viste lo que hay bajo la lona." Bajo la lona, algo se mueve el peso de las ánforas... sin sello de aduana.',
     options: [
@@ -851,6 +875,7 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_old_soldier',
+    category: EventCategory.inn,
     title: 'El veterano del puente',
     description: 'Un veterano de las legiones, más vino que hombre a esta hora, bloquea el paso angosto del puente. "¡Nadie cruza sin escuchar cómo perdí este ojo en la Galia!" No parece que la historia sea corta. Tampoco parece mentira.',
     options: [
@@ -883,6 +908,7 @@ const List<RealEventConfig> realEventPool = [
 
   RealEventConfig(
     id: 'evt_omen',
+    category: EventCategory.temple,
     title: 'El augur del cruce',
     description: 'En el cruce de caminos, un augur flaco lee el vuelo de los pájaros. Te clava los ojos: "Mensajero. Los cuervos volaron contra el sol. Hay sombra en tu camino... a menos que los dioses reciban lo suyo."',
     options: [

@@ -346,6 +346,8 @@ const List<RealEventConfig> storyEventPool = [
   // ── Capítulo I ───────────────────────────────────────────────
   RealEventConfig(
     id: 's1_varus_dilemma',
+    category: EventCategory.inn,
+    npcId: 'varus',
     title: 'La lealtad tiene horario',
     description: 'Antes de salir hacia la villa, pasás frente al cuartel. La luz de Varus está encendida, como siempre. Un senador te citó a escondidas de tu comandante. Podés entrar y contárselo. O podés seguir de largo y que esta historia sea solo tuya.',
     options: [
@@ -374,6 +376,7 @@ const List<RealEventConfig> storyEventPool = [
 
   RealEventConfig(
     id: 's1_villa_gate',
+    category: EventCategory.forum,
     title: 'La puerta de servicio',
     description: 'La villa de Claudius de noche es una fortaleza de mármol. La nota decía "vení solo", pero no decía cómo entrar. El portón principal tiene dos guardias. La puerta de servicio, un cocinero fumando. El muro, hiedra vieja.',
     options: [
@@ -404,6 +407,7 @@ const List<RealEventConfig> storyEventPool = [
   // ── Capítulo II ──────────────────────────────────────────────
   RealEventConfig(
     id: 's2_northman_offer',
+    category: EventCategory.subura,
     title: 'El hombre del norte',
     description: 'A tres cuadras del templo, un hombre de acento norteño te corta el paso con educación quirúrgica. "Doscientos denarios. Solo por dejarme ver el sello. Ni abrirla, ni tocarla. Ver el sello." Nadie ofrece doscientos denarios por mirar cera. Salvo que la cera diga todo.',
     options: [
@@ -441,6 +445,7 @@ const List<RealEventConfig> storyEventPool = [
 
   RealEventConfig(
     id: 's2_followed',
+    category: EventCategory.forum,
     title: 'Sombras propias',
     description: 'Desde que el norteño pagó, tenés compañía: dos hombres que cambian de vereda cuando vos cambiás, que miran vidrieras sin vidrio. Al templo no podés llevar cola.',
     options: [
@@ -470,6 +475,7 @@ const List<RealEventConfig> storyEventPool = [
 
   RealEventConfig(
     id: 's2_temple_watchers',
+    category: EventCategory.temple,
     title: 'Los ojos del templo',
     description: 'El Templo de Saturno de noche tiene más vigilantes que fieles. En la escalinata, un mendigo que no pide, un barrendero que no barre. Todos miran sin mirar. La carta te pesa en la túnica como si supiera.',
     options: [
@@ -493,6 +499,7 @@ const List<RealEventConfig> storyEventPool = [
   // ── Capítulo III ─────────────────────────────────────────────
   RealEventConfig(
     id: 's3_broken_seal',
+    category: EventCategory.inn,
     title: 'La carta que quema',
     description: 'Cruzando el Tíber, un carro te obliga a saltar y el rollo cae al empedrado. El tercer sello — solo el tercero — se parte limpio, y el rollo se abre lo justo. No querías leer. Leíste: "...las pruebas contra Petro, cuyo oro sostiene la red clandestina de mensajeros del llamado Varus..." El mundo se te para. Claudius no limpia Roma. Corta la rama donde estás parado vos.',
     options: [
@@ -532,6 +539,7 @@ const List<RealEventConfig> storyEventPool = [
   // ── Capítulo IV — eventos compartidos y por variante ─────────
   RealEventConfig(
     id: 's4_night_patrol',
+    category: EventCategory.patrol,
     title: 'Roma después del toque',
     description: 'La ciudad de noche es de las patrullas, y esta noche hay más que nunca: alguien importante movió hilos y los vigiles paran a todo lo que camina. Vos no podés parar.',
     options: [
@@ -562,6 +570,7 @@ const List<RealEventConfig> storyEventPool = [
 
   RealEventConfig(
     id: 's4_claudius_men',
+    category: EventCategory.subura,
     title: 'Los hombres de Claudius',
     description: 'A cinco cuadras de la villa de Petro, tres hombres con capas buenas y espadas mejores te cierran el paso. El del medio sonríe: "El Senador Claudius lamenta informarte que tu carrera de correo termina esta noche." Saben adónde vas. Saben qué llevás.',
     options: [
@@ -591,6 +600,7 @@ const List<RealEventConfig> storyEventPool = [
 
   RealEventConfig(
     id: 's4_guild_shadow',
+    category: EventCategory.subura,
     title: 'Una cara conocida',
     description: 'En el puente, una figura espera apoyada en la baranda. La conocés: Marco, mensajero de la red, el que te enseñó los atajos del río. "Varus sabe lo que llevás", dice sin saludar. "Me mandó a pedírtelo. A vos. Por la amistad."',
     options: [
@@ -615,6 +625,7 @@ const List<RealEventConfig> storyEventPool = [
 
   RealEventConfig(
     id: 's4_rival_buyer',
+    category: EventCategory.subura,
     title: 'La contraoferta',
     description: 'En la puerta de la Loba Dorada, una litera lujosa te corta el paso. Adentro, un hombre de anillos pesados: agente de Petro. "Sabemos qué vendés y a quién. Petro paga el doble por exclusividad... y el triple por saber quién más lo compra."',
     options: [
@@ -641,6 +652,8 @@ const List<RealEventConfig> storyEventPool = [
   // ── Capítulo V — eventos de los finales ──────────────────────
   RealEventConfig(
     id: 's5_petro_gift',
+    category: EventCategory.forum,
+    npcId: 'petro',
     title: 'La gratitud de un patricio',
     description: 'Antes de salir hacia el Foro, un esclavo de Petro te intercepta con una caja pequeña: "El Senador insiste." Adentro, un anillo de plata con un cuervo grabado. Los regalos de los senadores nunca son solo regalos.',
     options: [
@@ -667,6 +680,8 @@ const List<RealEventConfig> storyEventPool = [
 
   RealEventConfig(
     id: 's5_claudius_face',
+    category: EventCategory.forum,
+    npcId: 'claudius',
     title: 'La escalinata del Foro',
     description: 'Claudius te espera en la escalinata, más viejo que la semana pasada. Los que pierden en Roma envejecen por derrota. Te reconoce desde lejos y no cambia la cara: los patricios pierden con la misma expresión con la que ganan.',
     options: [
@@ -689,6 +704,7 @@ const List<RealEventConfig> storyEventPool = [
 
   RealEventConfig(
     id: 's5_senate_steps',
+    category: EventCategory.forum,
     title: 'Las gradas de la Curia',
     description: 'La escalinata del Senado es un desfile de togas que te miran como a un mueble nuevo: la librea de Claudius en un cuerpo de mensajero de la red. Algunos murmullos te preceden. Otros te siguen.',
     options: [
@@ -712,6 +728,8 @@ const List<RealEventConfig> storyEventPool = [
 
   RealEventConfig(
     id: 's5_varus_cold',
+    category: EventCategory.inn,
+    npcId: 'varus',
     title: 'El último saludo',
     description: 'Volviendo del Senado, el destino te cruza con Varus en el puente Emilio. Va con dos de los nuevos. Te ve. Ve la librea. Los nuevos miran al río, incómodos. Roma entera cabe en este puente.',
     options: [
@@ -734,6 +752,7 @@ const List<RealEventConfig> storyEventPool = [
 
   RealEventConfig(
     id: 's5_two_doors',
+    category: EventCategory.subura,
     title: 'Dos puertas, un mensaje',
     description: 'Primera entrega: la villa de Claudius. Segunda: la de Petro. El mismo sobre, la misma letra de la Viuda, el mismo mensaje sin firma. Tu trabajo: que ambos lo reciban en mano y te vean la cara al leerlo. Esa es la parte del contrato que nadie explica.',
     options: [
@@ -756,6 +775,8 @@ const List<RealEventConfig> storyEventPool = [
 
   RealEventConfig(
     id: 's5_widow_toast',
+    category: EventCategory.subura,
+    npcId: 'viuda',
     title: 'El brindis de la Viuda',
     description: 'De vuelta en la Loba Dorada, la Viuda te espera con dos copas servidas y la mesa del fondo despejada. En la Subura, que la Viuda te sirva el vino es un contrato, una adopción y una advertencia, todo junto.',
     options: [

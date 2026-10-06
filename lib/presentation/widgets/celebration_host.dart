@@ -179,7 +179,7 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     _c = AnimationController(vsync: this);
-    AppFeedback.reward();
+    AppFeedback.achievement();
     _timer = Timer(const Duration(milliseconds: 3800), _leave);
   }
 
@@ -317,7 +317,7 @@ class _RankUpOverlayState extends State<_RankUpOverlay>
   void initState() {
     super.initState();
     _c = AnimationController(vsync: this);
-    AppFeedback.impact();
+    AppFeedback.rankUp();
   }
 
   @override

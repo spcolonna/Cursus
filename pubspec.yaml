@@ -48,6 +48,11 @@ flutter:
     - assets/images/
     - assets/audio/
     - assets/content/
+    - assets/art/events/
+    - assets/art/story/
+    - assets/art/npcs/
+    - assets/art/endings/
+    - assets/art/scenes/
     - assets/fonts/OFL-Fredoka.txt
     - assets/fonts/OFL-Nunito.txt
   # Fuentes empaquetadas (OFL): el juego no depende de la red para su tipografía.

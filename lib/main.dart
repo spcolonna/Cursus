@@ -6,6 +6,7 @@ import 'router.dart';
 import 'presentation/theme/app_theme.dart';
 import 'presentation/providers/providers.dart';
 import 'presentation/feedback/feedback.dart';
+import 'presentation/widgets/art_image.dart';
 import 'presentation/widgets/celebration_host.dart';
 
 void main() async {
@@ -45,7 +46,7 @@ void main() async {
   openFromNotification(await scheduler.launchPayload());
   final sfx = container.read(sfxServiceProvider);
   final progress = container.read(playerProgressProvider);
-  await sfx.init();
+  await Future.wait([sfx.init(), ArtCatalog.load()]);
   sfx.setEnabled(await progress.isSfxEnabled());
   AppFeedback.configure(sfx: sfx, haptics: await progress.isHapticsEnabled());
   AppMotion.userPrefersReduced.value = await progress.isReduceMotion();

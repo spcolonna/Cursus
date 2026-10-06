@@ -96,14 +96,18 @@ class AnalyticsEvent {
         'busy_messengers': busy,
       });
 
+  /// [event] es el id del contenido (`evt_storm`); si un guardado viejo no
+  /// lo trae, el título.
   factory AnalyticsEvent.eventResolved({
     required String event,
+    required String category,
     required String outcome,
     required int risk,
     required int score,
   }) =>
       AnalyticsEvent('event_resolved', {
         'event': event,
+        'category': category,
         'outcome': outcome,
         'risk': risk,
         'score': score,

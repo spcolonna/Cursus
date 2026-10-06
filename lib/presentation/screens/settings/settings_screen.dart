@@ -343,7 +343,7 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
             await progress.setSfxEnabled(v);
             ref.read(sfxServiceProvider).setEnabled(v);
             setState(() => _sfx = v);
-            if (v) AppFeedback.tap();
+            if (v) AppFeedback.toggle();
           },
         ),
         _toggle(
@@ -354,7 +354,7 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
             await progress.setHapticsEnabled(v);
             AppFeedback.hapticsEnabled = v;
             setState(() => _haptics = v);
-            if (v) AppFeedback.tap();
+            if (v) AppFeedback.toggle();
           },
         ),
         _toggle(

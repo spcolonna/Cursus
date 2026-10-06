@@ -6,6 +6,7 @@ import '../../feedback/feedback.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/widgets.dart';
+import '../../widgets/art_image.dart';
 import '../../widgets/messenger_avatar.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/entities/progression.dart';
@@ -153,7 +154,7 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
                         : grade == 'F'
                             ? _GradeSeal(grade: grade, color: color)
                                 .animate(
-                                    onComplete: (_) => AppFeedback.impact())
+                                    onComplete: (_) => AppFeedback.seal())
                                 .scale(
                                     begin: const Offset(2.2, 2.2),
                                     duration: 380.ms,
@@ -168,7 +169,7 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
                                     duration: 380.ms,
                                     curve: AppMotion.exit)
                                 .fade(duration: 200.ms)
-                                .callback(callback: (_) => AppFeedback.impact())
+                                .callback(callback: (_) => AppFeedback.seal())
                                 .then()
                                 .shimmer(
                                     duration: 900.ms,
@@ -568,6 +569,22 @@ class _WhatChanged extends StatelessWidget {
                   color: AppColors.textSecondary, letterSpacing: 1.2)),
         ]),
         const SizedBox(height: 12),
+
+        // Ilustración del final, si ya existe (sin archivo no ocupa lugar).
+        if (completion.endingId case final id?
+            when ArtCatalog.has(ArtPaths.ending(id)))
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadii.md),
+              child: AspectRatio(
+                aspectRatio: 4 / 5,
+                child: ArtImage(
+                    asset: ArtPaths.ending(id),
+                    fallback: const SizedBox.shrink()),
+              ),
+            ),
+          ),
 
         // Título de arco: lo más grande que puede pasarte.
         if (completion.endingTitle != null) ...[

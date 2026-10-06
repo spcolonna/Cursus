@@ -753,6 +753,8 @@ class MissionCompletion {
   final List<String> flagsSet;
   /// Título ganado si el capítulo cerró un arco.
   final String? endingTitle;
+  /// Final alcanzado (`end_varus`…), para su ilustración.
+  final String? endingId;
   /// El mensajero terminó herido (salud en 0).
   final bool injured;
 
@@ -765,6 +767,7 @@ class MissionCompletion {
     required this.flagsSet,
     this.journalEntry,
     this.endingTitle,
+    this.endingId,
     this.injured = false,
   });
 }
@@ -851,6 +854,7 @@ class CompleteMissionUseCase {
     var flagsSet = <String>[];
     String? journalEntry;
     String? endingTitle;
+    String? endingId;
     if (mission.arcId != null) {
       final config = _content.storyMissionById(mission.routeId);
       if (config != null) {
@@ -858,6 +862,7 @@ class CompleteMissionUseCase {
         flagsSet = config.setFlagsOnComplete ?? const [];
         journalEntry = config.journalEntry;
         endingTitle = config.endingTitle;
+        endingId = config.endingId;
         var world = await _world.getState();
         world = world
             .applyRepDeltas(config.repDeltaOnComplete)
@@ -931,6 +936,7 @@ class CompleteMissionUseCase {
       flagsSet: flagsSet,
       journalEntry: journalEntry,
       endingTitle: endingTitle,
+      endingId: endingId,
       injured: injured,
     );
   }
@@ -1109,6 +1115,9 @@ class ResolveEventUseCase {
     final triggerAt = now.add(Duration(minutes: delayMin));
     return MissionEvent(
       id: 'followup_${DateTime.now().millisecondsSinceEpoch}',
+      configId: cfg.id,
+      category: cfg.category,
+      npcId: cfg.npcId,
       title: cfg.title,
       description: cfg.description,
       triggersAt: triggerAt,

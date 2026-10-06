@@ -255,7 +255,7 @@ class _WeeklyCardState extends ConsumerState<_WeeklyCard> {
     try {
       final def =
           await ref.read(weeklyProvider.notifier).claim(widget.entry.id);
-      AppFeedback.reward();
+      AppFeedback.weeklyComplete();
       if (mounted) {
         showRewardToast(
           context,

@@ -438,14 +438,29 @@ class _RouteCard extends ConsumerWidget {
     return GameCard(
       padding: const EdgeInsets.all(14),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('${route.origin} → ${route.destination}',
-            style: AppTextStyles.fredoka(16,
-                color: AppColors.gold, weight: FontWeight.bold)),
-        const SizedBox(height: 3),
-        Text(route.lore,
-            style: AppTextStyles.bodyMedium,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis),
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          RouteMapThumbnail(
+            routeId: route.id,
+            origin: route.origin,
+            destination: route.destination,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${route.origin} → ${route.destination}',
+                    style: AppTextStyles.fredoka(16,
+                        color: AppColors.gold, weight: FontWeight.bold)),
+                const SizedBox(height: 3),
+                Text(route.lore,
+                    style: AppTextStyles.bodyMedium,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          ),
+        ]),
         const SizedBox(height: 10),
         Wrap(spacing: 6, runSpacing: 6, children: [
           GameChip('${route.distanceKm} km', icon: Icons.straighten),

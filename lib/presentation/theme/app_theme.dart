@@ -330,13 +330,25 @@ class GradientScaffold extends StatelessWidget {
   final bool useHomeBg;
   final bool useEventBg;
 
+  /// Fondo pintado o ilustrado (escena de evento). Tapa a [bgAsset] y lleva
+  /// un scrim propio: más liviano en el medio para que la escena se vea.
+  final Widget? background;
+
   const GradientScaffold({
     super.key,
     required this.body,
     this.bgAsset,
     this.useHomeBg = false,
     this.useEventBg = false,
+    this.background,
   });
+
+  static const _sceneOverlay = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xCC060E1A), Color(0x14060E1A), Color(0x26060E1A), Color(0xCC060E1A), Color(0xF5060E1A)],
+    stops: [0.0, 0.16, 0.3, 0.48, 1.0],
+  );
 
   String? get _resolvedAsset {
     if (bgAsset != null) return bgAsset;
@@ -371,11 +383,14 @@ class GradientScaffold extends StatelessWidget {
       body: Stack(fit: StackFit.expand, children: [
         const DecoratedBox(
             decoration: BoxDecoration(gradient: AppGradients.background)),
-        if (asset != null)
+        if (background != null) ...[
+          background!,
+          const DecoratedBox(decoration: BoxDecoration(gradient: _sceneOverlay)),
+        ] else if (asset != null) ...[
           Image.asset(asset, fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => const SizedBox.shrink()),
-        if (asset != null)
           DecoratedBox(decoration: BoxDecoration(gradient: _overlay)),
+        ],
         body,
       ]),
     );

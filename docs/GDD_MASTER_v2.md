@@ -61,7 +61,7 @@ Flutter, arquitectura limpia (`domain/` → `infrastructure/` → `presentation/
 - **Multi-mensajero:** hasta 4 mensajeros con misiones paralelas. Slots 2/3/4 cuestan **20/50/100 Aureos** (requiere tutorial completo).
 - **Economía:** se arranca con **200 Denarios y 5 Aureos**. Tienda (`shop_screen.dart`, catálogo `shopCatalogue`): pociones (50/120 Denarios), descanso (80), manuales de skill (200/500/1.200/2.500 según el nivel; no se venden en nivel 5), Sandalias de Mercurio −20% tiempo (3 Aureos), Mapa del explorador revela evento (5 Aureos). "Adelantar" la misión cuesta 1 Denario/minuto (clamp 5-300).
 - **Perfil:** skills con barras de XP + historial de últimas 10 misiones con nota.
-- **Día/noche:** el fondo del Home cambia según la hora real del dispositivo. Detalle ambiental muy alineado con el pilar 2.
+- **Día/noche:** el fondo del Home cambia según la hora real del dispositivo, y el cielo de cada escenario de evento también. Detalle ambiental muy alineado con el pilar 2.
 
 ### 2.4 Lo que NO existe (y el GDD v1 prometía)
 
@@ -269,6 +269,23 @@ Mejoras aprobadas:
 
 Navy profundo + oro/pergamino, tipografías **Fredoka** (títulos) + **Nunito** (cuerpo), botones 3D con sombra dura, acento rojo solo para peligro, fondo día/noche según hora real. La identidad funciona; el problema es de contraste, no de estilo.
 
+### Arte y sonido
+
+Todo se ve completo sin ilustraciones: lo que no está dibujado a mano se pinta por código, y cada ilustración que se agrega reemplaza a su respaldo sin tocar código (`ArtImage`, [ART_PROMPTS.md](ART_PROMPTS.md)).
+
+| Pieza | Por código | Ilustración opcional |
+|---|---|---|
+| **Mapa de la ruta** | Italia (costas, Alpes y Apeninos, Tíber y Po, vías Appia, Aurelia y Flaminia) o el plano de Roma (Tíber, muralla serviana, siete colinas). La cámara encuadra la ruta; lo recorrido va en oro y el mensajero avanza a 60 fps. Por mar, el medallón es un barco que se mece. Miniatura en cada card de ruta. | — |
+| **Escenario del evento** | 10 categorías: camino, patrulla, río, tormenta, bandidos, templo, foro, posada, puerto y Subura. El cielo sigue la hora real (amanecer, día, atardecer, noche con estrellas), tres planos con parallax lento, y lluvia, antorchas, agua, humo y nubes que se apagan con movimiento reducido. | Por categoría o por evento |
+| **Mensajero** | Paenula en dos tonos, correa y bolsa, fíbula que dice el rango (hierro, bronce, plata, oro, oro con laurel) y petasos que crece con el rango (sin sombrero, fieltro, banda, alas, alas de oro). La cara sigue el estado (contento, neutro, cansado, dolorido); respira y parpadea en reposo. | — |
+| **Árbol de caminos** | Cinco columnas que crecen hacia arriba: niveles 1-5 como hitos de bronce, 6-10 como sellos de cera que caen al lacrarse. Tocar una columna abre su detalle. | — |
+| **Insignias** | Nota como sello de cera del color de la nota; escudo por facción (tablilla sellada, águila, laurel, daga y llave). | — |
+| **Capítulos, finales y NPCs** | Capítulo: el escenario de su primer evento. NPC: la inicial en un medallón. Final: nada. | Sí, por id |
+
+**Sonido:** 17 efectos sintetizados por `tool/gen_sfx.py` (lira por Karplus-Strong, bucina, golpes de ruido, monedas). Cada momento tiene el suyo: toque, volver, interruptor, acción negada, moneda, lluvia de monedas, sello, subida de nivel, de rango, logro, encargo semanal, evento que llega, pergamino, éxito, parcial, fallo y entrega. El audio respeta el switch de silencio del iPhone y no corta la música del jugador.
+
+**Monedas que vuelan:** cada premio lanza monedas desde el aviso hasta su contador, que salta al recibirlas.
+
 ### Reglas de legibilidad (obligatorias)
 
 1. **Todo texto cumple WCAG AA: contraste ≥ 4.5:1** (títulos grandes ≥ 3:1) sobre su fondo real.
@@ -316,6 +333,7 @@ Navy profundo + oro/pergamino, tipografías **Fredoka** (títulos) + **Nunito** 
 
 ### Historial
 
+- **v2.4 (2026-10-06):** arte y sonido (§8). Mapa de Italia y de Roma con la ruta en vivo, escenarios de evento por categoría con cielo según la hora, mensajero con capa, petasos y cara según su estado, árbol de caminos visual con sellos de cera, notas y facciones como insignias, monedas que vuelan, 17 efectos sintetizados. Los eventos guardan su id de contenido, escenario y personaje (con migración), y toda pieza acepta una ilustración que reemplaza al dibujo por código (ART_PROMPTS.md).
 - **v2.3 (2026-10-06):** analytics. Diccionario de eventos y métricas de retención definidos en código, sesión con corte a los 30 min, registro local de días activos, exportación para la beta y opt-out (§9, ANALYTICS.md).
 - **v2.2 (2026-10-05):** paga por ruta, 26 logros con títulos y celebraciones; reputación con escalones que abren rutas (las primeras de rango 4 y 5), tarifa de facción y cambio de contrato; encargos semanales con NPCs (§4.6-4.7).
 

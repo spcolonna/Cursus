@@ -7,6 +7,7 @@ import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/widgets.dart';
 import '../../widgets/messenger_avatar.dart';
+import '../../widgets/skill_tree_board.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/entities/skill_tree.dart';
 import '../../../domain/usecases/usecases.dart';
@@ -27,6 +28,10 @@ class _SkillTreeScreenState extends ConsumerState<SkillTreeScreen> {
   String? _selectedMessengerId;
   final Set<SkillType> _expanded = {};
   bool _ascending = false;
+  SkillType _focus = SkillType.speed;
+
+  /// Último nodo lacrado, para animar la caída del sello en el árbol.
+  (SkillType, int)? _stamp;
 
   @override
   Widget build(BuildContext context) {
@@ -77,28 +82,47 @@ class _SkillTreeScreenState extends ConsumerState<SkillTreeScreen> {
                       ),
                       const SizedBox(height: 14),
                     ],
-                    ...SkillType.values.toList().asMap().entries.map((e) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _PathCard(
-                          skill: e.value,
-                          messenger: selected,
-                          seals: primary.seals,
-                          expanded: _expanded.contains(e.value),
-                          ascending: _ascending,
-                          onToggle: () => setState(() {
-                            _expanded.contains(e.value)
-                                ? _expanded.remove(e.value)
-                                : _expanded.add(e.value);
-                          }),
-                          onAscend: () => _ascend(selected, e.value),
-                        )
-                            .animate(delay: AppMotion.stagger * (1 + e.key))
-                            .fadeIn(
-                                duration: AppMotion.of(context, AppMotion.base))
-                            .slideY(begin: 0.05, end: 0),
-                      );
-                    }),
+                    SkillTreeBoard(
+                      messenger: selected,
+                      focus: _focus,
+                      stamp: _stamp,
+                      onFocus: (skill) => setState(() => _focus = skill),
+                    )
+                        .animate(delay: AppMotion.stagger)
+                        .fadeIn(duration: AppMotion.of(context, AppMotion.base))
+                        .slideY(begin: 0.05, end: 0),
+                    const SizedBox(height: 12),
+                    // Detalle del camino elegido: perk, próximo nivel y
+                    // ascenso con Sellos.
+                    AnimatedSwitcher(
+                      duration: AppMotion.of(context, AppMotion.base),
+                      switchInCurve: AppMotion.enter,
+                      switchOutCurve: AppMotion.exit,
+                      transitionBuilder: (child, anim) => FadeTransition(
+                        opacity: anim,
+                        child: SlideTransition(
+                          position: Tween(
+                                  begin: const Offset(0, 0.04),
+                                  end: Offset.zero)
+                              .animate(anim),
+                          child: child,
+                        ),
+                      ),
+                      child: _PathCard(
+                        key: ValueKey(_focus),
+                        skill: _focus,
+                        messenger: selected,
+                        seals: primary.seals,
+                        expanded: _expanded.contains(_focus),
+                        ascending: _ascending,
+                        onToggle: () => setState(() {
+                          _expanded.contains(_focus)
+                              ? _expanded.remove(_focus)
+                              : _expanded.add(_focus);
+                        }),
+                        onAscend: () => _ascend(selected, _focus),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -141,9 +165,13 @@ class _SkillTreeScreenState extends ConsumerState<SkillTreeScreen> {
       await ref
           .read(primerosPasosProvider.notifier)
           .markTask(PlayerProgress.taskLevelSkill);
-      AppFeedback.impact();
+      AppFeedback.levelUp();
       if (mounted) {
         final node = skillNode(skill, messenger.skillLevel(skill) + 1);
+        setState(() {
+          _focus = skill;
+          _stamp = (skill, messenger.skillLevel(skill) + 1);
+        });
         await showGameDialog(
           context,
           builder: (_) => _AscendedDialog(skill: skill, node: node),
@@ -167,9 +195,10 @@ class _SkillTreeScreenState extends ConsumerState<SkillTreeScreen> {
       await ref
           .read(primerosPasosProvider.notifier)
           .markTask(PlayerProgress.taskLevelSkill);
-      AppFeedback.impact();
+      AppFeedback.seal();
       if (mounted) {
         final node = skillNode(skill, messenger.skillLevel(skill) + 1);
+        setState(() => _stamp = (skill, messenger.skillLevel(skill) + 1));
         await showGameDialog(
           context,
           builder: (_) => _AscendedDialog(skill: skill, node: node),
@@ -323,6 +352,7 @@ class _PathCard extends StatelessWidget {
   final VoidCallback onAscend;
 
   const _PathCard({
+    super.key,
     required this.skill,
     required this.messenger,
     required this.seals,

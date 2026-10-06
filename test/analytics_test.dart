@@ -48,7 +48,8 @@ void main() {
       AnalyticsEvent.missionAccept(
           routeId: 'real_01', kind: 'real', rank: 1, minutes: 60, busy: 0),
       AnalyticsEvent.eventResolved(
-          event: 'Patrulla en el puente',
+          event: 'evt_patrol',
+          category: 'patrol',
           outcome: 'success',
           risk: 3,
           score: 61),

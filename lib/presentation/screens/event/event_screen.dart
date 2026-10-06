@@ -11,6 +11,7 @@ import '../../../domain/entities/skill_tree.dart';
 import '../../../domain/entities/world.dart';
 import '../../../domain/usecases/forecast.dart';
 import '../../../domain/usecases/usecases.dart';
+import '../../widgets/event_scene.dart';
 import '../../widgets/primeros_pasos.dart';
 
 class EventScreen extends ConsumerStatefulWidget {
@@ -25,15 +26,19 @@ class EventScreen extends ConsumerStatefulWidget {
 class _EventScreenState extends ConsumerState<EventScreen> {
   EventOption? _selected;
   bool _resolving = false;
+
   /// Resolución completa: incluye el desglose del score, que es lo que le
   /// permite al jugador entender por qué le fue bien o mal.
   EventResolution? _resolution;
   bool _resolvedTutorial = false;
+  MissionEvent? _sceneEvent;
   static bool _spotlightShown = false;
 
   @override
   void initState() {
     super.initState();
+    // Se abre la carta del evento.
+    AppFeedback.unroll();
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeSpotlight());
   }
 
@@ -75,6 +80,10 @@ class _EventScreenState extends ConsumerState<EventScreen> {
         final slot = state.slotFor(widget.messengerId);
         final event = slot?.pendingEvent;
         final mission = slot?.activeMission;
+        // El escenario se queda mientras se muestra el resultado, aunque el
+        // evento ya no esté pendiente.
+        if (event != null) _sceneEvent = event;
+        final scene = _sceneEvent;
 
         final Widget body;
         if (_resolution != null) {
@@ -115,6 +124,19 @@ class _EventScreenState extends ConsumerState<EventScreen> {
         // corte en seco.
         return GradientScaffold(
           useEventBg: true,
+          // En el resultado la escena se apaga: el sello y el título van
+          // encima y tienen que leerse.
+          background: scene == null
+              ? null
+              : Stack(fit: StackFit.expand, children: [
+                  EventBackdrop(event: scene),
+                  AnimatedContainer(
+                    duration: AppMotion.of(context, AppMotion.slow),
+                    color: _resolution == null
+                        ? AppColors.transparent
+                        : AppColors.scrim,
+                  ),
+                ]),
           body: AnimatedSwitcher(
             duration: AppMotion.of(context, AppMotion.slow),
             switchInCurve: AppMotion.enter,
@@ -211,6 +233,8 @@ class _DecisionView extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(
                 AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.lg),
             children: [
+              // Ventana a la escena del evento (se va con el scroll).
+              const SizedBox(height: kEventStageGap),
               _buildHeader(context),
               const SizedBox(height: AppSpacing.lg),
               Text('¿QUÉ HACÉS?',
@@ -231,8 +255,7 @@ class _DecisionView extends StatelessWidget {
                         isSecret: e.value.requiredFlag != null,
                         onTap: () => onSelect(e.value),
                       )
-                          .animate(
-                              delay: AppMotion.stagger * (2 + e.key))
+                          .animate(delay: AppMotion.stagger * (2 + e.key))
                           .fadeIn(
                               duration: AppMotion.of(context, AppMotion.base))
                           .slideX(begin: 0.06, end: 0, curve: AppMotion.enter),
@@ -271,6 +294,7 @@ class _DecisionView extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     return Hero(
       tag: eventHeroTag(event.id),
+      flightShuttleBuilder: eventHeroShuttle,
       child: Material(
         type: MaterialType.transparency,
         child: Container(
@@ -287,7 +311,8 @@ class _DecisionView extends StatelessWidget {
                   blurRadius: 8),
             ],
           ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(event.title,
                 style: AppTextStyles.fredoka(22,
                     color: AppColors.parchment, weight: FontWeight.bold)),
@@ -507,7 +532,8 @@ class _OptionCard extends StatelessWidget {
                 ...option.requiredSkills.entries.map((e) {
                   final met = messenger != null &&
                       messenger!.skillLevel(e.key) >=
-                          e.value - SkillPerks.gatingDiscount(e.key, messenger!);
+                          e.value -
+                              SkillPerks.gatingDiscount(e.key, messenger!);
                   return GameChip('${e.key.label} Nv.${e.value}',
                       icon: skillIconData(e.key),
                       trailingIcon: met ? Icons.check : null,
@@ -668,7 +694,8 @@ class _OutcomeView extends StatelessWidget {
                 .animate(delay: at(250))
                 .fadeIn(duration: d(200))
                 .scale(
-                    begin: reduced ? const Offset(1, 1) : const Offset(1.5, 1.5),
+                    begin:
+                        reduced ? const Offset(1, 1) : const Offset(1.5, 1.5),
                     duration: d(350),
                     curve: AppMotion.pop),
 
@@ -697,7 +724,7 @@ class _OutcomeView extends StatelessWidget {
                     child: _LevelUpBanner(skill: skill)
                         .animate(
                             delay: at(650),
-                            onPlay: (_) => AppFeedback.impact())
+                            onPlay: (_) => AppFeedback.levelUp())
                         .fadeIn(duration: d(200))
                         .scale(
                             begin: reduced
@@ -706,8 +733,7 @@ class _OutcomeView extends StatelessWidget {
                             duration: d(450),
                             curve: Curves.elasticOut)
                         .then()
-                        .shimmer(
-                            duration: d(900), color: AppColors.parchment),
+                        .shimmer(duration: d(900), color: AppColors.parchment),
                   )),
             ],
 
@@ -716,7 +742,8 @@ class _OutcomeView extends StatelessWidget {
               const SizedBox(height: AppSpacing.lg),
               GameCard(
                 padding: const EdgeInsets.all(AppSpacing.md),
-                gradient: isTutorial ? AppGradients.tutorialCard : AppGradients.blue,
+                gradient:
+                    isTutorial ? AppGradients.tutorialCard : AppGradients.blue,
                 borderColor: isTutorial
                     ? AppColors.amber.withValues(alpha: 0.5)
                     : AppColors.gold.withValues(alpha: 0.4),
@@ -903,15 +930,13 @@ class _WhyItHappened extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 5),
               child: Row(children: [
                 Expanded(
-                  child: Text(f.label,
-                      style: AppTextStyles.bodyMedium),
+                  child: Text(f.label, style: AppTextStyles.bodyMedium),
                 ),
                 Text(
                   f.value >= 0 ? '+${f.value}' : '−${f.value.abs()}',
                   style: AppTextStyles.fredoka(13,
-                      color: f.value >= 0
-                          ? AppColors.riskLow
-                          : AppColors.riskMed,
+                      color:
+                          f.value >= 0 ? AppColors.riskLow : AppColors.riskMed,
                       weight: FontWeight.bold),
                 ),
               ]),

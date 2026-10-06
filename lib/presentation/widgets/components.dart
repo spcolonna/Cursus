@@ -101,6 +101,9 @@ class GameIconButton extends StatefulWidget {
   final Color color;
   final double size;
 
+  /// Suena como "volver" en vez de como un toque.
+  final bool isBack;
+
   const GameIconButton({
     super.key,
     required this.icon,
@@ -108,6 +111,7 @@ class GameIconButton extends StatefulWidget {
     required this.semanticLabel,
     this.color = AppColors.gold,
     this.size = 44,
+    this.isBack = false,
   });
 
   @override
@@ -138,7 +142,7 @@ class _GameIconButtonState extends State<GameIconButton> {
         onTapUp: (_) => _set(false),
         onTap: () {
           if (!enabled) return AppFeedback.denied();
-          AppFeedback.tap();
+          widget.isBack ? AppFeedback.back() : AppFeedback.tap();
           widget.onTap!();
         },
         child: SizedBox(
@@ -184,6 +188,7 @@ class GameBackButton extends StatelessWidget {
   Widget build(BuildContext context) => GameIconButton(
         icon: Icons.arrow_back_rounded,
         semanticLabel: 'Volver',
+        isBack: true,
         onTap: onTap ?? () => Navigator.of(context).maybePop(),
       );
 }
@@ -637,6 +642,20 @@ class CountUpText extends StatelessWidget {
 
 /// Tag del Hero de la cabecera de un evento (panel de misión → decisión).
 String eventHeroTag(String eventId) => 'event-$eventId';
+
+/// Durante el vuelo la card cambia de alto: el contenido se dibuja con su
+/// alto natural y se recorta, en vez de desbordar mientras se achica.
+Widget eventHeroShuttle(BuildContext _, Animation<double> __,
+        HeroFlightDirection direction, BuildContext from, BuildContext to) {
+  final hero = (direction == HeroFlightDirection.push ? to : from).widget as Hero;
+  return ClipRect(
+    child: OverflowBox(
+      alignment: Alignment.topCenter,
+      maxHeight: double.infinity,
+      child: hero.child,
+    ),
+  );
+}
 
 // ═══════════════════════════════════════════════════════════════
 // CELEBRACIÓN

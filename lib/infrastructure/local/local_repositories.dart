@@ -20,6 +20,20 @@ const _uuid = Uuid();
 /// read-modify-write (`saveMessenger`, `saveMission`…) pisan cambios si dos
 /// corren a la vez. Todo lo que lee una lista y la vuelve a escribir pasa por
 /// acá, de a uno.
+
+// ─── Escenario de cada evento del contenido (para migrar guardados) ───
+final Map<String, (EventCategory, String?)> _eventArtById = {
+  for (final e in tutorialEvents) e.id: (e.category, e.npcId),
+  for (final e in allRealEvents) e.id: (e.category, e.npcId),
+  for (final e in storyEventPool) e.id: (e.category, e.npcId),
+};
+
+final Map<String, String> _configIdByTitle = {
+  for (final e in tutorialEvents) e.title: e.id,
+  for (final e in allRealEvents) e.title: e.id,
+  for (final e in storyEventPool) e.title: e.id,
+};
+
 class _WriteQueue {
   Future<void> _tail = Future.value();
 
@@ -427,6 +441,9 @@ class LocalMissionRepository implements MissionRepository {
       final deadlineAt = triggerAt.add(Duration(minutes: evtCfg.decisionWindowMinutes));
       events.add(MissionEvent(
         id: _uuid.v4(),
+        configId: evtCfg.id,
+        category: evtCfg.category,
+        npcId: evtCfg.npcId,
         title: evtCfg.title,
         description: evtCfg.description,
         triggersAt: triggerAt,
@@ -498,6 +515,9 @@ class LocalMissionRepository implements MissionRepository {
       final triggerAt = now.add(Duration(seconds: (slotSec * (i + 1)).round()));
       events.add(MissionEvent(
         id: _uuid.v4(),
+        configId: ec.id,
+        category: ec.category,
+        npcId: ec.npcId,
         title: ec.title,
         description: ec.description,
         triggersAt: triggerAt,
@@ -558,6 +578,9 @@ class LocalMissionRepository implements MissionRepository {
           triggerAt.add(const Duration(minutes: kDecisionWindowMinutes));
       return MissionEvent(
         id: _uuid.v4(),
+        configId: ec.id,
+        category: ec.category,
+        npcId: ec.npcId,
         title: ec.title,
         description: ec.description,
         triggersAt: triggerAt,
@@ -620,6 +643,9 @@ class LocalMissionRepository implements MissionRepository {
 
   Map<String, dynamic> _eventToJson(MissionEvent e) => {
     'id': e.id, 'title': e.title, 'description': e.description,
+    'configId': e.configId,
+    'category': e.category.name,
+    'npcId': e.npcId,
     'triggersAt': e.triggersAt.toIso8601String(),
     'deadlineAt': e.deadlineAt.toIso8601String(),
     'status': e.status.index,
@@ -665,8 +691,19 @@ class LocalMissionRepository implements MissionRepository {
     },
   };
 
-  MissionEvent _eventFromJson(Map<String, dynamic> j) => MissionEvent(
+  MissionEvent _eventFromJson(Map<String, dynamic> j) {
+    // Guardados de antes de la Fase 4: sin configId. Se reconoce el evento
+    // por el título para recuperar su escenario y su personaje.
+    final configId = j['configId'] as String? ??
+        _configIdByTitle[j['title'] as String];
+    final art = configId == null ? null : _eventArtById[configId];
+    return MissionEvent(
     id: j['id'] as String, title: j['title'] as String,
+    configId: configId,
+    category: j['category'] != null
+        ? EventCategory.byName(j['category'] as String)
+        : art?.$1 ?? EventCategory.road,
+    npcId: j['npcId'] as String? ?? art?.$2,
     description: j['description'] as String,
     triggersAt: DateTime.parse(j['triggersAt'] as String),
     deadlineAt: DateTime.parse(j['deadlineAt'] as String),
@@ -724,6 +761,7 @@ class LocalMissionRepository implements MissionRepository {
       );
     }(),
   );
+  }
 
   Map<String, dynamic> _resultToJson(MissionResult r) => {
     'grade': r.grade, 'timeScore': r.timeScore,

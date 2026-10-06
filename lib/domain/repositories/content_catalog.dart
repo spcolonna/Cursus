@@ -1,4 +1,5 @@
 import '../entities/content.dart';
+import '../entities/geo.dart';
 import '../entities/progression.dart';
 import '../entities/weekly.dart';
 import '../entities/world.dart';
@@ -35,4 +36,10 @@ abstract class GameContentCatalog {
 
   /// Pool de encargos semanales (incluye el del Sello, [kWeeklySealId]).
   List<WeeklyCommissionDef> get weeklyCommissions;
+
+  /// Personajes con retrato.
+  List<NpcDef> get npcs;
+
+  /// Coordenadas de los mapas de Italia y Roma.
+  GeoAtlas get atlas;
 }

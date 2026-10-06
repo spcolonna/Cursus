@@ -381,7 +381,8 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
         change: (s) => s.copyWith(eventsResolved: s.eventsResolved + 1));
     await refresh();
     _track(AnalyticsEvent.eventResolved(
-      event: event.title,
+      event: event.configId ?? event.title,
+      category: event.category.name,
       outcome: result.outcome.type.name,
       risk: result.effectiveRisk,
       score: result.score,

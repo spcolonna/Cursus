@@ -41,7 +41,7 @@ Los nombres están en snake_case, con 40 caracteres como máximo, y ninguno usa 
 | `tutorial_step` | Acepta la prueba N del tutorial | `step` (0-3) |
 | `tutorial_complete` | Entrega la última prueba | — |
 | `mission_accept` | Acepta una misión | `route_id`, `kind` (real/story/tutorial), `rank`, `minutes`, `busy_messengers` |
-| `event_resolved` | Decide en un evento | `event` (título), `outcome`, `risk`, `score` |
+| `event_resolved` | Decide en un evento | `event` (id del contenido, como `evt_storm`), `category` (escenario), `outcome`, `risk`, `score` |
 | `events_auto_resolved` | Al abrir, había eventos vencidos | `count` |
 | `mission_complete` | Entrega | `route_id`, `kind`, `grade`, `denarios` |
 | `skip_to_event` | Paga para adelantar | `cost` |
@@ -84,7 +84,7 @@ Nunca hay que armar un `AnalyticsEvent('nombre')` suelto en una pantalla.
 
 **Agotamiento del contenido:**
 - Distribución de `rank` en `mission_accept` según `day`. Si se aplana antes del día 30, la progresión se estanca.
-- Eventos distintos vistos por jugador sobre `event_resolved` totales. Hay que medirlo con el `configId` que agrega la Fase 4; hoy se usa el título.
+- Eventos distintos vistos por jugador sobre `event_resolved` totales, contando por `event` (el id del contenido).
 
 **Economía:**
 - `mission_complete.denarios` más los contratos, por DAU. El objetivo es ~435 (GDD §6.2).
@@ -175,5 +175,5 @@ La app ya manda todo a `AnalyticsService`. Firebase es un sink más.
 ## 9. Limitaciones conocidas
 
 - **Jugadores que ya existían:** empiezan a contar desde el día en que actualizan. Su día 0 no es la instalación real.
-- **Identidad de los eventos:** `event_resolved` se identifica por el título hasta que la Fase 4 agregue `MissionEvent.configId`.
+- **Identidad de los eventos:** los guardados de antes de la Fase 4 se reconocen por el título al cargar. Si un título cambió, ese evento se manda con el título en vez del id.
 - **Eventos sin red:** el buffer local guarda los últimos 500. Firebase también encola sin conexión y manda al recuperarla.

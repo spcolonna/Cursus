@@ -43,6 +43,8 @@ class TutorialEvent {
   final String description;
   final int decisionWindowMinutes;
   final List<TutorialOption> options;
+  final EventCategory category;
+  final String? npcId;
 
   const TutorialEvent({
     required this.id,
@@ -50,6 +52,8 @@ class TutorialEvent {
     required this.description,
     required this.decisionWindowMinutes,
     required this.options,
+    this.category = EventCategory.road,
+    this.npcId,
   });
 }
 
@@ -138,12 +142,54 @@ class RealEventConfig {
   final String description;
   final List<RealOptionConfig> options;
 
+  /// Escenario pintado detrás del evento. La ilustración propia, si existe,
+  /// va en `assets/art/events/<id>.jpg` y tapa al escenario.
+  final EventCategory category;
+
+  /// Personaje con retrato (`NpcDef.id`) que aparece en el evento.
+  final String? npcId;
+
   const RealEventConfig({
     required this.id,
     required this.title,
     required this.description,
     required this.options,
+    this.category = EventCategory.road,
+    this.npcId,
   });
+}
+
+/// Personaje recurrente con retrato. El retrato va en
+/// `assets/art/npcs/<id>.png`; sin archivo se dibuja la inicial.
+class NpcDef {
+  final String id;
+  final String name;
+  final String role;
+  final Faction? faction;
+
+  /// Descripción física para el prompt del retrato (docs/ART_PROMPTS.md).
+  final String look;
+
+  const NpcDef({
+    required this.id,
+    required this.name,
+    required this.role,
+    this.faction,
+    required this.look,
+  });
+
+  /// 'Décimo' → 'decimo'. Así se enlazan los NPC de los encargos semanales,
+  /// que se guardan por nombre.
+  static String idFromName(String name) {
+    const accents = {'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ñ': 'n'};
+    final lower = name.toLowerCase().trim();
+    final buf = StringBuffer();
+    for (final ch in lower.split('')) {
+      final c = accents[ch] ?? ch;
+      buf.write(RegExp(r'[a-z0-9]').hasMatch(c) ? c : '_');
+    }
+    return buf.toString();
+  }
 }
 
 class RealOptionConfig {

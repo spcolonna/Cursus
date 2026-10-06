@@ -6,6 +6,7 @@ Juego móvil Flutter. Mensajero en la Roma del 50 a.C.: las misiones corren en *
 - [docs/GDD_MASTER_v2.md](docs/GDD_MASTER_v2.md) — §5 árbol de skills, §6 economía, §7 onboarding, §8 UX/legibilidad.
 - [docs/ROADMAP_MEJORAS_v1.md](docs/ROADMAP_MEJORAS_v1.md) — fases y criterios de salida.
 - [docs/ANALYTICS.md](docs/ANALYTICS.md) — eventos, métricas de retención y cómo enchufar Firebase. Todo evento nuevo sale de una factory de `AnalyticsEvent`.
+- [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) — ilustraciones: estilo base, prompt de cada pieza y dónde va el archivo.
 
 ## Skills de este proyecto (usalas antes de improvisar)
 
@@ -28,6 +29,7 @@ lib/
 │   ├── entities/progression.dart paga por ruta, PlayerStats, AchievementDef, ProgressionState
 │   ├── entities/weekly.dart      encargos semanales: WeeklyCommissionDef, WeeklyState, semana ISO
 │   ├── entities/analytics.dart   diccionario de eventos (AnalyticsEvent), RetentionLog, D_n/stickiness
+│   ├── entities/geo.dart         GeoAtlas: proyección del mapa, trazado de cada ruta (Italia o Roma)
 │   ├── repositories/             contratos abstractos + GameContentCatalog (contenido inyectado)
 │   ├── usecases/usecases.dart    use cases del loop (ResolveEvent, CompleteMission, AscendSkill…)
 │   ├── usecases/progression_usecases.dart  GetProgression (migra), RecordProgress, EquipTitle
@@ -35,16 +37,20 @@ lib/
 │   └── usecases/analytics_usecases.dart    TrackSession (sesiones y días activos)
 ├── infrastructure/local/local_repositories.dart   SharedPreferences (sin backend)
 ├── infrastructure/analytics/      AnalyticsService (fachada + opt-out), sinks de consola y buffer local
+├── infrastructure/audio/sfx_service.dart  enum Sfx + pool de players (los WAV salen de tool/gen_sfx.py)
 ├── data/game_content.dart        CONTENIDO: tutorial, rutas fase 1, pool de eventos reales
 ├── data/story_content.dart       CONTENIDO: arcos narrativos (arc_claudius, 5 caps, 3 finales)
 ├── data/progression_content.dart CONTENIDO: 26 logros con premios y títulos
 ├── data/faction_content.dart    CONTENIDO: rutas de facción, favores por escalón, encargos semanales
+├── data/npc_content.dart        CONTENIDO: NPCs con retrato (id = nombre del archivo en assets/art/npcs)
+├── data/geo_content.dart        CONTENIDO: coordenadas de ciudades, trazados de rutas, costas, Roma
 ├── data/static_game_content.dart StaticGameContent: implementa GameContentCatalog con lo de data/
 └── presentation/
     ├── theme/app_theme.dart      AppColors, AppGradients, AppTextStyles, AppSpacing, AppRadii
     │                             + GameButton (variantes), GameCard, GradientScaffold, StatBar,
     │                             RiskChip, DeadlineChip, PackageBadge   ← design system
     ├── theme/motion.dart         AppMotion: duraciones, curvas y movimiento reducido
+    ├── theme/art_palette.dart    ArtColors: colores de pintura (mapas, escenas, cera), nunca de texto
     ├── feedback/feedback.dart    AppFeedback: sonido + vibración en un solo lugar
     ├── widgets/components.dart   GameChip, GameIconButton/BackButton, GameDialog/Sheet,
     │                             Loading/Empty/ErrorState, LiveProgressBar, PeriodicBuilder,
@@ -52,6 +58,11 @@ lib/
     ├── widgets/widgets.dart      CurrencyChip, RewardAmount, showRewardToast, GradeBadge…
     ├── widgets/progression_widgets.dart  AchievementMedal, RankLaurel, TitlePicker
     ├── widgets/faction_widgets.dart      FactionBadge, NpcPortrait, FactionUnlockList
+    ├── widgets/art_image.dart            ArtImage + ArtPaths: ilustración opcional con respaldo por código
+    ├── widgets/route_map.dart            RouteMapView (en vivo) y RouteMapThumbnail
+    ├── widgets/event_scene.dart          EventBackdrop / EventScene: escenario del evento por categoría
+    ├── widgets/insignia.dart             WaxSeal, FactionCrest
+    ├── widgets/skill_tree_board.dart     árbol de caminos visual (5 columnas, sellos 6-10)
     ├── widgets/celebration_host.dart     logros, rangos y escalones de facción sobre toda la app
     ├── providers/providers.dart  Riverpod: DI + notifiers (home, guild, world, titles…)
     └── screens/                  splash, login, onboarding, character, home (+ home/parts/),
@@ -86,7 +97,7 @@ Para búsquedas amplias (¿dónde se usa X?, ¿existe Y?), delegá en el subagen
 
 ## Estado real (2026-07)
 
-Implementado: loop core con timer real, paga por ruta, 26 logros con títulos equipables y celebraciones, escalones de facción con rutas y favores, encargos semanales, tutorial de 4 pruebas, 3+ rutas, pool de eventos con prosa propia, arco `arc_claudius`, reputación/flags/diario, árbol de skills 1-10 con Sellos, contratos diarios, paga del gremio, tienda, multi-mensajero (4 slots).
+Implementado: mapas de ruta, escenarios de evento, mensajero ilustrado y árbol visual por código (ilustraciones opcionales encima), 17 SFX; loop core con timer real, paga por ruta, 26 logros con títulos equipables y celebraciones, escalones de facción con rutas y favores, encargos semanales, tutorial de 4 pruebas, 3+ rutas, pool de eventos con prosa propia, arco `arc_claudius`, reputación/flags/diario, árbol de skills 1-10 con Sellos, contratos diarios, paga del gremio, tienda, multi-mensajero (4 slots).
 
 También: avisos locales (eventos, entrega, ocioso, contratos; el tap abre la misión) y auto-resolución de eventos a los 60 min.
 
@@ -99,6 +110,7 @@ flutter pub get
 flutter run
 flutter test              # test/domain_test.dart
 flutter analyze
+python3 tool/gen_sfx.py   # regenera assets/audio/sfx_*.wav
 ```
 
 ## Convenciones

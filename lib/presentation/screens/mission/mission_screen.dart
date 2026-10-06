@@ -1,7 +1,4 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +6,8 @@ import '../../feedback/feedback.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/messenger_avatar.dart';
+import '../../widgets/event_scene.dart';
+import '../../widgets/route_map.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/usecases/usecases.dart';
@@ -61,6 +60,11 @@ class _MissionScreenState extends ConsumerState<MissionScreen> {
     // lo pintan la barra y la ruta por su cuenta, sin rebuilds por segundo.
     final (blockedId, readyToDeliver) = ref.watch(missionProgressProvider
         .select((s) => (s.blockedByEvent?.id, s.readyToDeliver)));
+    // Un evento que llega mientras el jugador mira el camino se anuncia.
+    ref.listen(missionProgressProvider.select((s) => s.blockedByEvent?.id),
+        (prev, next) {
+      if (prev == null && next != null) AppFeedback.eventArrive();
+    });
 
     return homeAsync.when(
       loading: () => const _Loading(),
@@ -82,6 +86,27 @@ class _MissionScreenState extends ConsumerState<MissionScreen> {
 
         return GradientScaffold(
           useEventBg: true,
+          // Viajando, el camino; con un evento encima, su escenario.
+          background: AnimatedSwitcher(
+            duration: AppMotion.of(context, AppMotion.slow),
+            layoutBuilder: (current, previous) => Stack(
+                fit: StackFit.expand,
+                children: [...previous, if (current != null) current]),
+            // Viajando, el mapa es el protagonista: el camino queda de fondo,
+            // apagado, para que los textos sobre él se lean.
+            child: blocked == null
+                ? const Stack(
+                    key: ValueKey('travel'),
+                    fit: StackFit.expand,
+                    children: [
+                      EventScene(category: EventCategory.road),
+                      ColoredBox(color: AppColors.scrim),
+                    ],
+                  )
+                : KeyedSubtree(
+                    key: ValueKey(blocked.id),
+                    child: EventBackdrop(event: blocked)),
+          ),
           body: Column(children: [
             SafeArea(
               bottom: false,
@@ -95,9 +120,9 @@ class _MissionScreenState extends ConsumerState<MissionScreen> {
                 transitionBuilder: (child, anim) => FadeTransition(
                   opacity: anim,
                   child: SlideTransition(
-                    position: Tween(
-                            begin: const Offset(0, 0.04), end: Offset.zero)
-                        .animate(anim),
+                    position:
+                        Tween(begin: const Offset(0, 0.04), end: Offset.zero)
+                            .animate(anim),
                     child: child,
                   ),
                 ),
@@ -194,9 +219,8 @@ class _TravelView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final resolved = mission.events
-        .where((e) => e.status == EventStatus.resolved)
-        .toList();
+    final resolved =
+        mission.events.where((e) => e.status == EventStatus.resolved).toList();
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
@@ -215,14 +239,16 @@ class _TravelView extends ConsumerWidget {
             border: Border.all(color: AppColors.bgLine, width: 2),
             boxShadow: const [
               BoxShadow(
-                  color: AppColors.outline, offset: Offset(0, 4), blurRadius: 0),
+                  color: AppColors.outline,
+                  offset: Offset(0, 4),
+                  blurRadius: 0),
             ],
           ),
           child: LiveProgressBar(
             height: 18,
             track: AppColors.trackDark,
             progressAt: mission.progressAt,
-            marks: _eventMarks(mission),
+            marks: eventMarks(mission),
           ),
         ),
 
@@ -335,18 +361,6 @@ class _TravelView extends ConsumerWidget {
   }
 }
 
-/// Posición (0..1) de cada evento sobre el camino, para marcarlos.
-List<double> _eventMarks(Mission mission) {
-  final total =
-      mission.deadlineAt.difference(mission.startedAt).inSeconds.toDouble();
-  if (total <= 0) return const [];
-  return [
-    for (final e in mission.events)
-      (e.triggersAt.difference(mission.startedAt).inSeconds / total)
-          .clamp(0.0, 1.0),
-  ];
-}
-
 // ─── Próximo evento revelado (Mapa del explorador) ────────────────────────────
 class _RevealedNextEvent extends StatelessWidget {
   final Mission mission;
@@ -377,7 +391,8 @@ class _RevealedNextEvent extends StatelessWidget {
         const Icon(Icons.map, color: AppColors.gold, size: 16),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('PRÓXIMO EVENTO REVELADO',
                 style: AppTextStyles.fredoka(12,
                     color: AppColors.gold, letterSpacing: 1)),
@@ -508,8 +523,9 @@ class _SkipButtonState extends ConsumerState<_SkipButton> {
 
         return GameCard(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-          borderColor:
-              canAfford ? AppColors.sky.withValues(alpha: 0.5) : AppColors.bgLine,
+          borderColor: canAfford
+              ? AppColors.sky.withValues(alpha: 0.5)
+              : AppColors.bgLine,
           semanticLabel: '$skipLabel por $cost denarios',
           onTap: canAfford && !_loading
               ? _skip
@@ -658,7 +674,8 @@ class _ResolvedEventTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: borderColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppRadii.md - 2),
-        border: Border.all(color: borderColor.withValues(alpha: 0.7), width: 1.5),
+        border:
+            Border.all(color: borderColor.withValues(alpha: 0.7), width: 1.5),
       ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Padding(
@@ -700,66 +717,22 @@ class _ResolvedEventTile extends StatelessWidget {
 // ─── Ruta visual ──────────────────────────────────────────────────────────────
 // Un camino serpenteante de origen a destino: lo recorrido en oro, lo que
 // falta punteado, los eventos como hitos y el mensajero avanzando suave.
-class _RouteVisual extends StatefulWidget {
+class _RouteVisual extends StatelessWidget {
   final Mission mission;
   const _RouteVisual({required this.mission});
 
   @override
-  State<_RouteVisual> createState() => _RouteVisualState();
-}
-
-class _RouteVisualState extends State<_RouteVisual>
-    with SingleTickerProviderStateMixin {
-  late final Ticker _ticker;
-  final _clock = ValueNotifier<double>(0); // segundos desde que se abrió
-
-  @override
-  void initState() {
-    super.initState();
-    _ticker = createTicker((elapsed) {
-      if (AppMotion.userPrefersReduced.value &&
-          (elapsed.inMilliseconds - _clock.value * 1000).abs() < 1000) {
-        return;
-      }
-      _clock.value = elapsed.inMilliseconds / 1000;
-    })
-      ..start();
-  }
-
-  @override
-  void dispose() {
-    _ticker.dispose();
-    _clock.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final mission = widget.mission;
-    return Column(children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _CityLabel(label: mission.origin, isOrigin: true),
-          _CityLabel(label: mission.destination, isOrigin: false),
-        ],
-      ),
-      const SizedBox(height: AppSpacing.sm),
-      RepaintBoundary(
-        child: SizedBox(
-          height: 96,
-          width: double.infinity,
-          child: CustomPaint(
-            painter: _RoadPainter(
-              mission: mission,
-              clock: _clock,
-              animate: !AppMotion.reduced(context),
-            ),
-          ),
+  Widget build(BuildContext context) => Column(children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _CityLabel(label: mission.origin, isOrigin: true),
+            _CityLabel(label: mission.destination, isOrigin: false),
+          ],
         ),
-      ),
-    ]);
-  }
+        const SizedBox(height: AppSpacing.sm),
+        RouteMapView(mission: mission),
+      ]);
 }
 
 class _CityLabel extends StatelessWidget {
@@ -777,159 +750,6 @@ class _CityLabel extends StatelessWidget {
                 color: isOrigin ? AppColors.textMuted : AppColors.gold,
                 weight: FontWeight.bold)),
       );
-}
-
-class _RoadPainter extends CustomPainter {
-  final Mission mission;
-  final ValueNotifier<double> clock;
-  final bool animate;
-
-  _RoadPainter({
-    required this.mission,
-    required this.clock,
-    required this.animate,
-  }) : super(repaint: clock);
-
-  Path _road(Size size) {
-    final h = size.height;
-    final w = size.width;
-    const pad = 14.0;
-    return Path()
-      ..moveTo(pad, h * 0.62)
-      ..cubicTo(w * 0.25, h * 0.05, w * 0.42, h * 0.95, w * 0.6, h * 0.5)
-      ..cubicTo(w * 0.72, h * 0.2, w * 0.86, h * 0.25, w - pad, h * 0.4);
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final now = DateTime.now();
-    final progress = mission.progressAt(now).clamp(0.0, 1.0);
-    final path = _road(size);
-    final metric = path.computeMetrics().first;
-    final len = metric.length;
-
-    // Base del camino: tierra oscura con borde.
-    canvas.drawPath(
-        path,
-        Paint()
-          ..color = AppColors.outline
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 10
-          ..strokeCap = StrokeCap.round);
-
-    // Lo que falta: punteado tenue.
-    final dash = Paint()
-      ..color = AppColors.bgLine
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round;
-    for (var d = len * progress; d < len; d += 12) {
-      canvas.drawPath(metric.extractPath(d, math.min(d + 6, len)), dash);
-    }
-
-    // Lo recorrido: oro.
-    if (progress > 0) {
-      canvas.drawPath(
-          metric.extractPath(0, len * progress),
-          Paint()
-            ..color = AppColors.gold
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 4
-            ..strokeCap = StrokeCap.round);
-    }
-
-    // Origen y destino.
-    final start = metric.getTangentForOffset(0)!.position;
-    final end = metric.getTangentForOffset(len)!.position;
-    _dot(canvas, start, 7, AppColors.textMuted, AppColors.bgLine);
-    _flag(canvas, end, progress >= 1);
-
-    // Eventos: hitos sobre el camino.
-    for (final (i, m) in _eventMarks(mission).indexed) {
-      final e = mission.events[i];
-      final pos = metric.getTangentForOffset(len * m)!.position;
-      final resolved = e.status == EventStatus.resolved;
-      final blocking = e.isUnresolved && !now.isBefore(e.triggersAt);
-      final pulse = animate && blocking
-          ? 1 + 0.18 * math.sin(clock.value * 5)
-          : 1.0;
-      _dot(
-        canvas,
-        pos,
-        6.5 * pulse,
-        resolved
-            ? AppColors.green
-            : blocking
-                ? AppColors.amber
-                : AppColors.bgCard2,
-        resolved ? AppColors.greenDark : AppColors.outline,
-      );
-    }
-
-    // El mensajero: un medallón dorado que avanza y "trota" levemente.
-    final tangent = metric.getTangentForOffset(len * progress)!;
-    final bob = animate && progress < 1 ? math.sin(clock.value * 7) * 1.6 : 0.0;
-    final c = tangent.position.translate(0, -14 + bob);
-    canvas.drawCircle(
-        c.translate(0, 3), 15, Paint()..color = AppColors.goldShadow);
-    canvas.drawCircle(c, 15, Paint()..color = AppColors.gold);
-    canvas.drawCircle(
-        c,
-        15,
-        Paint()
-          ..color = AppColors.outline
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.5);
-    _icon(canvas, c, Icons.directions_run, 18, AppColors.outline);
-  }
-
-  void _dot(Canvas canvas, Offset c, double r, Color fill, Color border) {
-    canvas.drawCircle(c, r, Paint()..color = fill);
-    canvas.drawCircle(
-        c,
-        r,
-        Paint()
-          ..color = border
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2);
-  }
-
-  void _flag(Canvas canvas, Offset base, bool reached) {
-    final pole = Paint()
-      ..color = AppColors.goldDark
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round;
-    final top = base.translate(0, -26);
-    canvas.drawLine(base, top, pole);
-    final cloth = Path()
-      ..moveTo(top.dx, top.dy)
-      ..lineTo(top.dx + 16, top.dy + 5)
-      ..lineTo(top.dx, top.dy + 11)
-      ..close();
-    canvas.drawPath(
-        cloth, Paint()..color = reached ? AppColors.gold : AppColors.amber);
-    _dot(canvas, base, 5, AppColors.gold, AppColors.goldDark);
-  }
-
-  void _icon(Canvas canvas, Offset c, IconData icon, double size, Color color) {
-    final tp = TextPainter(
-      text: TextSpan(
-        text: String.fromCharCode(icon.codePoint),
-        style: TextStyle(
-          fontFamily: icon.fontFamily,
-          package: icon.fontPackage,
-          fontSize: size,
-          color: color,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    tp.paint(canvas, c - Offset(tp.width / 2, tp.height / 2));
-  }
-
-  @override
-  bool shouldRepaint(_RoadPainter old) =>
-      old.mission != mission || old.animate != animate;
 }
 
 // ─── Panel de evento bloqueante ───────────────────────────────────────────────
@@ -950,6 +770,7 @@ class _EventPanel extends StatelessWidget {
           // Cabecera del evento: vuela hasta la pantalla de decisión.
           Hero(
             tag: eventHeroTag(event.id),
+            flightShuttleBuilder: eventHeroShuttle,
             child: Material(
               type: MaterialType.transparency,
               child: Container(

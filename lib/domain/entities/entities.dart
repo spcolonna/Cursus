@@ -465,8 +465,24 @@ class MissionResult {
 }
 
 // ─── Mission Event ────────────────────────────────────────────────────────────
+
+/// Escenario de un evento: decide el fondo pintado y la ilustración genérica
+/// cuando el evento no tiene una propia. `road` es el camino abierto.
+enum EventCategory {
+  road, patrol, river, storm, bandits, temple, forum, inn, port, subura;
+
+  static EventCategory byName(String? name) => EventCategory.values
+      .firstWhere((c) => c.name == name, orElse: () => EventCategory.road);
+}
+
 class MissionEvent {
   final String id;
+  /// Id del evento en el contenido (`evt_storm`, `s3_broken_seal`…). Null en
+  /// los guardados viejos que no se pudieron reconocer y en los de prueba.
+  final String? configId;
+  final EventCategory category;
+  /// Personaje que protagoniza el evento, si tiene retrato.
+  final String? npcId;
   final String title;
   final String description;
   final DateTime triggersAt;
@@ -477,6 +493,9 @@ class MissionEvent {
 
   const MissionEvent({
     required this.id,
+    this.configId,
+    this.category = EventCategory.road,
+    this.npcId,
     required this.title,
     required this.description,
     required this.triggersAt,
@@ -493,23 +512,27 @@ class MissionEvent {
     EventOutcome? outcome,
     DateTime? triggersAt,
     DateTime? deadlineAt,
-  }) => MissionEvent(
-    id: id, title: title, description: description,
-    triggersAt: triggersAt ?? this.triggersAt,
-    deadlineAt: deadlineAt ?? this.deadlineAt,
-    status: status ?? this.status,
-    options: options,
-    outcome: outcome ?? this.outcome,
-  );
+  }) =>
+      MissionEvent(
+        id: id,
+        configId: configId,
+        category: category,
+        npcId: npcId,
+        title: title,
+        description: description,
+        triggersAt: triggersAt ?? this.triggersAt,
+        deadlineAt: deadlineAt ?? this.deadlineAt,
+        status: status ?? this.status,
+        options: options,
+        outcome: outcome ?? this.outcome,
+      );
 
   bool get isUnresolved =>
       status == EventStatus.pending || status == EventStatus.active;
 
   /// Desplaza los tiempos del evento por [delta] (negativo = adelantar).
   MissionEvent shiftBy(Duration delta) => copyWith(
-        triggersAt: triggersAt.add(delta),
-        deadlineAt: deadlineAt.add(delta),
-      );
+      triggersAt: triggersAt.add(delta), deadlineAt: deadlineAt.add(delta));
 }
 
 enum EventStatus { pending, active, resolved, expired }

@@ -1,4 +1,5 @@
 import '../domain/entities/content.dart';
+import '../domain/entities/geo.dart';
 import '../domain/entities/progression.dart';
 import '../domain/entities/weekly.dart';
 import '../domain/entities/world.dart';
@@ -6,6 +7,8 @@ import '../domain/repositories/content_catalog.dart';
 import 'faction_content.dart' as faction;
 import 'game_content.dart' as base;
 import 'game_content_expansion.dart';
+import 'geo_content.dart';
+import 'npc_content.dart';
 import 'progression_content.dart';
 import 'story_content.dart' as story;
 
@@ -50,4 +53,10 @@ class StaticGameContent implements GameContentCatalog {
   @override
   List<WeeklyCommissionDef> get weeklyCommissions =>
       faction.weeklyCommissionPool;
+
+  @override
+  List<NpcDef> get npcs => allNpcs;
+
+  @override
+  GeoAtlas get atlas => geoAtlas;
 }

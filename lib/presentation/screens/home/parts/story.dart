@@ -31,6 +31,20 @@ class _StoryChapterCardState extends ConsumerState<_StoryChapterCard> {
         ],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // Ilustración del capítulo; sin archivo, el escenario de su primer
+        // evento pintado por código.
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          child: SizedBox(
+            height: 112,
+            width: double.infinity,
+            child: ArtImage(
+              asset: ArtPaths.story(c.id),
+              fallback: EventScene(category: _chapterScene(ref, c), banner: true),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
         Row(children: [
           const GameChip('HISTORIA',
               icon: Icons.auto_stories, color: AppColors.purple),
@@ -75,7 +89,7 @@ class _StoryChapterCardState extends ConsumerState<_StoryChapterCard> {
     setState(() => _loading = true);
     try {
       await ref.read(homeProvider.notifier).acceptStoryMission(widget.config);
-      AppFeedback.impact();
+      AppFeedback.seal();
       if (mounted) context.push('/mission');
     } catch (e) {
       if (mounted) showErrorSnack(context, e);
@@ -83,4 +97,11 @@ class _StoryChapterCardState extends ConsumerState<_StoryChapterCard> {
       if (mounted) setState(() => _loading = false);
     }
   }
+}
+
+/// Escenario del capítulo: el de su primer evento.
+EventCategory _chapterScene(WidgetRef ref, StoryMissionConfig c) {
+  if (c.fixedEventIds.isEmpty) return EventCategory.road;
+  return ref.read(gameContentProvider).eventById(c.fixedEventIds.first)?.category ??
+      EventCategory.road;
 }

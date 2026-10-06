@@ -248,6 +248,7 @@ const List<RealMissionConfig> expansionMissions = [
 const List<RealEventConfig> expansionEvents = [
   RealEventConfig(
     id: 'evt_flood',
+    category: EventCategory.river,
     title: 'Crecida en el vado',
     description: 'La lluvia de la noche crece un río que ayer se cruzaba caminando. El vado desapareció bajo agua marrón y rápida. Del otro lado, el camino sigue esperando.',
     options: [
@@ -278,6 +279,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_tax_collector',
+    category: EventCategory.patrol,
     title: 'El recaudador del portazgo',
     description: 'En el puesto de portazgo, un recaudador con tablilla de cera revisa cada carga dos veces. Tu paquete no tiene el sello que él quiere ver, y él no tiene apuro.',
     options: [
@@ -308,6 +310,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_lost_child',
+    category: EventCategory.road,
     title: 'La nena del cruce',
     description: 'En el cruce de caminos, una nena de no más de seis años llora sola, sin nadie a la vista. Repite un nombre entre lágrimas: el de un pueblo, o quizás el de su madre.',
     options: [
@@ -342,6 +345,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_wolf',
+    category: EventCategory.road,
     title: 'Aullidos cerca del camino',
     description: 'El sol cae y los aullidos suenan más cerca de lo cómodo, en un tramo de bosque sin pueblos a la vista. Algo grande se mueve entre los árboles, al ritmo de tus pasos.',
     options: [
@@ -371,6 +375,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_ferry',
+    category: EventCategory.port,
     title: 'El transbordador del estuario',
     description: 'El único cruce del estuario es una barcaza vieja que un barquero maneja según su humor del día. Hoy, por lo visto, el humor no es bueno.',
     options: [
@@ -401,6 +406,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_forge_fire',
+    category: EventCategory.forum,
     title: 'Fuego en la herrería',
     description: 'Al pasar por un pueblo de posta, ves llamas saliendo del techo de paja de la herrería. Adentro alguien grita y afuera nadie parece decidirse a actuar.',
     options: [
@@ -433,6 +439,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_oracle',
+    category: EventCategory.temple,
     title: 'La sibila de Cumas',
     description: 'En la boca de una cueva, una anciana de ojos blancos susurra versos que nadie pidió. Te señala directo a vos: "El mensaje que llevás no es el que creés que es." Después, extiende la mano.',
     options: [
@@ -464,6 +471,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_deserter',
+    category: EventCategory.patrol,
     title: 'El desertor de la ruta',
     description: 'Escondido entre unas rocas, un joven con uniforme de legión pero sin armas te pide, en voz baja, que no digas que lo viste. Tiembla más de miedo que de frío.',
     options: [
@@ -496,6 +504,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_wedding_road',
+    category: EventCategory.road,
     title: 'Cortejo de bodas',
     description: 'Una procesión de bodas ocupa el camino entero: antorchas, flautas y un tropel de invitados felices que no tienen ningún apuro. La novia va al centro, cubierta de velo naranja.',
     options: [
@@ -526,6 +535,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_landslide',
+    category: EventCategory.storm,
     title: 'Derrumbe en la sierra',
     description: 'Un desprendimiento de rocas tapó el paso de montaña esta misma mañana. Piedras del tamaño de un buey bloquean el camino de lado a lado.',
     options: [
@@ -554,6 +564,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_spy_drop',
+    category: EventCategory.subura,
     title: 'El paquete equivocado',
     description: 'En una plaza vacía, alguien deja caer un rollo sellado justo frente a vos y desaparece entre la gente sin mirar atrás. El rollo no tiene tu nombre, pero ya lo tenés en la mano.',
     options: [
@@ -585,6 +596,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_heatwave',
+    category: EventCategory.road,
     title: 'Ola de calor',
     description: 'El sol de mediodía pega como un castigo personal. El camino tiembla de calor y el agua del odre se terminó hace dos leguas.',
     options: [
@@ -614,6 +626,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_cart_jam',
+    category: EventCategory.forum,
     title: 'Embotellamiento en el puente',
     description: 'Dos carros de bueyes trabaron sus ruedas al cruzarse en el puente angosto. Detrás se amontona una fila de carretas, mulas y gritos que no ayudan a nadie.',
     options: [
@@ -643,6 +656,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_temple_theft',
+    category: EventCategory.temple,
     title: 'Acusación en el templo',
     description: 'Frente al templo, un sacerdote grita que falta una ofrenda de plata y señala hacia el grupo de viajeros donde justo estás parado vos.',
     options: [
@@ -674,6 +688,7 @@ const List<RealEventConfig> expansionEvents = [
   ),
   RealEventConfig(
     id: 'evt_ghost_road',
+    category: EventCategory.road,
     title: 'El tramo que nadie nombra',
     description: 'Los arrieros del último pueblo se negaron a acompañarte más allá de la piedra tallada. "Ese tramo no se nombra de noche", dijo uno, y ninguno lo contradijo.',
     options: [
