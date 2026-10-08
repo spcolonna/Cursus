@@ -9,6 +9,7 @@ import '../../domain/entities/world.dart';
 import '../feedback/feedback.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
+import 'music_director.dart';
 import 'widgets.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -48,7 +49,7 @@ class _CelebrationHostState extends ConsumerState<CelebrationHost> {
   bool _isBlocked() {
     // Un aviso de recompensa en pantalla: la celebración espera su turno.
     if (rewardToastsVisible.value > 0) return true;
-    final path = widget.router.routerDelegate.currentConfiguration.uri.path;
+    final path = visibleRouteUri(widget.router).path;
     // Pantallas donde una celebración estorba: decidir y el arranque.
     return path == '/event' || path == '/' || path == '/login';
   }
@@ -68,6 +69,12 @@ class _CelebrationHostState extends ConsumerState<CelebrationHost> {
   Widget build(BuildContext context) {
     final queue = ref.watch(celebrationQueueProvider);
     final current = _blocked || queue.isEmpty ? null : queue.first;
+    // Mientras se festeja, la música baja (MusicDirector).
+    final showing = current != null;
+    if (celebrationVisible.value != showing) {
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => celebrationVisible.value = showing);
+    }
 
     return Stack(children: [
       widget.child,
@@ -273,8 +280,8 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
                         Text(widget.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.ui(17,
-                                weight: FontWeight.bold)),
+                            style:
+                                AppTextStyles.ui(17, weight: FontWeight.bold)),
                         if (widget.chips.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 6),
@@ -287,8 +294,7 @@ class _ToastState extends State<_Toast> with SingleTickerProviderStateMixin {
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right,
-                      color: AppColors.inkSoft),
+                  const Icon(Icons.chevron_right, color: AppColors.inkSoft),
                 ]),
               ),
             ),

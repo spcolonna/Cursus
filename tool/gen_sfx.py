@@ -2,16 +2,20 @@
 """Genera los efectos de sonido de Cursus (solo stdlib).
 
 Uso:  python3 tool/gen_sfx.py            → escribe assets/audio/sfx_*.wav
+      (y el motivo como sonido de aviso en android/…/res/raw e ios/Runner)
 
 Paleta sonora: lira (Karplus-Strong), bucina (metal con vibrato), golpes de
-ruido filtrado (madera, cera, pergamino) y monedas (parciales inarmónicos).
+ruido filtrado y modos de madera (papel, tablilla, cuero, cera, pergamino) y
+monedas de bronce (parciales inarmónicos).
 Todo sale en mono, 44,1 kHz, 16 bits, normalizado a −3 dBFS. El azar usa una
 semilla fija: correr el script dos veces da archivos idénticos.
 """
 import math
 import os
 import random
+import shutil
 import struct
+import subprocess
 import wave
 
 SR = 44100
@@ -205,53 +209,100 @@ def arpeggio(notes, step, dur, bright=0.5, gain=1.0):
     return buf
 
 
+# ─── Materiales: papel, madera, cuero, cera ───
+def wood(freq, dur=0.12, gain=1.0):
+    """Madera golpeada: tres modos inarmónicos que mueren rápido + el clic."""
+    modes = [(1.0, 1.0, 55), (2.57, 0.45, 80), (4.21, 0.2, 120)]
+    n = int(dur * SR)
+    out = []
+    for i in range(n):
+        t = i / SR
+        out.append(gain * sum(g * math.sin(2 * math.pi * freq * r * t) * math.exp(-t * d)
+                              for r, g, d in modes))
+    return mix(out, noise_hit(0.004, 7000, 0.4 * gain, 12))
+
+
+def paper(dur, gain=1.0, cutoff=5500):
+    """Papel o pergamino: ruido en banda media con una envolvente que roza."""
+    n = int(dur * SR)
+    buf = highpass(lowpass([rng.uniform(-1, 1) for _ in range(n)], cutoff), 900)
+    env = [math.sin(math.pi * i / n) ** 0.7 for i in range(n)]
+    return [x * e * gain for x, e in zip(buf, env)]
+
+
+def crackle(dur, density=0.004, gain=1.0):
+    """Crujidos sueltos: fibras del pergamino o cera que se enfría."""
+    n = int(dur * SR)
+    buf = [0.0] * n
+    for i in range(n):
+        if rng.random() < density:
+            k = rng.uniform(0.3, 1.0) * gain
+            for j in range(min(40, n - i)):
+                buf[i + j] += k * rng.uniform(-1, 1) * math.exp(-j / 6)
+    return highpass(buf, 1500)
+
+
+def leather(dur=0.09, gain=1.0):
+    """Cuero: un roce grave y apagado."""
+    return lowpass(paper(dur, gain, cutoff=1400), 1200)
+
+
 # ─── Sonidos ───
 def sfx_tap():
-    buf = noise_hit(0.025, 3500, 0.6, 9)
-    mix(buf, apply([math.sin(2 * math.pi * 1100 * i / SR) for i in range(int(0.04 * SR))],
-                   env_ar(int(0.04 * SR), 0.001, 10)), gain=0.5)
+    # La yema contra el papel y un toque de tablilla.
+    buf = paper(0.022, 0.5)
+    mix(buf, wood(1750, 0.05, 0.6))
     return buf
 
 
 def sfx_back():
-    buf = noise_hit(0.03, 2200, 0.5, 9)
-    mix(buf, apply([math.sin(2 * math.pi * 700 * i / SR) for i in range(int(0.05 * SR))],
-                   env_ar(int(0.05 * SR), 0.001, 9)), gain=0.5)
-    mix(buf, apply([math.sin(2 * math.pi * 520 * i / SR) for i in range(int(0.06 * SR))],
-                   env_ar(int(0.06 * SR), 0.001, 9)), at=0.045, gain=0.4)
+    # Una hoja que se da vuelta y la tablilla que se apoya.
+    buf = paper(0.07, 0.6, cutoff=4200)
+    mix(buf, wood(820, 0.07, 0.6), at=0.05)
     return buf
 
 
 def sfx_toggle():
-    buf = noise_hit(0.015, 5000, 0.5, 10)
-    mix(buf, noise_hit(0.02, 2500, 0.4, 10), at=0.035)
+    # Pestillo de madera: dos golpecitos.
+    buf = wood(2300, 0.04, 0.6)
+    mix(buf, wood(1850, 0.05, 0.5), at=0.035)
     return buf
 
 
 def sfx_error_soft():
-    return arpeggio(['E3', 'C3'], 0.11, 0.45, bright=0.2)
+    buf = arpeggio(['E3', 'C3'], 0.11, 0.45, bright=0.2)
+    mix(buf, leather(0.08, 0.5))
+    return buf
 
 
 def sfx_coin():
-    buf = coin(2350, 0.3)
+    # Bronce sobre la mesa: el clic del contacto y dos monedas que cantan.
+    buf = wood(2600, 0.03, 0.35)
+    mix(buf, coin(2350, 0.3), at=0.005)
+    mix(buf, coin(2362, 0.3), at=0.005, gain=0.4)  # batido: metal real
     mix(buf, coin(3150, 0.35), at=0.06, gain=0.7)
     return buf
 
 
 def sfx_coins_many():
-    buf = []
-    t = 0.0
+    buf = leather(0.12, 0.6)  # la bolsa que se abre
+    t = 0.04
     for _ in range(9):
         mix(buf, coin(rng.uniform(2000, 3400), 0.3), at=t, gain=rng.uniform(0.5, 0.9))
         t += rng.uniform(0.035, 0.08)
+    mix(buf, wood(2400, 0.04, 0.3), at=t)
     return buf
 
 
 def sfx_seal_stamp():
     buf = thump(140, 55, 0.28, 1.0)
-    mix(buf, noise_hit(0.05, 1800, 0.7, 7))
-    # la cera que se aplasta
-    mix(buf, lowpass(noise_hit(0.12, 900, 0.35, 3), 600), at=0.02)
+    mix(buf, wood(420, 0.1, 0.5))
+    # la cera que se aplasta: ruido grave con ataque lento
+    n = int(0.14 * SR)
+    squish = lowpass([rng.uniform(-1, 1) for _ in range(n)], 700)
+    mix(buf, apply(squish, env_ar(n, 0.018, 3)), at=0.01, gain=0.6)
+    # y se enfría con unos crujidos
+    mix(buf, crackle(0.25, 0.002, 0.25), at=0.12)
     return buf
 
 
@@ -297,7 +348,10 @@ def sfx_event_arrive():
 
 
 def sfx_page_unroll():
-    return sweep_noise(0.45, 900, 4500, 0.9)
+    buf = sweep_noise(0.45, 900, 4500, 0.9)
+    mix(buf, crackle(0.45, 0.003, 0.5))
+    mix(buf, wood(600, 0.08, 0.4), at=0.4)  # la varilla del rollo
+    return buf
 
 
 def sfx_success():
@@ -315,10 +369,27 @@ def sfx_fail():
 
 
 def sfx_delivery():
+    buf = paper(0.12, 0.4)  # la carta pasa de mano
+    mix(buf, bucina(note('C4'), 0.18), at=0.05)
+    mix(buf, bucina(note('G4'), 0.55), at=0.25)
+    mix(buf, sfx_coin(), at=0.6, gain=0.6)
+    return buf
+
+
+# ─── Firma sonora ───
+# El motivo de Cursus: tres notas de lira que suben por quintas (D-A-E), un
+# camino que se abre. Suena en el splash, en la nota S y en los avisos.
+MOTIF = ['D4', 'A4', 'E5']
+
+
+def sfx_motif():
     buf = []
-    mix(buf, bucina(note('C4'), 0.18))
-    mix(buf, bucina(note('G4'), 0.55), at=0.2)
-    mix(buf, sfx_coin(), at=0.55, gain=0.6)
+    for k, nm in enumerate(MOTIF):
+        last = k == len(MOTIF) - 1
+        mix(buf, lyre(note(nm), 1.6 if last else 0.9, bright=0.55, decay=0.997),
+            at=k * 0.17, gain=1.0 if last else 0.85)
+    # cuerpo: la tónica grave bajo la última nota
+    mix(buf, lyre(note('D3'), 1.6, bright=0.3), at=0.34, gain=0.45)
     return buf
 
 
@@ -340,14 +411,22 @@ SOUNDS = {
     'partial': sfx_partial,
     'fail': sfx_fail,
     'delivery': sfx_delivery,
+    'motif': sfx_motif,
 }
 
+# El motivo también es el sonido de los avisos: cada plataforma lo quiere en
+# su carpeta nativa (Android en res/raw; iOS en el bundle, como .caf).
+ROOT = os.path.join(os.path.dirname(__file__), '..')
+NOTIF_ANDROID = os.path.join(ROOT, 'android', 'app', 'src', 'main', 'res', 'raw',
+                             'cursus_motif.wav')
+NOTIF_IOS = os.path.join(ROOT, 'ios', 'Runner', 'cursus_motif.caf')
 
-def write(name, buf):
+
+def write(name, buf, path=None):
     buf = fade_tail(buf, 0.02)
     peak = max(abs(x) for x in buf) or 1.0
     scale = PEAK / peak
-    path = os.path.join(OUT, f'sfx_{name}.wav')
+    path = path or os.path.join(OUT, f'sfx_{name}.wav')
     with wave.open(path, 'wb') as w:
         w.setnchannels(1)
         w.setsampwidth(2)
@@ -362,6 +441,17 @@ def main():
     for name, fn in SOUNDS.items():
         path, secs = write(name, fn())
         print(f'{os.path.relpath(path)}  {secs:.2f}s')
+    # Sonido de aviso: el mismo motivo, copiado a cada plataforma.
+    motif = os.path.join(OUT, 'sfx_motif.wav')
+    os.makedirs(os.path.dirname(NOTIF_ANDROID), exist_ok=True)
+    shutil.copyfile(motif, NOTIF_ANDROID)
+    print(os.path.relpath(NOTIF_ANDROID))
+    if shutil.which('afconvert'):
+        subprocess.run(['afconvert', '-f', 'caff', '-d', 'LEI16', motif, NOTIF_IOS],
+                       check=True)
+        print(os.path.relpath(NOTIF_IOS))
+    else:
+        print('afconvert no está (solo macOS): el .caf de iOS no se regeneró')
 
 
 if __name__ == '__main__':

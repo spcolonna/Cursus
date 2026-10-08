@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../feedback/feedback.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/brand.dart';
@@ -19,6 +20,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    // La firma de Cursus suena cuando el sello termina de caer.
+    Future.delayed(const Duration(milliseconds: 250), () {
+      if (mounted) AppFeedback.motif();
+    });
     _checkAuth();
   }
 

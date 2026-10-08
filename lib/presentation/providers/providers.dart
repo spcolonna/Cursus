@@ -19,6 +19,7 @@ import '../../infrastructure/analytics/analytics_service.dart';
 import '../../infrastructure/local/local_repositories.dart';
 import '../../infrastructure/notifications/notification_service.dart';
 import '../../infrastructure/audio/sfx_service.dart';
+import '../../infrastructure/audio/music_service.dart';
 import '../../infrastructure/progress/player_progress.dart';
 import '../../infrastructure/monetization/iap_service.dart';
 import '../../infrastructure/monetization/rewarded_ads_service.dart';
@@ -37,6 +38,7 @@ final notificationSchedulerProvider =
     Provider<NotificationScheduler>((_) => LocalNotificationService());
 final playerProgressProvider = Provider<PlayerProgress>((_) => PlayerProgress());
 final sfxServiceProvider = Provider<SfxService>((_) => SfxService());
+final musicServiceProvider = Provider<MusicService>((_) => MusicService());
 
 // ─── Analytics (ver docs/ANALYTICS.md) ────────────────────────────────────────
 final retentionRepositoryProvider =

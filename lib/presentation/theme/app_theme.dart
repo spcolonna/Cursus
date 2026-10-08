@@ -359,6 +359,10 @@ class AppTheme {
         fontFamily: 'Figtree',
         dividerColor: AppColors.paperLine,
         // Interruptor de estampa: prendido es ocre con la perilla de tinta.
+        // La pista vacía en paperLine: sobre papel, la del tema se pierde.
+        sliderTheme: const SliderThemeData(
+          inactiveTrackColor: AppColors.paperLine,
+        ),
         switchTheme: SwitchThemeData(
           thumbColor: WidgetStateProperty.resolveWith((s) =>
               s.contains(WidgetState.selected) ? AppColors.ink : AppColors.inkMuted),

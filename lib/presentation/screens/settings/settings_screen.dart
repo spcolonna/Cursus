@@ -84,8 +84,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   builder: (context, snap) {
                     if (!snap.hasData) {
                       return const Center(
-                          child:
-                              CircularProgressIndicator(color: AppColors.ochreDeep));
+                          child: CircularProgressIndicator(
+                              color: AppColors.ochreDeep));
                     }
                     return _DiagnosticsCard(
                       data: snap.data!,
@@ -271,8 +271,7 @@ class _DiagnosticsCard extends ConsumerWidget {
               onReload();
             },
             child: Text('Cancelar todos los avisos',
-                style:
-                    AppTextStyles.ui(12, color: AppColors.inkSoft)),
+                style: AppTextStyles.ui(12, color: AppColors.inkSoft)),
           ),
         ),
       ]),
@@ -287,7 +286,6 @@ class _DiagnosticsCard extends ConsumerWidget {
       };
 }
 
-/// Sonido, vibración y movimiento: lo sensorial del juego, en una card.
 // ─── Cielo: hora fija para QA (solo debug) ────────────────────────────────────
 class _SkyDebugCard extends ConsumerWidget {
   const _SkyDebugCard();
@@ -329,6 +327,7 @@ class _SkyDebugCard extends ConsumerWidget {
   }
 }
 
+/// Sonido, música, vibración y movimiento: lo sensorial del juego, en una card.
 class _SfxToggleCard extends ConsumerStatefulWidget {
   const _SfxToggleCard();
 
@@ -377,8 +376,34 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
   @override
   Widget build(BuildContext context) {
     final progress = ref.read(playerProgressProvider);
+    // La música lee su estado del servicio: main.dart ya lo cargó de prefs.
+    final music = ref.read(musicServiceProvider);
     return GameCard(
       child: Column(children: [
+        _toggle(
+          title: 'Música',
+          subtitle: 'Lira y aulos: cambia con la hora y en el camino',
+          value: music.enabled,
+          onChanged: (v) async {
+            music.setEnabled(v);
+            setState(() {});
+            await progress.setMusicEnabled(v);
+          },
+        ),
+        if (music.enabled)
+          Row(children: [
+            const Icon(Icons.volume_down, color: AppColors.inkSoft, size: 22),
+            Expanded(
+              child: Slider(
+                value: music.volume,
+                semanticFormatterCallback: (v) =>
+                    'Volumen de la música ${(v * 100).round()}%',
+                onChanged: (v) => setState(() => music.setVolume(v)),
+                onChangeEnd: progress.setMusicVolume,
+              ),
+            ),
+            const Icon(Icons.volume_up, color: AppColors.inkSoft, size: 22),
+          ]),
         _toggle(
           title: 'Efectos de sonido',
           subtitle: 'Botones, resultados, entregas y cobros',
@@ -461,8 +486,7 @@ class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title:
-              Text('Compartir estadísticas', style: AppTextStyles.ui(14)),
+          title: Text('Compartir estadísticas', style: AppTextStyles.ui(14)),
           subtitle: Text(
               'Qué rutas jugás y cuándo volvés. Anónimo: sin tu nombre '
               'ni nada que te identifique.',
@@ -492,8 +516,7 @@ class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
             icon: const Icon(Icons.copy_rounded,
                 size: 16, color: AppColors.inkSoft),
             label: Text('Copiar datos para el equipo',
-                style:
-                    AppTextStyles.ui(12, color: AppColors.inkSoft)),
+                style: AppTextStyles.ui(12, color: AppColors.inkSoft)),
           ),
         ),
       ]),

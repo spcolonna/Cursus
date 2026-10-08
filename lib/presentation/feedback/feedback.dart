@@ -116,6 +116,13 @@ class AppFeedback {
     _play(Sfx.eventArrive);
   }
 
+  /// La firma sonora de Cursus (tres notas de lira): el splash, la nota S.
+  /// Es también el sonido de los avisos.
+  static void motif() {
+    _haptic(HapticFeedback.lightImpact);
+    _play(Sfx.motif);
+  }
+
   /// Se abre un pergamino: carta de evento, diario.
   static void unroll() => _play(Sfx.pageUnroll);
 

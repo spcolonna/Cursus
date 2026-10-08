@@ -8,6 +8,7 @@ import 'presentation/providers/providers.dart';
 import 'presentation/feedback/feedback.dart';
 import 'presentation/widgets/art_image.dart';
 import 'presentation/widgets/celebration_host.dart';
+import 'presentation/widgets/music_director.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +43,7 @@ void main() async {
       container.read(pendingNotificationRouteProvider.notifier).state = route;
     }
   }
+
   scheduler.onTap = openFromNotification;
   openFromNotification(await scheduler.launchPayload());
   final sfx = container.read(sfxServiceProvider);
@@ -49,6 +51,10 @@ void main() async {
   await Future.wait([sfx.init(), ArtCatalog.load()]);
   sfx.setEnabled(await progress.isSfxEnabled());
   AppFeedback.configure(sfx: sfx, haptics: await progress.isHapticsEnabled());
+  final music = container.read(musicServiceProvider)
+    ..setEnabled(await progress.isMusicEnabled());
+  final volume = await progress.musicVolume();
+  if (volume != null) music.setVolume(volume);
   AppMotion.userPrefersReduced.value = await progress.isReduceMotion();
   await container.read(iapServiceProvider).init();
   container.read(analyticsProvider).enabled =
@@ -73,12 +79,20 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
   @override
   void initState() {
     super.initState();
-    // Sesiones para la retención: abrir y volver de segundo plano.
+    // Sesiones para la retención: abrir y volver de segundo plano. La
+    // música se calla en segundo plano (en Android seguiría sonando).
     final sessions = ref.read(trackSessionUseCaseProvider);
+    final music = ref.read(musicServiceProvider);
     sessions.open();
     _lifecycle = AppLifecycleListener(
-      onResume: () => sessions.open(),
-      onPause: () => sessions.pause(),
+      onResume: () {
+        sessions.open();
+        music.resumeFromBackground();
+      },
+      onPause: () {
+        sessions.pause();
+        music.pauseForBackground();
+      },
     );
   }
 
@@ -95,13 +109,17 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       routerConfig: appRouter,
-      // Logros y rangos nuevos se festejan sobre cualquier pantalla.
+      // Logros y rangos nuevos se festejan sobre cualquier pantalla, y la
+      // música sigue a la pantalla y a la hora.
       // La barra de estado va en tinta sobre el papel; las pantallas con
       // cielo (home, login) la cambian con su propio AnnotatedRegion.
       builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
-        child: CelebrationHost(
-            router: appRouter, child: child ?? const SizedBox()),
+        child: MusicDirector(
+          router: appRouter,
+          child: CelebrationHost(
+              router: appRouter, child: child ?? const SizedBox()),
+        ),
       ),
     );
   }

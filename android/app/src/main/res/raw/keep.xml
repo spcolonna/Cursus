@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- El sonido de los avisos se pide por nombre desde Dart: que el shrinker
+     de recursos no lo borre en release. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/cursus_motif" />

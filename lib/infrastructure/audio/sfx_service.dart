@@ -21,7 +21,9 @@ enum Sfx {
   success(0.70),
   partial(0.70),
   fail(0.70),
-  delivery(0.75);
+  delivery(0.75),
+  // La firma sonora: splash, nota S y avisos (ver tool/gen_sfx.py).
+  motif(0.70);
 
   const Sfx(this.volume, {this.ui = false, String? file}) : _file = file;
 
@@ -59,8 +61,7 @@ class SfxService {
         await p.setReleaseMode(ReleaseMode.stop);
         await p.setPlayerMode(PlayerMode.lowLatency);
       }
-      await AudioCache.instance
-          .loadAll([for (final s in Sfx.values) s.asset]);
+      await AudioCache.instance.loadAll([for (final s in Sfx.values) s.asset]);
       _ready = true;
     } catch (e) {
       debugPrint('SfxService init failed: $e');

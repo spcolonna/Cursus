@@ -44,7 +44,10 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
     final grade = result?.grade ?? 'B';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       switch (grade) {
-        case 'S' || 'A':
+        // La nota máxima suena con la firma de Cursus.
+        case 'S':
+          AppFeedback.motif();
+        case 'A':
           AppFeedback.success();
         case 'B' || 'C':
           AppFeedback.partial();

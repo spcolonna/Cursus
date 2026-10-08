@@ -7,6 +7,7 @@ Juego móvil Flutter. Mensajero en la Roma del 50 a.C.: las misiones corren en *
 - [docs/ROADMAP_MEJORAS_v1.md](docs/ROADMAP_MEJORAS_v1.md) — fases y criterios de salida.
 - [docs/ANALYTICS.md](docs/ANALYTICS.md) — eventos, métricas de retención y cómo enchufar Firebase. Todo evento nuevo sale de una factory de `AnalyticsEvent`.
 - [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) — ilustraciones: estilo base, prompt de cada pieza y dónde va el archivo.
+- [docs/AUDIO.md](docs/AUDIO.md) — identidad sonora, el motivo D-A-E y la hoja de cues de música, SFX y aviso.
 
 ## Skills de este proyecto (usalas antes de improvisar)
 
@@ -39,6 +40,7 @@ lib/
 ├── infrastructure/local/local_repositories.dart   SharedPreferences (sin backend)
 ├── infrastructure/analytics/      AnalyticsService (fachada + opt-out), sinks de consola y buffer local
 ├── infrastructure/audio/sfx_service.dart  enum Sfx + pool de players (los WAV salen de tool/gen_sfx.py)
+├── infrastructure/audio/music_service.dart  MusicTrack + MusicService: loop, crossfade, ducking, pausa en 2.º plano
 ├── data/game_content.dart        CONTENIDO: tutorial, rutas fase 1, pool de eventos reales
 ├── data/story_content.dart       CONTENIDO: arcos (storyArcs), arc_claudius y el motor de capítulos
 ├── data/story_lucius.dart        CONTENIDO: arc_lucius "La Taberna del Buey" (5 caps, 3 finales)
@@ -72,6 +74,7 @@ lib/
     ├── widgets/brand.dart                marca Cursus: BrandSealPainter (también genera el ícono), BrandMark
     ├── widgets/skill_tree_board.dart     árbol de caminos visual (5 columnas, sellos 6-10)
     ├── widgets/celebration_host.dart     logros, rangos y escalones de facción sobre toda la app
+    ├── widgets/music_director.dart       qué tema suena según ruta, hora y arco (musicTrackFor)
     ├── providers/providers.dart  Riverpod: DI + notifiers (home, guild, world, titles…) + skyPaletteProvider
     └── screens/                  splash, login, onboarding, character, home (+ home/parts/),
                                   mission, event, mission_result, profile, shop, skills, achievements
@@ -105,7 +108,7 @@ Para búsquedas amplias (¿dónde se usa X?, ¿existe Y?), delegá en el subagen
 
 ## Estado real (2026-07)
 
-Implementado: cielo vivo según la hora real (home, splash, login, escenas, mapa); arte por código al estilo fresco (mapas de ruta, escenarios de evento, mensajero, sellos y árbol visual) (ilustraciones opcionales encima), 17 SFX; loop core con timer real, paga por ruta, 26 logros con títulos equipables y celebraciones, escalones de facción con rutas y favores, encargos semanales, tutorial de 4 pruebas, 22 rutas, pool de eventos con prosa propia y selección con memoria, 9 eventos de consecuencia, arcos `arc_claudius` y `arc_lucius` con finales que abren rutas/postas/tienda, reputación/flags/diario, árbol de skills 1-10 con Sellos, contratos diarios, paga del gremio, tienda, multi-mensajero (4 slots).
+Implementado: cielo vivo según la hora real (home, splash, login, escenas, mapa); arte por código al estilo fresco (mapas de ruta, escenarios de evento, mensajero, sellos y árbol visual) (ilustraciones opcionales encima); identidad sonora: 18 SFX de materiales, motivo D-A-E (splash, nota S, avisos) y música por hora, viaje y arco (placeholders sintetizados); loop core con timer real, paga por ruta, 26 logros con títulos equipables y celebraciones, escalones de facción con rutas y favores, encargos semanales, tutorial de 4 pruebas, 22 rutas, pool de eventos con prosa propia y selección con memoria, 9 eventos de consecuencia, arcos `arc_claudius` y `arc_lucius` con finales que abren rutas/postas/tienda, reputación/flags/diario, árbol de skills 1-10 con Sellos, contratos diarios, paga del gremio, tienda, multi-mensajero (4 slots).
 
 También: avisos locales (eventos, entrega, ocioso, contratos; el tap abre la misión) y auto-resolución de eventos a los 60 min.
 
@@ -118,7 +121,8 @@ flutter pub get
 flutter run
 flutter test              # test/domain_test.dart
 flutter analyze
-python3 tool/gen_sfx.py   # regenera assets/audio/sfx_*.wav
+python3 tool/gen_sfx.py   # regenera assets/audio/sfx_*.wav y el sonido de aviso (Android/iOS)
+python3 tool/gen_music.py # regenera assets/audio/music_*.m4a (placeholders; necesita afconvert de macOS)
 flutter test tool/gen_icon_test.dart && dart run flutter_launcher_icons && dart run flutter_native_splash:create   # ícono y launch screen
 ```
 

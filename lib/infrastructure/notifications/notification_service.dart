@@ -26,10 +26,17 @@ const _registryKey = 'notification_registry_v1';
 /// Cuántos eventos futuros de una misma misión se programan por adelantado.
 const _eventsAheadPerMission = 2;
 
-const _channelId = 'the_messenger_road';
+// v2: el canal suena con el motivo de Cursus. Android fija el sonido al
+// crear el canal, así que cambiarlo exige un id nuevo (y borrar el viejo).
+const _channelId = 'cursus_road_v2';
+const _legacyChannelIds = ['the_messenger_road'];
+
+/// El motivo como sonido de aviso (sale de tool/gen_sfx.py): en Android es
+/// res/raw/cursus_motif.wav; en iOS, cursus_motif.caf en el bundle.
+const notificationSoundAndroid = 'cursus_motif';
+const notificationSoundIos = 'cursus_motif.caf';
 const _channelName = 'El camino';
-const _channelDescription =
-    'Avisos de eventos en la ruta y entregas listas.';
+const _channelDescription = 'Avisos de eventos en la ruta y entregas listas.';
 
 class LocalNotificationService implements NotificationScheduler {
   final FlutterLocalNotificationsPlugin _plugin =
@@ -75,15 +82,21 @@ class LocalNotificationService implements NotificationScheduler {
       },
     );
 
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(const AndroidNotificationChannel(
-          _channelId,
-          _channelName,
-          description: _channelDescription,
-          importance: Importance.high,
-        ));
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    if (android != null) {
+      for (final id in _legacyChannelIds) {
+        await android.deleteNotificationChannel(channelId: id);
+      }
+      await android.createNotificationChannel(const AndroidNotificationChannel(
+        _channelId,
+        _channelName,
+        description: _channelDescription,
+        importance: Importance.high,
+        playSound: true,
+        sound: RawResourceAndroidNotificationSound(notificationSoundAndroid),
+      ));
+    }
 
     await _loadRegistry();
     _ready = true;
@@ -119,9 +132,9 @@ class LocalNotificationService implements NotificationScheduler {
     final ios = _plugin.resolvePlatformSpecificImplementation<
         IOSFlutterLocalNotificationsPlugin>();
     if (ios != null) {
-      granted = await ios.requestPermissions(
-              alert: true, badge: true, sound: true) ??
-          false;
+      granted =
+          await ios.requestPermissions(alert: true, badge: true, sound: true) ??
+              false;
     }
 
     final android = _plugin.resolvePlatformSpecificImplementation<
@@ -361,11 +374,13 @@ class LocalNotificationService implements NotificationScheduler {
           importance: Importance.high,
           priority: Priority.high,
           category: AndroidNotificationCategory.reminder,
+          sound: RawResourceAndroidNotificationSound(notificationSoundAndroid),
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
           presentBadge: true,
           presentSound: true,
+          sound: notificationSoundIos,
           threadIdentifier: kind.name,
         ),
       );

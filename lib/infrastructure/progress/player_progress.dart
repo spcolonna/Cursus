@@ -13,6 +13,8 @@ class PlayerProgress {
   static const _kAdsTravelCount = 'ads_travel_count_v1';
   static const _kAdsDoublePayDay = 'ads_double_pay_day_v1';
   static const _kSfxEnabled = 'sfx_enabled_v1';
+  static const _kMusicEnabled = 'music_enabled_v1';
+  static const _kMusicVolume = 'music_volume_v1';
   static const _kHapticsEnabled = 'haptics_enabled_v1';
   static const _kReduceMotion = 'reduce_motion_v1';
   static const _kAnalytics = 'analytics_enabled_v1';
@@ -108,6 +110,27 @@ class PlayerProgress {
   Future<void> setSfxEnabled(bool enabled) async {
     final p = await SharedPreferences.getInstance();
     await p.setBool(_kSfxEnabled, enabled);
+  }
+
+  Future<bool> isMusicEnabled() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getBool(_kMusicEnabled) ?? true;
+  }
+
+  Future<void> setMusicEnabled(bool enabled) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setBool(_kMusicEnabled, enabled);
+  }
+
+  /// Volumen de la música (0-1); null si el jugador nunca lo tocó.
+  Future<double?> musicVolume() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getDouble(_kMusicVolume);
+  }
+
+  Future<void> setMusicVolume(double volume) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setDouble(_kMusicVolume, volume);
   }
 
   Future<bool> isHapticsEnabled() async {
