@@ -2,6 +2,11 @@
 
 Todo en `lib/presentation/theme/app_theme.dart` (interfaz) y `theme/art_palette.dart` (pintura: mapas, escenas, retratos, cera; **nunca** texto).
 
+**Arte por código (`ArtColors`):** fresco pompeyano en siluetas planas, contorno de tinta. Reglas:
+- Colinas y tierra de escenas y paisajes salen de `SkyPalette` (`landFar/Mid/Near`), y el follaje de `SkyPalette.tree`: así la hora tiñe todo junto. No agregues colores de colina fijos.
+- Mapa: mar `sea` (azul egipcio aguado), tierra `land` (cal y ocre), costa en tinta. La ruta va en tinta con el tramo hecho en `ochre`; `test/art_palette_test.dart` valida que se lea sobre tierra y mar.
+- Sello de cera: siempre `WaxSeal` / `paintWaxSeal` de `widgets/insignia.dart` (un test impide otro painter de sello).
+
 ## Colores ("Fresco al atardecer")
 
 | Grupo | Tokens | Uso |

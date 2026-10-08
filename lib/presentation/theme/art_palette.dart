@@ -9,29 +9,34 @@ import 'package:flutter/material.dart';
 class ArtColors {
   ArtColors._();
 
-  // ─── Mapas ───
-  static const sea = Color(0xFF10294A);
-  static const seaWave = Color(0xFF1B3A60);
-  static const land = Color(0xFF4B3F2A);
-  static const landLight = Color(0xFF6A5A3B);
-  static const landShade = Color(0xFF3A301F);
-  static const road = Color(0xFF7D6A45);
-  static const river = Color(0xFF2A6A98);
-  static const wall = Color(0xFF9A8258);
-  static const city = Color(0xFFD9C9A0);
+  // ─── Mapas: carta pintada al fresco ───
+  // Mar de azul egipcio aguado, tierra de cal y ocre, todo contorneado en
+  // tinta. La ruta (tinta + ocre) tiene que ganarle siempre al fondo.
+  static const sea = Color(0xFFA9C4D6);
+  static const seaWave = Color(0xFF7FA2BF);
+  static const seaShore = Color(0xFFC9DBE5);
+  static const land = Color(0xFFE8D7AE);
+  static const landLight = Color(0xFFF5ECD3);
+  static const landShade = Color(0xFFC4A266);
+  static const road = Color(0xFF7A6450);
+  static const river = Color(0xFF3F72A8);
+  static const wall = Color(0xFFB5562F);
+  static const city = Color(0xFFF7F0DE);
 
   // ─── Cera y metal ───
-  static const wax = Color(0xFFA3221B);
-  static const waxLight = Color(0xFFC8392E);
-  static const waxDark = Color(0xFF5E0F0B);
-  static const iron = Color(0xFF8A8A8A);
-  static const ironDark = Color(0xFF555555);
-  static const silver = Color(0xFFD8D8D8);
-  static const silverDark = Color(0xFF8C8C8C);
-  static const bronze = Color(0xFFB0793A);
-  static const bronzeDark = Color(0xFF6B4520);
-  static const laurel = Color(0xFF5F8A3A);
-  static const laurelDark = Color(0xFF34531E);
+  // Cera cinabrio (la del sello de marca) y metales de pigmento, sin grises
+  // fríos: el hierro y la plata tiran a tierra.
+  static const wax = Color(0xFFA8322D);
+  static const waxLight = Color(0xFFC4473C);
+  static const waxDark = Color(0xFF6E1F1B);
+  static const iron = Color(0xFF8C8578);
+  static const ironDark = Color(0xFF57514A);
+  static const silver = Color(0xFFDCD6C8);
+  static const silverDark = Color(0xFF948C7E);
+  static const bronze = Color(0xFFB07F3A);
+  static const bronzeDark = Color(0xFF6B4A22);
+  static const laurel = Color(0xFF5E7F45);
+  static const laurelDark = Color(0xFF3D5A2E);
 
   // ─── Personajes ───
   static const skin = Color(0xFFD9A577);
@@ -73,22 +78,21 @@ class ArtColors {
   static const star = Color(0xFFF2EAD0);
 
   // ─── Escenas: planos ───
-  static const hillFar = Color(0xFF3E5470);
-  static const hillMid = Color(0xFF2E3F2C);
-  static const hillNear = Color(0xFF1E2A1C);
-  static const stone = Color(0xFFB8A98A);
-  static const stoneShade = Color(0xFF7E715A);
-  static const stoneDark = Color(0xFF4A4234);
-  static const terracotta = Color(0xFFA0522D);
-  static const terracottaDark = Color(0xFF6E3519);
-  static const water = Color(0xFF2A5F86);
-  static const waterLight = Color(0xFF4F8DB5);
-  static const torch = Color(0xFFFFB347);
-  static const torchGlow = Color(0x55FFB347);
+  // Las colinas no viven acá: salen de SkyPalette (landFar/Mid/Near), así
+  // escenas y cielo comparten tierra. La piedra es cal y travertino; el
+  // follaje, el verde de los cipreses de los frescos.
+  static const stone = Color(0xFFE2D2AE);
+  static const stoneShade = Color(0xFFB39B72);
+  static const stoneDark = Color(0xFF6B5A45);
+  static const terracotta = Color(0xFFB5562F);
+  static const water = Color(0xFF3D6E9E);
+  static const waterLight = Color(0xFF7FA9C9);
+  static const torch = Color(0xFFF7B267);
+  static const torchGlow = Color(0x55F7B267);
   static const rain = Color(0x66C9D6E3);
-  static const mist = Color(0x33E8E0D0);
-  static const silhouette = Color(0xFF0B1120);
-  static const legionRed = Color(0xFF8E1B14);
-  static const cypress = Color(0xFF16261A);
-  static const sail = Color(0xFFE6D8B5);
+  static const mist = Color(0x33F2E8D5);
+  static const silhouette = Color(0xFF1A1420);
+  static const legionRed = Color(0xFFA8322D);
+  static const cypress = Color(0xFF2C4231);
+  static const sail = Color(0xFFEDE3C8);
 }

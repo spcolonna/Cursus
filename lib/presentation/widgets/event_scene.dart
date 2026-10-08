@@ -31,8 +31,8 @@ class EventBackdrop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final painted = EventScene(category: event.category);
-    final scene = ArtImage(
-        asset: ArtPaths.scene(event.category.name), fallback: painted);
+    final scene =
+        ArtImage(asset: ArtPaths.scene(event.category.name), fallback: painted);
     final id = event.configId;
     if (id == null) return scene;
     return ArtImage(asset: ArtPaths.event(id), fallback: scene);
@@ -139,6 +139,13 @@ class EventScenePainter extends CustomPainter {
     return out;
   }
 
+  /// La tierra de la escena es la del cielo vivo: ya trae la hora, así que
+  /// no pasa por [_shade]; solo la tormenta la apaga.
+  Color _land(Color c) => _storm ? Color.lerp(c, ArtColors.stormTop, 0.35)! : c;
+  Color get _hillFar => _land(Color.lerp(sky.landFar, _skyBottom, 0.2)!);
+  Color get _hillMid => _land(sky.landMid);
+  Color get _hillNear => _land(sky.landNear);
+
   Color get _skyTop => _storm ? ArtColors.stormTop : sky.top;
   Color get _skyMid => _storm
       ? Color.lerp(ArtColors.stormTop, ArtColors.stormBottom, 0.5)!
@@ -163,8 +170,8 @@ class EventScenePainter extends CustomPainter {
     canvas.clipRect(Offset.zero & stage);
     // Plano lejano: colinas azuladas, se mueven casi nada.
     final drift = math.sin(t * 0.05) * 6;
-    _ridge(canvas, stage, horizon - h * 0.04, h * 0.06, 1.3, 1,
-        _shade(ArtColors.hillFar, far: 0.35), drift * 0.3);
+    _ridge(canvas, stage, horizon - h * 0.04, h * 0.06, 1.3, 1, _hillFar,
+        drift * 0.3);
 
     switch (category) {
       case EventCategory.road:
@@ -199,13 +206,14 @@ class EventScenePainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            _shade(ArtColors.hillNear).withValues(alpha: 0),
-            _shade(ArtColors.hillNear),
+            _hillNear.withValues(alpha: 0),
+            _hillNear,
           ],
         ).createShader(seam),
     );
 
-    // Suelo bajo la franja: el mismo plano cercano, oscureciéndose.
+    // Suelo bajo la franja: el mismo plano cercano; de día apenas se
+    // oscurece, de noche se hunde en la sombra.
     final below = Rect.fromLTRB(0, h, w, size.height);
     canvas.drawRect(
       below,
@@ -213,7 +221,11 @@ class EventScenePainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [_shade(ArtColors.hillNear), ArtColors.silhouette],
+          colors: [
+            _hillNear,
+            Color.lerp(
+                _hillNear, ArtColors.silhouette, 0.35 + 0.65 * sky.night)!,
+          ],
         ).createShader(below),
     );
 
@@ -225,8 +237,11 @@ class EventScenePainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [ArtColors.mist.withValues(alpha: 0), ArtColors.mist,
-            ArtColors.mist.withValues(alpha: 0)],
+          colors: [
+            ArtColors.mist.withValues(alpha: 0),
+            ArtColors.mist,
+            ArtColors.mist.withValues(alpha: 0)
+          ],
         ).createShader(mist),
     );
   }
@@ -276,8 +291,8 @@ class EventScenePainter extends CustomPainter {
       canvas.drawCircle(body.translate(6, -3), 14,
           Paint()..color = _skyTop.withValues(alpha: 0.85));
     } else {
-      canvas.drawCircle(body, 46,
-          Paint()..color = sky.sunColor.withValues(alpha: 0.2));
+      canvas.drawCircle(
+          body, 46, Paint()..color = sky.sunColor.withValues(alpha: 0.2));
       canvas.drawCircle(body, 22, Paint()..color = sky.sunColor);
     }
     _clouds(canvas, size, horizon);
@@ -302,7 +317,8 @@ class EventScenePainter extends CustomPainter {
   }
 
   void _cloud(Canvas canvas, Offset c, double s, Paint p) {
-    canvas.drawOval(Rect.fromCenter(center: c, width: 90 * s, height: 22 * s), p);
+    canvas.drawOval(
+        Rect.fromCenter(center: c, width: 90 * s, height: 22 * s), p);
     canvas.drawCircle(c.translate(-14 * s, -8 * s), 14 * s, p);
     canvas.drawCircle(c.translate(10 * s, -12 * s), 18 * s, p);
   }
@@ -320,8 +336,9 @@ class EventScenePainter extends CustomPainter {
     for (var x = -20.0; x <= w + 20; x += 8) {
       final u = (x + shift) / w;
       final y = baseY -
-          amp * (0.6 * math.sin(u * math.pi * 2 * freq + p1) +
-              0.4 * math.sin(u * math.pi * 5 * freq + p2));
+          amp *
+              (0.6 * math.sin(u * math.pi * 2 * freq + p1) +
+                  0.4 * math.sin(u * math.pi * 5 * freq + p2));
       path.lineTo(x, y);
     }
     path
@@ -331,8 +348,8 @@ class EventScenePainter extends CustomPainter {
   }
 
   void _ground(Canvas canvas, Size size, double y, Color color) {
-    canvas.drawRect(Rect.fromLTRB(0, y, size.width, size.height),
-        Paint()..color = color);
+    canvas.drawRect(
+        Rect.fromLTRB(0, y, size.width, size.height), Paint()..color = color);
   }
 
   void _cypress(Canvas canvas, Offset base, double height, {double sway = 0}) {
@@ -340,10 +357,12 @@ class EventScenePainter extends CustomPainter {
     final top = base.translate(sway, -height);
     final path = Path()
       ..moveTo(base.dx - w / 2, base.dy)
-      ..quadraticBezierTo(base.dx - w * 0.7, base.dy - height * 0.55, top.dx, top.dy)
-      ..quadraticBezierTo(base.dx + w * 0.7, base.dy - height * 0.55, base.dx + w / 2, base.dy)
+      ..quadraticBezierTo(
+          base.dx - w * 0.7, base.dy - height * 0.55, top.dx, top.dy)
+      ..quadraticBezierTo(
+          base.dx + w * 0.7, base.dy - height * 0.55, base.dx + w / 2, base.dy)
       ..close();
-    canvas.drawPath(path, Paint()..color = _shade(ArtColors.cypress));
+    canvas.drawPath(path, Paint()..color = _land(sky.tree));
   }
 
   /// Camino que se pierde en el horizonte.
@@ -351,11 +370,11 @@ class EventScenePainter extends CustomPainter {
     final w = size.width, h = size.height;
     final path = Path()
       ..moveTo(w * 0.5 - 4, horizon + 4)
-      ..quadraticBezierTo(w * (0.5 + curve), horizon + (h - horizon) * 0.35,
-          w * 0.18, h)
+      ..quadraticBezierTo(
+          w * (0.5 + curve), horizon + (h - horizon) * 0.35, w * 0.18, h)
       ..lineTo(w * 0.82, h)
-      ..quadraticBezierTo(w * (0.5 + curve * 1.4), horizon + (h - horizon) * 0.35,
-          w * 0.5 + 4, horizon + 4)
+      ..quadraticBezierTo(w * (0.5 + curve * 1.4),
+          horizon + (h - horizon) * 0.35, w * 0.5 + 4, horizon + 4)
       ..close();
     canvas.drawPath(path, Paint()..color = _shade(ArtColors.stoneShade));
     // Adoquines: líneas que se abren con la perspectiva.
@@ -372,13 +391,16 @@ class EventScenePainter extends CustomPainter {
   }
 
   void _torch(Canvas canvas, Offset top, {double scale = 1}) {
-    final flick = 1 + 0.12 * math.sin(t * 13 + top.dx) + 0.06 * math.sin(t * 29);
-    canvas.drawLine(top, top.translate(0, 26 * scale),
+    final flick =
+        1 + 0.12 * math.sin(t * 13 + top.dx) + 0.06 * math.sin(t * 29);
+    canvas.drawLine(
+        top,
+        top.translate(0, 26 * scale),
         Paint()
           ..color = _shade(ArtColors.leatherDark)
           ..strokeWidth = 3 * scale);
-    canvas.drawCircle(top, 26 * scale * flick,
-        Paint()..color = ArtColors.torchGlow);
+    canvas.drawCircle(
+        top, 26 * scale * flick, Paint()..color = ArtColors.torchGlow);
     canvas.drawOval(
         Rect.fromCenter(
             center: top.translate(0, -4 * scale),
@@ -396,10 +418,11 @@ class EventScenePainter extends CustomPainter {
     }
   }
 
-  void _building(Canvas canvas, Rect body, {bool roof = true, int windows = 2,
-      double far = 0}) {
+  void _building(Canvas canvas, Rect body,
+      {bool roof = true, int windows = 2, double far = 0}) {
     canvas.drawRect(body, Paint()..color = _shade(ArtColors.stone, far: far));
-    canvas.drawRect(Rect.fromLTWH(body.right - body.width * 0.25, body.top,
+    canvas.drawRect(
+        Rect.fromLTWH(body.right - body.width * 0.25, body.top,
             body.width * 0.25, body.height),
         Paint()..color = _shade(ArtColors.stoneShade, far: far));
     if (roof) {
@@ -408,7 +431,8 @@ class EventScenePainter extends CustomPainter {
         ..lineTo(body.center.dx, body.top - body.width * 0.28)
         ..lineTo(body.right + 6, body.top)
         ..close();
-      canvas.drawPath(r, Paint()..color = _shade(ArtColors.terracotta, far: far));
+      canvas.drawPath(
+          r, Paint()..color = _shade(ArtColors.terracotta, far: far));
     }
     for (var i = 0; i < windows; i++) {
       final x = body.left + body.width * (i + 1) / (windows + 1) - 4;
@@ -422,7 +446,8 @@ class EventScenePainter extends CustomPainter {
       final x = area.left + i * colW * 2;
       canvas.drawRect(Rect.fromLTWH(x, area.top, colW, area.height),
           Paint()..color = color);
-      canvas.drawRect(Rect.fromLTWH(x + colW * 0.65, area.top, colW * 0.35, area.height),
+      canvas.drawRect(
+          Rect.fromLTWH(x + colW * 0.65, area.top, colW * 0.35, area.height),
           Paint()..color = shade);
     }
   }
@@ -438,26 +463,36 @@ class EventScenePainter extends CustomPainter {
       final y = r.top + 6 + rng.nextDouble() * (r.height - 10);
       final depth = (y - r.top) / r.height;
       final len = 10 + 28 * depth;
-      final x = (rng.nextDouble() * r.width + math.sin(t * 0.8 + i) * 6) % r.width;
-      canvas.drawLine(Offset(r.left + x, y), Offset(r.left + x + len, y), shine);
+      final x =
+          (rng.nextDouble() * r.width + math.sin(t * 0.8 + i) * 6) % r.width;
+      canvas.drawLine(
+          Offset(r.left + x, y), Offset(r.left + x + len, y), shine);
     }
   }
 
   // ─── Escenas ───
 
   void _roadScene(Canvas c, Size s, double hz, double drift) {
-    _ridge(c, s, hz + s.height * 0.02, s.height * 0.035, 0.9, 2,
-        _shade(ArtColors.hillMid, far: 0.15), drift);
-    _ground(c, s, hz + s.height * 0.05, _shade(ArtColors.hillNear));
+    _ridge(
+        c, s, hz + s.height * 0.02, s.height * 0.035, 0.9, 2, _hillMid, drift);
+    _ground(c, s, hz + s.height * 0.05, _hillNear);
     _road(c, s, hz + s.height * 0.02);
-    for (final (x, hh) in [(0.12, 0.2), (0.2, 0.15), (0.84, 0.22), (0.92, 0.17)]) {
+    for (final (x, hh) in [
+      (0.12, 0.2),
+      (0.2, 0.15),
+      (0.84, 0.22),
+      (0.92, 0.17)
+    ]) {
       _cypress(c, Offset(s.width * x, hz + s.height * 0.1), s.height * hh,
           sway: math.sin(t * 0.7 + x * 9) * 1.5);
     }
     // Miliario al costado del camino.
     final m = Rect.fromLTWH(s.width * 0.7, hz + s.height * 0.1, 14, 34);
-    c.drawRRect(RRect.fromRectAndCorners(m, topLeft: const Radius.circular(7),
-        topRight: const Radius.circular(7)), Paint()..color = _shade(ArtColors.stone));
+    c.drawRRect(
+        RRect.fromRectAndCorners(m,
+            topLeft: const Radius.circular(7),
+            topRight: const Radius.circular(7)),
+        Paint()..color = _shade(ArtColors.stone));
   }
 
   void _patrolScene(Canvas c, Size s, double hz, double drift) {
@@ -475,9 +510,12 @@ class EventScenePainter extends CustomPainter {
     // Estandartes de la legión, recortados contra el cielo.
     for (final x in [0.24, 0.76]) {
       final top = Offset(w * x, base - 96);
-      c.drawLine(top, Offset(w * x, base), Paint()
-        ..color = ArtColors.silhouette
-        ..strokeWidth = 3);
+      c.drawLine(
+          top,
+          Offset(w * x, base),
+          Paint()
+            ..color = ArtColors.silhouette
+            ..strokeWidth = 3);
       final sway = math.sin(t * 1.6 + x * 10) * 3;
       final flag = Path()
         ..moveTo(top.dx - 14, top.dy + 10)
@@ -497,9 +535,8 @@ class EventScenePainter extends CustomPainter {
 
   void _riverScene(Canvas c, Size s, double hz, double drift) {
     final w = s.width, h = s.height;
-    _ridge(c, s, hz + h * 0.01, h * 0.03, 0.8, 4,
-        _shade(ArtColors.hillMid, far: 0.15), drift);
-    _ground(c, s, hz + h * 0.04, _shade(ArtColors.hillNear));
+    _ridge(c, s, hz + h * 0.01, h * 0.03, 0.8, 4, _hillMid, drift);
+    _ground(c, s, hz + h * 0.04, _hillNear);
     final river = Rect.fromLTWH(0, hz + h * 0.1, w, h * 0.14);
     _water(c, river);
     // Puente de piedra de tres ojos.
@@ -509,7 +546,8 @@ class EventScenePainter extends CustomPainter {
     for (var i = 0; i < 3; i++) {
       final cx = w * (0.25 + i * 0.25);
       final arch = Path()
-        ..addRect(Rect.fromLTWH(cx - w * 0.125, deckY + 14, w * 0.25, river.height * 0.7))
+        ..addRect(Rect.fromLTWH(
+            cx - w * 0.125, deckY + 14, w * 0.25, river.height * 0.7))
         ..addOval(Rect.fromCenter(
             center: Offset(cx, deckY + 14 + river.height * 0.7),
             width: w * 0.17,
@@ -548,30 +586,36 @@ class EventScenePainter extends CustomPainter {
     // Relámpago: un destello cada ~7 s.
     final phase = t % 7.3;
     if (phase < 0.18) {
-      c.drawRect(Offset.zero & s,
-          Paint()..color = ArtColors.star.withValues(alpha: 0.18 * (1 - phase / 0.18)));
+      c.drawRect(
+          Offset.zero & s,
+          Paint()
+            ..color =
+                ArtColors.star.withValues(alpha: 0.18 * (1 - phase / 0.18)));
       final bolt = Path()
         ..moveTo(w * 0.62, 0)
         ..lineTo(w * 0.57, hz * 0.35)
         ..lineTo(w * 0.63, hz * 0.4)
         ..lineTo(w * 0.55, hz * 0.8);
-      c.drawPath(bolt, Paint()
-        ..color = ArtColors.star
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5);
+      c.drawPath(
+          bolt,
+          Paint()
+            ..color = ArtColors.star
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.5);
     }
   }
 
   void _banditsScene(Canvas c, Size s, double hz, double drift) {
     final w = s.width, h = s.height;
-    _ridge(c, s, hz, h * 0.03, 1, 6, _shade(ArtColors.hillMid, far: 0.1), drift);
-    _ground(c, s, hz + h * 0.04, _shade(ArtColors.hillNear));
+    _ridge(c, s, hz, h * 0.03, 1, 6, _hillMid, drift);
+    _ground(c, s, hz + h * 0.04, _hillNear);
     _road(c, s, hz + h * 0.02, curve: -0.1);
     // Bosque cerrado a los costados: el camino se angosta.
     for (var i = 0; i < 9; i++) {
       final left = i.isEven;
       final x = left ? w * (0.02 + i * 0.035) : w * (0.98 - i * 0.035);
-      _cypress(c, Offset(x, hz + h * (0.12 + (i % 3) * 0.03)), h * (0.18 + (i % 4) * 0.04),
+      _cypress(c, Offset(x, hz + h * (0.12 + (i % 3) * 0.03)),
+          h * (0.18 + (i % 4) * 0.04),
           sway: math.sin(t * 0.9 + i) * 2);
     }
     // Rocas y una fogata a lo lejos: alguien espera.
@@ -586,17 +630,20 @@ class EventScenePainter extends CustomPainter {
 
   void _templeScene(Canvas c, Size s, double hz, double drift) {
     final w = s.width, h = s.height;
-    _ground(c, s, hz + h * 0.02, _shade(ArtColors.hillNear));
+    _ground(c, s, hz + h * 0.02, _hillNear);
     final base = hz + h * 0.1;
     final tw = w * 0.62, left = (w - tw) / 2;
     // Podio y escalinata.
     for (var i = 0; i < 5; i++) {
-      c.drawRect(Rect.fromLTWH(left - i * 6, base + i * 7, tw + i * 12, 7),
-          Paint()..color = _shade(i.isEven ? ArtColors.stone : ArtColors.stoneShade));
+      c.drawRect(
+          Rect.fromLTWH(left - i * 6, base + i * 7, tw + i * 12, 7),
+          Paint()
+            ..color =
+                _shade(i.isEven ? ArtColors.stone : ArtColors.stoneShade));
     }
     final colTop = base - h * 0.17;
-    _columns(c, Rect.fromLTWH(left + 8, colTop, tw - 16, base - colTop),
-        6, _shade(ArtColors.stone), _shade(ArtColors.stoneShade));
+    _columns(c, Rect.fromLTWH(left + 8, colTop, tw - 16, base - colTop), 6,
+        _shade(ArtColors.stone), _shade(ArtColors.stoneShade));
     // Entablamento y frontón.
     c.drawRect(Rect.fromLTWH(left - 4, colTop - 12, tw + 8, 12),
         Paint()..color = _shade(ArtColors.stone));
@@ -606,10 +653,12 @@ class EventScenePainter extends CustomPainter {
       ..lineTo(left + tw + 8, colTop - 12)
       ..close();
     c.drawPath(ped, Paint()..color = _shade(ArtColors.stone));
-    c.drawPath(ped, Paint()
-      ..color = _shade(ArtColors.stoneShade)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3);
+    c.drawPath(
+        ped,
+        Paint()
+          ..color = _shade(ArtColors.stoneShade)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3);
     // Humo de incienso.
     final smoke = Paint()
       ..color = ArtColors.mist
@@ -633,8 +682,12 @@ class EventScenePainter extends CustomPainter {
     // Ciudad al fondo.
     for (var i = 0; i < 6; i++) {
       final bw = w * 0.18;
-      _building(c, Rect.fromLTWH(w * (i * 0.17 - 0.03), hz - h * (0.06 + (i % 3) * 0.02),
-          bw, h * 0.12), windows: 1, far: 0.35);
+      _building(
+          c,
+          Rect.fromLTWH(w * (i * 0.17 - 0.03), hz - h * (0.06 + (i % 3) * 0.02),
+              bw, h * 0.12),
+          windows: 1,
+          far: 0.35);
     }
     _ground(c, s, hz + h * 0.04, _shade(ArtColors.stoneDark));
     // Basílica con arcada al frente.
@@ -644,9 +697,13 @@ class EventScenePainter extends CustomPainter {
     final arch = Paint()..color = _shade(ArtColors.stoneDark);
     for (var i = 0; i < 6; i++) {
       final cx = w * (0.14 + i * 0.144);
-      final r = Rect.fromLTWH(cx - 12, top + h * 0.05, 24, bot - top - h * 0.05);
-      c.drawRRect(RRect.fromRectAndCorners(r,
-          topLeft: const Radius.circular(12), topRight: const Radius.circular(12)), arch);
+      final r =
+          Rect.fromLTWH(cx - 12, top + h * 0.05, 24, bot - top - h * 0.05);
+      c.drawRRect(
+          RRect.fromRectAndCorners(r,
+              topLeft: const Radius.circular(12),
+              topRight: const Radius.circular(12)),
+          arch);
     }
     c.drawRect(Rect.fromLTWH(w * 0.04, top - 10, w * 0.92, 10),
         Paint()..color = _shade(ArtColors.terracotta));
@@ -656,31 +713,39 @@ class EventScenePainter extends CustomPainter {
         Paint()..color = _shade(ArtColors.stoneShade));
     c.drawOval(Rect.fromLTWH(px - 6, py - 54, 12, 34),
         Paint()..color = _shade(ArtColors.bronze));
-    c.drawCircle(Offset(px, py - 58), 6, Paint()..color = _shade(ArtColors.bronze));
+    c.drawCircle(
+        Offset(px, py - 58), 6, Paint()..color = _shade(ArtColors.bronze));
   }
 
   void _innScene(Canvas c, Size s, double hz, double drift) {
     final w = s.width, h = s.height;
-    _ridge(c, s, hz + h * 0.01, h * 0.03, 0.7, 8, _shade(ArtColors.hillMid, far: 0.15), drift);
-    _ground(c, s, hz + h * 0.04, _shade(ArtColors.hillNear));
+    _ridge(c, s, hz + h * 0.01, h * 0.03, 0.7, 8, _hillMid, drift);
+    _ground(c, s, hz + h * 0.04, _hillNear);
     _road(c, s, hz + h * 0.03, curve: 0.2);
     // La posada: dos pisos, tejas, ventanas cálidas.
     final body = Rect.fromLTWH(w * 0.08, hz - h * 0.04, w * 0.42, h * 0.16);
     _building(c, body, windows: 3);
-    c.drawRect(Rect.fromLTWH(body.left + body.width * 0.4, body.bottom - 30, 20, 30),
+    c.drawRect(
+        Rect.fromLTWH(body.left + body.width * 0.4, body.bottom - 30, 20, 30),
         Paint()..color = _shade(ArtColors.leatherDark));
     // Cartel colgante que se mece.
     final hook = Offset(body.right + 6, body.top + 20);
-    c.drawLine(hook.translate(-8, 0), hook.translate(18, 0),
-        Paint()..color = _shade(ArtColors.leatherDark)..strokeWidth = 3);
+    c.drawLine(
+        hook.translate(-8, 0),
+        hook.translate(18, 0),
+        Paint()
+          ..color = _shade(ArtColors.leatherDark)
+          ..strokeWidth = 3);
     c.save();
     c.translate(hook.dx + 10, hook.dy);
     c.rotate(math.sin(t * 1.3) * 0.08);
-    c.drawRect(const Rect.fromLTWH(-12, 6, 24, 16), Paint()..color = _shade(ArtColors.felt));
+    c.drawRect(const Rect.fromLTWH(-12, 6, 24, 16),
+        Paint()..color = _shade(ArtColors.felt));
     c.restore();
     _window(c, Rect.fromLTWH(body.left + 12, body.bottom - 24, 10, 12));
     if (_lit) _torch(c, Offset(body.right + 4, body.bottom - 30), scale: 0.8);
-    _cypress(c, Offset(w * 0.78, hz + h * 0.1), h * 0.2, sway: math.sin(t * 0.7) * 1.5);
+    _cypress(c, Offset(w * 0.78, hz + h * 0.1), h * 0.2,
+        sway: math.sin(t * 0.7) * 1.5);
   }
 
   void _portScene(Canvas c, Size s, double hz, double drift) {
@@ -700,8 +765,12 @@ class EventScenePainter extends CustomPainter {
       ..quadraticBezierTo(-64, 12, -70, -6)
       ..close();
     c.drawPath(hull, Paint()..color = _shade(ArtColors.leatherDark));
-    c.drawLine(const Offset(0, -6), const Offset(0, -96),
-        Paint()..color = _shade(ArtColors.leatherDark)..strokeWidth = 4);
+    c.drawLine(
+        const Offset(0, -6),
+        const Offset(0, -96),
+        Paint()
+          ..color = _shade(ArtColors.leatherDark)
+          ..strokeWidth = 4);
     final sail = Path()
       ..moveTo(-40, -88)
       ..quadraticBezierTo(0, -70 + math.sin(t * 1.5) * 3, 40, -88)
@@ -716,7 +785,8 @@ class EventScenePainter extends CustomPainter {
     c.drawRect(Rect.fromLTWH(0, hz + h * 0.12, w * 0.46, 14),
         Paint()..color = _shade(ArtColors.felt));
     for (var i = 0; i < 5; i++) {
-      c.drawRect(Rect.fromLTWH(w * (0.04 + i * 0.09), hz + h * 0.12, 6, h * 0.08),
+      c.drawRect(
+          Rect.fromLTWH(w * (0.04 + i * 0.09), hz + h * 0.12, 6, h * 0.08),
           Paint()..color = _shade(ArtColors.feltDark));
     }
     final lh = Rect.fromLTWH(w * 0.1, hz - h * 0.14, 26, h * 0.14);
@@ -724,8 +794,9 @@ class EventScenePainter extends CustomPainter {
     final glow = 0.6 + 0.4 * math.sin(t * 2);
     c.drawCircle(Offset(lh.center.dx, lh.top - 8), 24 * glow,
         Paint()..color = ArtColors.torchGlow);
-    c.drawCircle(Offset(lh.center.dx, lh.top - 8), 6, Paint()..color = ArtColors.torch);
-    _ground(c, s, hz + h * 0.28, _shade(ArtColors.hillNear));
+    c.drawCircle(
+        Offset(lh.center.dx, lh.top - 8), 6, Paint()..color = ArtColors.torch);
+    _ground(c, s, hz + h * 0.28, _hillNear);
   }
 
   void _suburaScene(Canvas c, Size s, double hz, double drift) {
@@ -735,10 +806,16 @@ class EventScenePainter extends CustomPainter {
     for (var i = 0; i < 3; i++) {
       final lw = w * (0.2 - i * 0.03);
       final top = hz - h * (0.22 - i * 0.04);
-      _building(c, Rect.fromLTWH(w * 0.02 + i * lw * 0.9, top, lw, hz + h * 0.12 - top),
+      _building(c,
+          Rect.fromLTWH(w * 0.02 + i * lw * 0.9, top, lw, hz + h * 0.12 - top),
           roof: false, windows: 2, far: 0.1 * (2 - i));
-      _building(c, Rect.fromLTWH(w * 0.98 - (i + 1) * lw * 0.9 - lw * 0.1, top, lw, hz + h * 0.12 - top),
-          roof: false, windows: 2, far: 0.1 * (2 - i));
+      _building(
+          c,
+          Rect.fromLTWH(w * 0.98 - (i + 1) * lw * 0.9 - lw * 0.1, top, lw,
+              hz + h * 0.12 - top),
+          roof: false,
+          windows: 2,
+          far: 0.1 * (2 - i));
     }
     // Ropa tendida entre ventanas.
     final line = Paint()
@@ -750,7 +827,12 @@ class EventScenePainter extends CustomPainter {
       ..moveTo(w * 0.22, y)
       ..quadraticBezierTo(w * 0.5, y + 22, w * 0.78, y);
     c.drawPath(cord, line);
-    final cloth = [ArtColors.legionRed, ArtColors.sail, ArtColors.felt, ArtColors.sail];
+    final cloth = [
+      ArtColors.legionRed,
+      ArtColors.sail,
+      ArtColors.felt,
+      ArtColors.sail
+    ];
     for (var i = 0; i < 4; i++) {
       final x = w * (0.3 + i * 0.12);
       final sway = math.sin(t * 1.4 + i) * 2;

@@ -15,6 +15,7 @@ import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 
 import 'app_theme.dart';
+import 'art_palette.dart';
 
 enum SkyPhase { dawn, day, dusk, night }
 
@@ -135,6 +136,10 @@ class SkyPalette {
   Color get landFar => Color.lerp(land, horizon, 0.55)!;
   Color get landMid => Color.lerp(land, horizon, 0.28)!;
   Color get landNear => land;
+
+  /// Follaje de cipreses y pinos: la tierra cercana teñida del verde de los
+  /// frescos. Lo comparten el paisaje del home y las escenas de evento.
+  Color get tree => Color.lerp(land, ArtColors.cypress, 0.45 * (1 - night))!;
 
   /// Nubes: claras de día, apenas más claras que el cielo de noche.
   Color get cloud => Color.lerp(

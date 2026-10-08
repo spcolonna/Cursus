@@ -1,6 +1,6 @@
-# Ilustraciones: prompts y dónde va cada archivo
+# Ilustraciones de Cursus: prompts y dónde va cada archivo
 
-El juego ya se ve completo sin ninguna ilustración: todo tiene un dibujo por código de respaldo. Cada pieza que se agrega reemplaza a ese dibujo en un solo lugar, sin tocar código.
+Estilo: **fresco pompeyano en siluetas planas por capas**, la misma paleta que el juego (ver `lib/presentation/theme/sky.dart` y `art_palette.dart`). El juego ya se ve completo sin ninguna ilustración: todo tiene un dibujo por código de respaldo. Cada pieza que se agrega reemplaza a ese dibujo en un solo lugar, sin tocar código.
 
 ## 1. Cómo se enchufa una ilustración
 
@@ -21,45 +21,60 @@ El juego ya se ve completo sin ninguna ilustración: todo tiene un dibujo por c�
 
 **Orden de búsqueda de un evento:** primero su ilustración propia, después la de su escenario y al final el escenario pintado. Con los 10 escenarios ya se cubren todos los eventos.
 
-**Peso:** un JPG de 1080×1350 a calidad 82 pesa unos 250 KB. Las 35 piezas suman unos 8 MB.
+**Peso:** un JPG de 1080×1350 a calidad 82 pesa unos 250 KB. Las 37 ilustraciones de juego (sin retratos) suman unos 9 MB; los 12 retratos, unos 4 MB más.
 
 ## 2. Estilo base (va pegado al principio de cada prompt)
 
 ```
-Flat gouache illustration with visible brush texture, limited palette:
-deep navy blue (#0A1628, #142040), warm gold (#FFCC00, #CC9900),
-parchment cream (#F7EFDC), terracotta (#A0522D) and muted olive.
-Ancient Rome, 50 BC, historically grounded: togas, paenula travel cloaks,
-petasos hats, Roman roads with paving stones, no medieval elements,
-no castles, no stirrups. Bold simple shapes, soft rim light, gentle
-painterly shading in two tones, thick dark outlines on main figures.
-Calm, slightly mysterious mood, storybook adventure, not grim.
+Pompeian fresco painting, flat layered silhouettes, matte mineral pigments
+on lime plaster with a subtle plaster texture and faint hairline cracks.
+Strict palette: lime white #F2E8D5, warm parchment #E6D8BE, yellow ochre
+#D9A441, cinnabar red #A8322D, Egyptian blue #2F5D9E, verdigris #3F7F72,
+Tyrian purple #6B3E6E (sparingly), olive land #6E7F4E, cypress green
+#2C4231, ink brown-black #231A16. Ancient Rome, 50 BC, historically
+grounded: tunics, togas, paenula travel cloaks, petasos hats, paved Roman
+roads, umbrella pines and cypresses, no medieval elements, no castles, no
+stirrups. Simple bold shapes, two-tone shading at most, thin ink-brown
+contour lines on figures and buildings, distant layers fade toward the
+horizon color. Quiet, slightly mysterious mood, adult storybook, not grim.
 No text, no letters, no logos, no watermark, no frame.
 ```
+
+**La hora del cielo.** El juego pinta el cielo según la hora real. Cuando una pieza tenga cielo, elegí uno de los cuatro y sumá su línea (son los mismos colores que `SkyKeyframe`):
+
+| Hora | Línea para el prompt |
+|---|---|
+| Alba | `Dawn sky: pale blue #9DB7D5 at the top, peach #E9C3B0, apricot horizon #F6C9A6, violet-grey land #5B5470.` |
+| Día | `Day sky: soft cerulean #8EC3D6, sea-glass #BFD9D6, warm cream horizon #F4E3B5, olive land #6E7F4E.` |
+| Atardecer | `Dusk sky: mulberry #7A3B5C at the top, Pompeian red #C4544A, orange horizon #F0A35E, plum land #3A2230.` |
+| Noche | `Night sky: indigo #0F1024, deep blue #1B2147, Egyptian blue glow on the horizon #2F5D9E, near-black land #0A0B18, a few stars.` |
 
 **Para escenarios, eventos, capítulos y finales**, sumar:
 
 ```
-Vertical composition 4:5. The main subject sits in the upper 60% of the
-image. The lower third is darker and simple (ground, shadow, water) because
-the game's interface is placed over it.
+Vertical composition 4:5. The sky and the main subject sit in the upper
+40% of the image. The lower 60% is calm and simple (ground, road, water,
+plain wall) because the game places a paper card over it. Keep a quiet
+band about 10% tall at the very top for the status bar.
 ```
 
 **Para retratos**, sumar:
 
 ```
 Portrait bust, three-quarter view, head and shoulders, centered, looking
-slightly toward the viewer. Plain dark navy background with a soft warm
-glow behind the head. Square 1:1, the face fills about 40% of the frame.
+slightly toward the viewer, like a Fayum portrait painted on a fresco
+wall. Plain flat wall background in a single pigment (ochre, Pompeian red,
+pale Egyptian blue or lime white), with a thin darker band at the bottom.
+Square 1:1, the face fills about 40% of the frame.
 ```
 
-**Qué evitar:** fotorrealismo, 3D, anime, estética de fantasía medieval, armaduras de placas, escudos con heráldica, banderas con texto, cascos con cuernos y colores saturados de neón.
+**Qué evitar:** fotorrealismo, 3D, anime, fantasía medieval, armaduras de placas, escudos con heráldica, banderas con texto, cascos con cuernos, degradés brillantes tipo videojuego, neón y el viejo look navy y dorado. El dorado metálico tampoco: el oro se pinta como ocre.
 
 ## 3. Key art (1)
 
 | Archivo | Prompt |
 |---|---|
-| `assets/images/key_art.jpg` (para la tienda y el splash; no se usa en código todavía) | A lone Roman messenger in a red paenula cloak and a wide-brimmed petasos hat runs along a paved Roman road at dusk, a sealed scroll case strapped across the chest. Rome's hills, temples and an aqueduct glow gold in the distance. Cypress trees line the road. Dramatic but warm sky. |
+| `assets/images/key_art.jpg` (para la tienda y el splash; no se usa en código todavía) | A lone Roman messenger in a cinnabar paenula cloak and a wide-brimmed petasos hat runs along a paved Roman road at dusk, a sealed scroll case strapped across the chest, a red wax seal on it. Rome in flat layers on the horizon: hills, a domed temple and an aqueduct. Umbrella pines and cypresses line the road. Dusk sky line. |
 
 ## 4. Escenarios por categoría (10)
 
@@ -72,7 +87,7 @@ Estos cubren todos los eventos. Conviene hacerlos primero.
 | `scenes/river.jpg` | A three-arched Roman stone bridge over a slow river, reeds on the bank, a ferry rope, mist on the water, hills behind. |
 | `scenes/storm.jpg` | A Roman road under a violent storm, heavy diagonal rain, bent cypress trees, a flash of lightning over the hills, puddles reflecting the sky. |
 | `scenes/bandits.jpg` | A narrow road through a dark forest, large rocks, the faint glow of a campfire between the trees, shadowy figures watching, tense atmosphere. |
-| `scenes/temple.jpg` | The front of a Roman temple on a high podium with wide steps and six columns, incense smoke rising, a priest's silhouette at the door, golden evening light. |
+| `scenes/temple.jpg` | The front of a Roman temple on a high podium with wide steps and six columns, incense smoke rising, a priest's silhouette at the door, warm ochre evening light. |
 | `scenes/forum.jpg` | The Roman Forum: a basilica with arches, a bronze statue on a pedestal, market stalls, crowds in togas, terracotta roofs. |
 | `scenes/inn.jpg` | A roadside Roman inn (caupona) with two floors, terracotta roof tiles, a hanging wooden sign, warm lit windows, a mule tied by the door. |
 | `scenes/port.jpg` | The port of Ostia: a Roman merchant ship with a square sail at a wooden pier, a lighthouse, amphorae stacked on the dock, calm sea. |
@@ -97,7 +112,7 @@ Estos cubren todos los eventos. Conviene hacerlos primero.
 | Archivo | Prompt |
 |---|---|
 | `endings/end_varus.jpg` | An old courier master and a young messenger share a quiet cup of wine in a modest post house at night, a map of Roman roads on the wall. Earned trust. |
-| `endings/end_claudius.jpg` | A young messenger in fine patrician livery stands on the steps of a marble villa overlooking Rome, the senator's hand on the shoulder. Ambition, gold light. |
+| `endings/end_claudius.jpg` | A young messenger in fine patrician livery stands on the steps of a marble villa overlooking Rome, the senator's hand on the shoulder. Ambition, warm ochre light. |
 | `endings/end_underworld.jpg` | A messenger counting coins in the shadows of the Subura, a ledger of secrets open on the table, a golden wolf brooch glinting. Dangerous freedom. |
 
 ## 6b. Arco de Lucius: capítulos (11) y finales (3)
@@ -144,6 +159,29 @@ Solo valen la pena para los eventos de historia, que el jugador ve una sola vez 
 
 - [ ] Sin texto ni letras en la imagen.
 - [ ] Nada medieval: ni castillos, ni armaduras de placas, ni estribos.
-- [ ] El tercio inferior es oscuro y simple. Para verificarlo, probar la pantalla de evento en el simulador: el título y las opciones se tienen que leer.
-- [ ] Los colores cálidos no compiten con el oro de los botones.
+- [ ] Solo colores de la paleta del estilo base; nada de navy ni de dorado metálico.
+- [ ] El 60% inferior es calmo. Para verificarlo, probar la pantalla de evento en el simulador: la card de papel tapa esa parte y el cielo de arriba se tiene que ver.
+- [ ] Si tiene cielo, coincide con una de las cuatro horas (no mezclar atardecer con sombras de mediodía).
 - [ ] El retrato se lee a 48 px (el tamaño del medallón en el Gremio).
+
+## 10. Piezas de tienda y marca
+
+No las usa el código: son para App Store, Google Play y redes. Van en `assets/store/` (fuera del bundle; no se declaran en `pubspec.yaml`).
+
+| Archivo | Tamaño | Prompt o contenido |
+|---|---|---|
+| `store/icon_painted.png` | 1024×1024, PNG sin transparencia | Ícono alternativo pintado: `A round cinnabar wax seal stamped with a Roman letter V, slightly irregular edge, lying on lime plaster, soft top-left light, fresco texture, centered, fills 70% of the frame.` El ícono oficial sigue siendo el de código (`tool/gen_icon_test.dart`); este es para probar en un A/B de tienda. |
+| `store/key_art_iphone.jpg` | 1290×2796 | El key art de la sección 3, recompuesto vertical: el mensajero en el tercio de abajo, el cielo arriba y lugar libre en el tercio superior para el logo, que se agrega después en diseño (no en el prompt). |
+| `store/key_art_ipad.jpg` | 2048×2732 | Igual que el anterior, más aire a los costados. |
+| `store/feature_graphic.jpg` | 1024×500 | `Wide panoramic fresco of the Roman countryside at dusk: a paved road crossing the frame from left to right, a small running messenger in a cinnabar cloak at the left third, Rome in flat layers on the right horizon, umbrella pines.` La mitad derecha queda calma para el logo. |
+
+**Capturas de tienda (6).** Marco: banda de cal arriba con el texto en Marcellus color tinta, la captura del simulador debajo con borde de tinta de 2 px. Tamaños: 1290×2796 (iPhone 6,9") y 1080×1920 (Android). Capturar con `debugSkyHour` fijo (Ajustes, solo debug) para que las seis tengan cielos distintos:
+
+| # | Pantalla | Hora | Texto |
+|---|---|---|---|
+| 1 | Home | Atardecer | Llevá cartas por la Roma del 50 a.C. |
+| 2 | Misión con el mapa | Día | Las misiones corren en tiempo real |
+| 3 | Evento con sus opciones | Noche | Cada camino tiene decisiones |
+| 4 | Resultado con el sello de la nota | Alba | Tu nota queda sellada en cera |
+| 5 | Árbol de caminos | Día | Cinco caminos para tu mensajero |
+| 6 | Perfil, pestaña Mundo | Atardecer | Las facciones recuerdan lo que hiciste |

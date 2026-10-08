@@ -283,33 +283,62 @@ class LivingSkyPainter extends CustomPainter {
       ..quadraticBezierTo(
           base.dx + w * 0.7, base.dy - height * 0.55, base.dx + w / 2, base.dy)
       ..close();
-    canvas.drawPath(path, Paint()..color = palette.landNear);
+    canvas.drawPath(path, Paint()..color = palette.tree);
   }
 
-  /// Pino piñonero: tronco fino y copa ancha y chata, como un paraguas.
+  /// Pino piñonero: tronco que se afina y se tuerce, dos ramas que abren y
+  /// una copa chata de paraguas, más ancha que alta y con el borde de abajo
+  /// casi recto (así se lee pino y no chupetín).
   void _pine(Canvas canvas, Offset base, double height) {
-    final paint = Paint()..color = palette.landNear;
-    final top = base.translate(height * 0.08, -height);
-    canvas.drawLine(base, top.translate(0, height * 0.12),
-        paint..strokeWidth = math.max(2, height * 0.05));
-    final sway = math.sin(t * 0.5 + base.dx) * 1.5;
-    final crown = Offset(top.dx + sway, top.dy);
-    canvas.drawOval(
-        Rect.fromCenter(
-            center: crown, width: height * 0.9, height: height * 0.22),
+    final paint = Paint()..color = palette.tree;
+    final sway = math.sin(t * 0.5 + base.dx) * 1.2;
+    final lean = height * 0.1;
+    final fork = base.translate(lean * 0.7, -height * 0.62);
+    final tw = math.max(2.0, height * 0.07);
+    // Tronco: se afina hacia arriba, con una curva suave.
+    canvas.drawPath(
+        Path()
+          ..moveTo(base.dx - tw / 2, base.dy)
+          ..quadraticBezierTo(base.dx - tw * 0.2, base.dy - height * 0.35,
+              fork.dx - tw * 0.3, fork.dy)
+          ..lineTo(fork.dx + tw * 0.3, fork.dy)
+          ..quadraticBezierTo(base.dx + tw * 0.7, base.dy - height * 0.3,
+              base.dx + tw / 2, base.dy)
+          ..close(),
         paint);
-    canvas.drawOval(
-        Rect.fromCenter(
-            center: crown.translate(-height * 0.18, -height * 0.07),
-            width: height * 0.5,
-            height: height * 0.16),
+    // Ramas: abren en V hasta la copa.
+    final crownY = base.dy - height * 0.8;
+    final branch = Paint()
+      ..color = palette.tree
+      ..strokeWidth = math.max(1.5, tw * 0.55)
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+        fork, Offset(fork.dx - height * 0.2 + sway, crownY), branch);
+    canvas.drawLine(
+        fork, Offset(fork.dx + height * 0.22 + sway, crownY), branch);
+    // Copa: una nube densa de base casi plana, como los pinos de la Via
+    // Appia; varios lomos encimados para que no sea un disco.
+    final cx = fork.dx + sway, cw = height * 0.9;
+    final base0 = crownY + height * 0.04;
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            Rect.fromLTRB(
+                cx - cw / 2, base0 - height * 0.12, cx + cw / 2, base0),
+            Radius.circular(height * 0.06)),
         paint);
-    canvas.drawOval(
-        Rect.fromCenter(
-            center: crown.translate(height * 0.2, -height * 0.05),
-            width: height * 0.45,
-            height: height * 0.14),
-        paint);
+    for (final (dx, dy, rw, rh) in [
+      (-0.3, 0.12, 0.42, 0.2),
+      (-0.08, 0.2, 0.5, 0.26),
+      (0.18, 0.17, 0.46, 0.22),
+      (0.34, 0.09, 0.32, 0.16),
+    ]) {
+      canvas.drawOval(
+          Rect.fromCenter(
+              center: Offset(cx + cw * dx, base0 - height * dy),
+              width: cw * rw * 1.2,
+              height: height * rh),
+          paint);
+    }
   }
 
   @override

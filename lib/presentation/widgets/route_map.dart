@@ -282,7 +282,7 @@ class RouteMapPainter extends CustomPainter {
       ..strokeJoin = StrokeJoin.round;
     // Sombra de costa: un borde claro hacia el mar, como en las cartas viejas.
     final shore = Paint()
-      ..color = ArtColors.seaWave
+      ..color = ArtColors.seaShore
       ..style = PaintingStyle.stroke
       ..strokeWidth = thumbnail ? 3 : 7
       ..strokeJoin = StrokeJoin.round;
@@ -370,7 +370,7 @@ class RouteMapPainter extends CustomPainter {
     canvas.save();
     canvas.clipPath(land);
     final tuft = Paint()
-      ..color = ArtColors.landLight
+      ..color = ArtColors.landShade.withValues(alpha: 0.6)
       ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
     final rng = math.Random(23);
@@ -406,7 +406,8 @@ class RouteMapPainter extends CustomPainter {
   // ─── Fondo: Roma ───
   void _paintRome(Canvas canvas, Size size, _Camera cam) {
     canvas.drawRect(Offset.zero & size, Paint()..color = ArtColors.land);
-    final hill = Paint()..color = ArtColors.landLight;
+    final hill = Paint()
+      ..color = Color.lerp(ArtColors.land, ArtColors.landShade, 0.35)!;
     for (final h in atlas.hills) {
       canvas.drawCircle(cam.map(h), cam.scale * 0.075, hill);
     }
@@ -440,7 +441,7 @@ class RouteMapPainter extends CustomPainter {
           ..strokeWidth = cam.scale * 0.055
           ..strokeCap = StrokeCap.round);
     if (!thumbnail) {
-      final dot = Paint()..color = ArtColors.city;
+      final dot = Paint()..color = ArtColors.stoneDark;
       for (final p in atlas.romePlaces.values.toSet()) {
         canvas.drawRect(
             Rect.fromCenter(center: cam.map(p), width: 5, height: 5), dot);
@@ -488,7 +489,7 @@ class RouteMapPainter extends CustomPainter {
       canvas.drawPath(
           done,
           Paint()
-            ..color = AppColors.ochreDeep.withValues(alpha: 0.25)
+            ..color = AppColors.ochre.withValues(alpha: 0.25)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 10
             ..strokeCap = StrokeCap.round
@@ -496,7 +497,7 @@ class RouteMapPainter extends CustomPainter {
       canvas.drawPath(
           done,
           Paint()
-            ..color = AppColors.ochreDeep
+            ..color = AppColors.ochre
             ..style = PaintingStyle.stroke
             ..strokeWidth = 4
             ..strokeCap = StrokeCap.round);
@@ -506,7 +507,7 @@ class RouteMapPainter extends CustomPainter {
     final end = metric.getTangentForOffset(len)!.position;
     _dot(canvas, start, thumbnail ? 3.5 : 6, ArtColors.city, AppColors.ink);
     if (thumbnail) {
-      _dot(canvas, end, 4, AppColors.ochreDeep, AppColors.ink);
+      _dot(canvas, end, 4, AppColors.ochre, AppColors.ink);
       return;
     }
     _flag(canvas, end, progress >= 1);
@@ -552,7 +553,7 @@ class RouteMapPainter extends CustomPainter {
         : 0.0;
     final c = tangent.position.translate(0, -16 + bob);
     canvas.drawCircle(c.translate(0, 3), 15, Paint()..color = AppColors.ink);
-    canvas.drawCircle(c, 15, Paint()..color = AppColors.ochreDeep);
+    canvas.drawCircle(c, 15, Paint()..color = AppColors.ochre);
     canvas.drawCircle(
         c,
         15,
@@ -624,14 +625,14 @@ class RouteMapPainter extends CustomPainter {
       ..lineTo(top.dx, top.dy + 11)
       ..close();
     canvas.drawPath(
-        cloth, Paint()..color = reached ? AppColors.ochreDeep : AppColors.sienna);
+        cloth, Paint()..color = reached ? AppColors.ochre : AppColors.sienna);
     canvas.drawPath(
         cloth,
         Paint()
           ..color = AppColors.ink
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.5);
-    _dot(canvas, base, 5, AppColors.ochreDeep, AppColors.ink);
+    _dot(canvas, base, 5, AppColors.ochre, AppColors.ink);
   }
 
   void _icon(Canvas canvas, Offset c, IconData icon, double size, Color color) {

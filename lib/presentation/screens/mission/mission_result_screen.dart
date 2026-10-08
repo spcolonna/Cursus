@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../feedback/feedback.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/insignia.dart';
 import '../../widgets/widgets.dart';
 import '../../widgets/art_image.dart';
 import '../../widgets/messenger_avatar.dart';
@@ -304,7 +305,8 @@ class _EpilogueCard extends StatelessWidget {
   }
 }
 
-/// La nota como sello de cera: borde ondulado, letra grabada.
+/// La nota como sello de cera: el mismo [WaxSeal] de toda la app, en
+/// grande y con la letra grabada en tinta o cal (la que más contraste dé).
 class _GradeSeal extends StatelessWidget {
   final String grade;
   final Color color;
@@ -312,72 +314,20 @@ class _GradeSeal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final letter =
+        color.computeLuminance() > 0.2 ? AppColors.ink : AppColors.paper;
     return Semantics(
       label: 'Nota $grade',
-      child: SizedBox(
-        width: 140,
-        height: 140,
-        child: CustomPaint(
-          painter: _WaxSealPainter(color),
-          child: Center(
-            child: Text(grade,
-                style: AppTextStyles.heading(78,
-                    color: AppColors.paper)),
-          ),
-        ),
+      child: WaxSeal(
+        size: 140,
+        color: color,
+        shade: Color.lerp(color, AppColors.ink, 0.5)!,
+        light: Color.lerp(color, AppColors.paperHigh, 0.22)!,
+        child: Text(grade,
+            style: AppTextStyles.heading(78, color: letter)),
       ),
     );
   }
-}
-
-class _WaxSealPainter extends CustomPainter {
-  final Color color;
-  _WaxSealPainter(this.color);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final c = size.center(Offset.zero);
-    final r = size.width / 2 - 6;
-    // Borde ondulado de cera derramada.
-    final blob = Path();
-    const lobes = 14;
-    for (var i = 0; i <= lobes * 4; i++) {
-      final a = i / (lobes * 4) * 6.28318;
-      final wobble =
-          1 + 0.06 * (i.isEven ? 1 : -1) * ((i ~/ 2).isEven ? 1 : 0.5);
-      final p = c + Offset.fromDirection(a, r * wobble);
-      i == 0 ? blob.moveTo(p.dx, p.dy) : blob.lineTo(p.dx, p.dy);
-    }
-    blob.close();
-    canvas.drawPath(
-        blob.shift(const Offset(0, 6)), Paint()..color = AppColors.shadowHard);
-    final dark = Color.lerp(color, AppColors.ink, 0.45)!;
-    canvas.drawPath(
-        blob,
-        Paint()
-          ..shader = RadialGradient(
-            center: const Alignment(-0.3, -0.4),
-            colors: [color, dark],
-          ).createShader(Rect.fromCircle(center: c, radius: r)));
-    // Anillo grabado interior.
-    canvas.drawCircle(
-        c,
-        r * 0.72,
-        Paint()
-          ..color = dark
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3);
-    canvas.drawCircle(
-        c,
-        r * 0.72 - 3,
-        Paint()
-          ..color = AppColors.paper.withValues(alpha: 0.25)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2);
-  }
-
-  @override
-  bool shouldRepaint(_WaxSealPainter old) => old.color != color;
 }
 
 // ── Desglose de scores ────────────────────────────────────────────────────────
