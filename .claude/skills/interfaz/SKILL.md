@@ -11,8 +11,9 @@ Identidad **"Fresco al atardecer"**: papel y tinta sobre un cielo que sigue la h
 
 El design system vive en `lib/presentation/theme/app_theme.dart`. Antes de escribir un widget, buscá si ya existe:
 
-- `app_theme.dart`: `GradientScaffold` (la página de papel; `background:` para una escena) · `GameButton` (variantes primary/secondary/ghost/danger/info/success/secret; se hunde, suena y vibra solo) · `GameCard` (tocable con `onTap`, `frieze: true` para la guarda pompeyana) · `PompeianFrieze` · `StatBar` · `RiskChip` · `DeadlineChip` · `PackageBadge` · `paperTint(color)` (fondo teñido opaco).
+- `app_theme.dart`: `GradientScaffold` (la página de papel, que de noche baja a `paperNight`; `background:` para una escena) · `PaperPage` (solo el fondo de papel) · `GameButton` (variantes primary/secondary/ghost/danger/info/success/secret; se hunde, suena y vibra solo) · `GameCard` (tocable con `onTap`, `frieze: true` para la guarda pompeyana) · `PompeianFrieze` · `StatBar` · `RiskChip` · `DeadlineChip` · `PackageBadge` · `paperTint(color)` (fondo teñido opaco).
 - `widgets/components.dart`: `GameChip` (toda etiqueta) · `GameIconButton` / `GameBackButton` (44 px) · `showGameDialog` + `GameDialog` · `showGameSheet` · `LoadingState` / `EmptyState` / `ErrorState` · `showGameSnack` / `showErrorSnack` (nunca `Text('$e')`) · `LiveProgressBar` (progreso por tiempo, 60 fps sin rebuilds) · `PeriodicBuilder` (relojes) · `CountUpText` · `ParticleBurst`.
+- Cielo vivo: `theme/sky.dart` (`SkyPalette.at(hora)`: colores, astro, estrellas, `titleColor`, `titleHalo`, `statusBar`) · `widgets/living_sky.dart` (`LivingSkyBackground`: el paisaje de la hora real) · `skyPaletteProvider` (con `debugSkyHourProvider` para QA, en Ajustes solo en debug). Nunca leas `DateTime.now()` para decidir día/noche: usá el provider.
 - `widgets/widgets.dart`: `CurrencyChip` · `RewardAmount` · `showRewardToast` · `GradeBadge` · `SectionHeader`. `MessengerHero` (retrato con Hero) en `messenger_avatar.dart`.
 
 Fuentes: Marcellus, Figtree y Literata van empaquetadas en `assets/fonts/` (instancias estáticas, OFL registrada en `main.dart`); se usan solo vía `AppTextStyles` (`heading`, `ui`, `prose`, `proseItalic`). No vuelvas a `google_fonts`: descargaba en runtime.
@@ -32,7 +33,8 @@ Patrones de pantalla, jerarquía y animación: `references/patrones.md`.
 2. **Sin emojis.** Íconos Material, tamaño 11-28, del set ya usado.
 3. **Un pigmento, un rol.** Ocre = acción principal · cinabrio = marca y peligro (siempre con ícono) · azul egipcio = información · verdigrís = éxito · púrpura de Tiro = sigilo y secreto · siena = atención. Máx. 4 por pantalla además de papel y tinta.
 4. **Un solo `GameButton` primario (ocre) por vista.** Lo demás: `secondary`, `ghost` o una `GameCard`.
-5. **Texto chico siempre sobre papel.** Sobre el cielo o una escena pintada solo van títulos grandes en `onSky` con `scrimSky`; rótulos y chips van en una pastilla de papel (los `GameChip` ya son opacos).
+5. **Texto chico siempre sobre papel.** Sobre el cielo o una escena pintada solo van títulos grandes: en `sky.titleColor` con `sky.titleHalo` (tinta o cal según la hora), o en `onSky` con `scrimSky`. Rótulos, monedas y chips van opacos (`GameChip`, `CurrencyChip`). El cielo se muestra como ventana (banda del home, splash, login, escenas), nunca detrás de párrafos.
+   La barra de estado sigue al fondo: pantallas de papel en tinta (default en `main.dart`); con cielo, `AnnotatedRegion(sky.statusBar)`; `GradientScaffold` con escena ya la pone clara.
 6. **Nada translúcido sobre papel para dar color**: `withValues(alpha:)` encima del papel se ve barroso. Usá `paperTint(color)` o un gradiente `*Tint`.
 7. **Sin `opacity` sobre texto.** Bajar opacidad es doble penalización de contraste: usá un token más oscuro/claro.
 8. **Target táctil ≥44×44 lógicos.**

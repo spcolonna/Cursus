@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/entities.dart';
 import '../feedback/feedback.dart';
+import '../providers/providers.dart';
 import 'motion.dart';
 
 export 'motion.dart';
@@ -140,6 +143,12 @@ class AppGradients {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [AppColors.paper, AppColors.paperDeep],
+  );
+  /// La página de noche: el papel baja un punto de brillo.
+  static const pageNight = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [AppColors.paperDeep, AppColors.paperNight],
   );
   static const paper = LinearGradient(
     begin: Alignment.topCenter,
@@ -385,8 +394,10 @@ class GradientScaffold extends StatelessWidget {
   static const _sceneFade = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
+    // Arriba, el velo de scrimSky: la barra de estado (clara) se lee sobre
+    // cualquier cielo, de día, de noche o con tormenta.
     colors: [
-      Color(0x66231A16),
+      AppColors.scrimSky,
       Color(0x00231A16),
       Color(0x00E6D8BE),
       AppColors.paperDeep,
@@ -396,16 +407,34 @@ class GradientScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final scaffold = Scaffold(
       backgroundColor: AppColors.paperDeep,
       body: Stack(fit: StackFit.expand, children: [
-        const DecoratedBox(decoration: BoxDecoration(gradient: AppGradients.page)),
+        const PaperPage(),
         if (background != null) ...[
           background!,
           const DecoratedBox(decoration: BoxDecoration(gradient: _sceneFade)),
         ],
         body,
       ]),
+    );
+    if (background == null) return scaffold;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light, child: scaffold);
+  }
+}
+
+/// El fondo de papel de las pantallas: de noche (según el cielo vivo) baja
+/// a `paperNight` para no encandilar.
+class PaperPage extends ConsumerWidget {
+  const PaperPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final night = ref.watch(skyPaletteProvider.select((s) => s.dimPaper));
+    return DecoratedBox(
+      decoration: BoxDecoration(
+          gradient: night ? AppGradients.pageNight : AppGradients.page),
     );
   }
 }

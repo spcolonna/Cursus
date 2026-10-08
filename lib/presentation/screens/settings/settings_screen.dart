@@ -7,6 +7,7 @@
 // hay programado con su hora, y permite disparar una de prueba.
 
 import '../../feedback/feedback.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -16,6 +17,7 @@ import 'package:intl/intl.dart';
 
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/sky.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/entities/analytics.dart';
 import '../../../domain/entities/notifications.dart';
@@ -71,6 +73,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 SectionHeader(title: 'DATOS DE USO'),
                 const _UsageDataCard(),
                 const SizedBox(height: 20),
+                if (kDebugMode) ...[
+                  SectionHeader(title: 'CIELO (SOLO DEBUG)'),
+                  const _SkyDebugCard(),
+                  const SizedBox(height: 20),
+                ],
                 SectionHeader(title: 'DIAGNÓSTICO'),
                 FutureBuilder<_Diagnostics>(
                   future: _diagnostics,
@@ -281,6 +288,47 @@ class _DiagnosticsCard extends ConsumerWidget {
 }
 
 /// Sonido, vibración y movimiento: lo sensorial del juego, en una card.
+// ─── Cielo: hora fija para QA (solo debug) ────────────────────────────────────
+class _SkyDebugCard extends ConsumerWidget {
+  const _SkyDebugCard();
+
+  static String _fmt(double h) =>
+      '${h.floor().toString().padLeft(2, '0')}:${((h % 1) * 60).round().toString().padLeft(2, '0')}';
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final fixed = ref.watch(debugSkyHourProvider);
+    final sky = ref.watch(skyPaletteProvider);
+    final set = ref.read(debugSkyHourProvider.notifier);
+    return GameCard(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(
+            fixed == null
+                ? 'Reloj real: ${_fmt(sky.hour)} · ${sky.phase.label}'
+                : 'Hora fija: ${_fmt(sky.hour)} · ${sky.phase.label}',
+            style: AppTextStyles.ui(14, weight: FontWeight.w600)),
+        Slider(
+          value: sky.hour.clamp(0, 23.99),
+          max: 23.99,
+          onChanged: (v) => set.state = v,
+        ),
+        Wrap(spacing: 8, runSpacing: 8, children: [
+          // Herramienta de QA: botones de contorno en tinta, sin rol de color.
+          for (final h in [6.5, 13.0, 19.25, 23.0])
+            OutlinedButton(
+                style: OutlinedButton.styleFrom(foregroundColor: AppColors.ink),
+                onPressed: () => set.state = h,
+                child: Text(_fmt(h))),
+          OutlinedButton(
+              style: OutlinedButton.styleFrom(foregroundColor: AppColors.ink),
+              onPressed: () => set.state = null,
+              child: const Text('Reloj')),
+        ]),
+      ]),
+    );
+  }
+}
+
 class _SfxToggleCard extends ConsumerStatefulWidget {
   const _SfxToggleCard();
 

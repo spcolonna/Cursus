@@ -132,12 +132,16 @@ class BrandMark extends StatelessWidget {
   final bool tagline;
   /// Color del texto: cal sobre fondos oscuros, tinta sobre papel.
   final Color color;
+
+  /// Sombras del texto (el halo del título sobre el cielo).
+  final List<Shadow>? shadows;
   const BrandMark({
     super.key,
     this.layout = BrandLayout.stacked,
     this.size = 40,
     this.tagline = false,
     this.color = AppColors.paper,
+    this.shadows,
   });
 
   @override
@@ -146,7 +150,7 @@ class BrandMark extends StatelessWidget {
       kGameName.toUpperCase(),
       maxLines: 1,
       softWrap: false,
-      style: AppTextStyles.brandWordmark(size, color),
+      style: AppTextStyles.brandWordmark(size, color).copyWith(shadows: shadows),
     );
     final sub = Text(
       kGameTagline.toUpperCase(),

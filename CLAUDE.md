@@ -55,6 +55,7 @@ lib/
     │                             + GameButton (variantes), GameCard, PompeianFrieze, GradientScaffold,
     │                             StatBar, RiskChip, DeadlineChip, PackageBadge   ← design system
     ├── theme/motion.dart         AppMotion: duraciones, curvas y movimiento reducido
+    ├── theme/sky.dart            SkyPalette: el cielo de la hora real (4 cielos fundidos, astro, título legible)
     ├── theme/art_palette.dart    ArtColors: colores de pintura (mapas, escenas, cera), nunca de texto
     ├── feedback/feedback.dart    AppFeedback: sonido + vibración en un solo lugar
     ├── widgets/components.dart   GameChip, GameIconButton/BackButton, GameDialog/Sheet,
@@ -66,11 +67,12 @@ lib/
     ├── widgets/art_image.dart            ArtImage + ArtPaths: ilustración opcional con respaldo por código
     ├── widgets/route_map.dart            RouteMapView (en vivo) y RouteMapThumbnail
     ├── widgets/event_scene.dart          EventBackdrop / EventScene: escenario del evento por categoría
+    ├── widgets/living_sky.dart           LivingSkyBackground: paisaje de la hora (home, splash, login)
     ├── widgets/insignia.dart             WaxSeal, FactionCrest
     ├── widgets/brand.dart                marca Cursus: BrandSealPainter (también genera el ícono), BrandMark
     ├── widgets/skill_tree_board.dart     árbol de caminos visual (5 columnas, sellos 6-10)
     ├── widgets/celebration_host.dart     logros, rangos y escalones de facción sobre toda la app
-    ├── providers/providers.dart  Riverpod: DI + notifiers (home, guild, world, titles…)
+    ├── providers/providers.dart  Riverpod: DI + notifiers (home, guild, world, titles…) + skyPaletteProvider
     └── screens/                  splash, login, onboarding, character, home (+ home/parts/),
                                   mission, event, mission_result, profile, shop, skills, achievements
 ```
@@ -103,7 +105,7 @@ Para búsquedas amplias (¿dónde se usa X?, ¿existe Y?), delegá en el subagen
 
 ## Estado real (2026-07)
 
-Implementado: mapas de ruta, escenarios de evento, mensajero ilustrado y árbol visual por código (ilustraciones opcionales encima), 17 SFX; loop core con timer real, paga por ruta, 26 logros con títulos equipables y celebraciones, escalones de facción con rutas y favores, encargos semanales, tutorial de 4 pruebas, 22 rutas, pool de eventos con prosa propia y selección con memoria, 9 eventos de consecuencia, arcos `arc_claudius` y `arc_lucius` con finales que abren rutas/postas/tienda, reputación/flags/diario, árbol de skills 1-10 con Sellos, contratos diarios, paga del gremio, tienda, multi-mensajero (4 slots).
+Implementado: cielo vivo según la hora real (home, splash, login, escenas, mapa), mapas de ruta, escenarios de evento, mensajero ilustrado y árbol visual por código (ilustraciones opcionales encima), 17 SFX; loop core con timer real, paga por ruta, 26 logros con títulos equipables y celebraciones, escalones de facción con rutas y favores, encargos semanales, tutorial de 4 pruebas, 22 rutas, pool de eventos con prosa propia y selección con memoria, 9 eventos de consecuencia, arcos `arc_claudius` y `arc_lucius` con finales que abren rutas/postas/tienda, reputación/flags/diario, árbol de skills 1-10 con Sellos, contratos diarios, paga del gremio, tienda, multi-mensajero (4 slots).
 
 También: avisos locales (eventos, entrega, ocioso, contratos; el tap abre la misión) y auto-resolución de eventos a los 60 min.
 

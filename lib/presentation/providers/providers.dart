@@ -22,6 +22,7 @@ import '../../infrastructure/audio/sfx_service.dart';
 import '../../infrastructure/progress/player_progress.dart';
 import '../../infrastructure/monetization/iap_service.dart';
 import '../../infrastructure/monetization/rewarded_ads_service.dart';
+import '../theme/sky.dart';
 
 // ─── Infrastructure ───────────────────────────────────────────────────────────
 final authRepositoryProvider    = Provider<AuthRepository>((_) => LocalAuthRepository());
@@ -63,6 +64,25 @@ final rewardedAdsServiceProvider =
 /// Ruta a abrir porque el jugador tocó un aviso. La escribe `main.dart` y la
 /// consume el Home cuando ya está montado (así no la pisa el Splash).
 final pendingNotificationRouteProvider = StateProvider<String?>((_) => null);
+
+// ─── Cielo vivo (theme/sky.dart) ──────────────────────────────────────────────
+/// Hora fija para QA y tests (Ajustes > Cielo, solo en debug). Null = reloj.
+final debugSkyHourProvider = StateProvider<double?>((_) => null);
+
+/// La hora real, una vez por minuto.
+final skyClockProvider = StreamProvider<double>((_) async* {
+  yield SkyPalette.hourOf(DateTime.now());
+  yield* Stream.periodic(
+      const Duration(minutes: 1), (_) => SkyPalette.hourOf(DateTime.now()));
+});
+
+final skyHourProvider = Provider<double>((ref) =>
+    ref.watch(debugSkyHourProvider) ??
+    ref.watch(skyClockProvider).valueOrNull ??
+    SkyPalette.hourOf(DateTime.now()));
+
+final skyPaletteProvider =
+    Provider<SkyPalette>((ref) => SkyPalette.at(ref.watch(skyHourProvider)));
 
 /// Pantalla que corresponde a un aviso tocado; null si no lleva a ningún lado.
 String? routeForNotification(String? payload) {

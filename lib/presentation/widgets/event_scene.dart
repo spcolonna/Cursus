@@ -10,10 +10,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/entities.dart';
+import '../providers/providers.dart';
 import '../theme/art_palette.dart';
 import '../theme/motion.dart';
+import '../theme/sky.dart';
 import 'art_image.dart';
 
 /// Espacio libre que la pantalla de evento deja arriba para ver la escena.
@@ -36,10 +39,10 @@ class EventBackdrop extends StatelessWidget {
   }
 }
 
-class EventScene extends StatefulWidget {
+class EventScene extends ConsumerStatefulWidget {
   final EventCategory category;
 
-  /// Hora del día (0-24). Por defecto, la del reloj.
+  /// Hora del día (0-24). Por defecto, la del cielo vivo.
   final double? hour;
 
   /// La escena ocupa todo el alto (banners); si no, solo la franja de arriba
@@ -49,10 +52,10 @@ class EventScene extends StatefulWidget {
       {super.key, required this.category, this.hour, this.banner = false});
 
   @override
-  State<EventScene> createState() => _EventSceneState();
+  ConsumerState<EventScene> createState() => _EventSceneState();
 }
 
-class _EventSceneState extends State<EventScene>
+class _EventSceneState extends ConsumerState<EventScene>
     with SingleTickerProviderStateMixin {
   late final Ticker _ticker;
   final _clock = ValueNotifier<double>(0);
@@ -83,15 +86,14 @@ class _EventSceneState extends State<EventScene>
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final hour = widget.hour ?? now.hour + now.minute / 60;
+    final double hour = widget.hour ?? ref.watch<double>(skyHourProvider);
     return ExcludeSemantics(
       child: RepaintBoundary(
         child: CustomPaint(
           size: Size.infinite,
           painter: EventScenePainter(
             category: widget.category,
-            hour: hour,
+            sky: SkyPalette.at(hour),
             clock: _clock,
             banner: widget.banner,
           ),
@@ -105,60 +107,43 @@ class _EventSceneState extends State<EventScene>
 // PINTOR
 // ═══════════════════════════════════════════════════════════════
 
-enum _Daytime { dawn, day, dusk, night }
-
 class EventScenePainter extends CustomPainter {
   final EventCategory category;
-  final double hour;
+  final SkyPalette sky;
   final ValueNotifier<double> clock;
   final bool banner;
 
   EventScenePainter({
     required this.category,
-    required this.hour,
+    required this.sky,
     required this.clock,
     this.banner = false,
   }) : super(repaint: clock);
 
   double get t => clock.value;
 
-  _Daytime get _daytime {
-    if (hour >= 5.5 && hour < 8) return _Daytime.dawn;
-    if (hour >= 8 && hour < 18) return _Daytime.day;
-    if (hour >= 18 && hour < 20.5) return _Daytime.dusk;
-    return _Daytime.night;
-  }
+  bool get _night => sky.night >= 0.5;
 
-  bool get _night => _daytime == _Daytime.night;
+  /// Faroles, antorchas y ventanas: se prenden al caer la tarde.
+  bool get _lit => sky.lamps >= 0.5;
   bool get _storm => category == EventCategory.storm;
 
-  /// Las cosas lejanas se oscurecen de noche y se azulan con la distancia.
+  /// Las cosas se oscurecen de noche, se tiñen al atardecer y se funden con
+  /// el horizonte con la distancia. Sin saltos: siguen el peso de cada cielo.
   Color _shade(Color c, {double far = 0}) {
     var out = c;
-    if (_night) out = Color.lerp(out, ArtColors.nightTop, 0.55)!;
-    if (_daytime == _Daytime.dusk) out = Color.lerp(out, ArtColors.duskTop, 0.3)!;
+    out = Color.lerp(out, SkyKeyframe.night.top, 0.55 * sky.night)!;
+    out = Color.lerp(out, SkyKeyframe.dusk.top, 0.3 * sky.dusk)!;
     if (_storm) out = Color.lerp(out, ArtColors.stormTop, 0.35)!;
     if (far > 0) out = Color.lerp(out, _skyBottom, far)!;
     return out;
   }
 
-  Color get _skyTop => _storm
-      ? ArtColors.stormTop
-      : switch (_daytime) {
-          _Daytime.dawn => ArtColors.dawnTop,
-          _Daytime.day => ArtColors.dayTop,
-          _Daytime.dusk => ArtColors.duskTop,
-          _Daytime.night => ArtColors.nightTop,
-        };
-
-  Color get _skyBottom => _storm
-      ? ArtColors.stormBottom
-      : switch (_daytime) {
-          _Daytime.dawn => ArtColors.dawnBottom,
-          _Daytime.day => ArtColors.dayBottom,
-          _Daytime.dusk => ArtColors.duskBottom,
-          _Daytime.night => ArtColors.nightBottom,
-        };
+  Color get _skyTop => _storm ? ArtColors.stormTop : sky.top;
+  Color get _skyMid => _storm
+      ? Color.lerp(ArtColors.stormTop, ArtColors.stormBottom, 0.5)!
+      : sky.mid;
+  Color get _skyBottom => _storm ? ArtColors.stormBottom : sky.horizon;
 
   /// Alto de la franja donde vive la escena: arriba de todo, donde la
   /// pantalla de evento deja una ventana libre ([kEventStageGap]). Abajo de
@@ -255,37 +240,45 @@ class EventScenePainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [_skyTop, _skyBottom, _skyBottom],
-          stops: [0, size.height / full.height * 0.62, 1],
+          colors: [_skyTop, _skyMid, _skyBottom, _skyBottom],
+          stops: [
+            0,
+            size.height / full.height * 0.34,
+            size.height / full.height * 0.62,
+            1
+          ],
         ).createShader(rect),
     );
-    final w = size.width, h = size.height;
+    final w = size.width;
     if (_storm) return _clouds(canvas, size, horizon, dark: true);
 
-    if (_night) {
+    if (sky.stars > 0.02) {
       final rng = math.Random(7);
       for (var i = 0; i < 70; i++) {
         final x = rng.nextDouble() * w;
         final y = rng.nextDouble() * horizon * 0.85;
         final tw = 0.55 + 0.45 * math.sin(t * (0.8 + rng.nextDouble()) + i);
-        canvas.drawCircle(Offset(x, y), rng.nextDouble() * 1.2 + 0.4,
-            Paint()..color = ArtColors.star.withValues(alpha: 0.35 + 0.5 * tw));
+        canvas.drawCircle(
+            Offset(x, y),
+            rng.nextDouble() * 1.2 + 0.4,
+            Paint()
+              ..color = ArtColors.star
+                  .withValues(alpha: (0.35 + 0.5 * tw) * sky.stars));
       }
-      final moon = Offset(w * 0.78, h * 0.13);
-      canvas.drawCircle(moon, 30,
-          Paint()..color = ArtColors.moon.withValues(alpha: 0.12));
-      canvas.drawCircle(moon, 16, Paint()..color = ArtColors.moon);
-      canvas.drawCircle(moon.translate(6, -3), 14,
+    }
+    // El sol (o la luna) cruza el cielo con la hora: sale a la izquierda.
+    final body = Offset(w * sky.celestialX,
+        horizon - sky.celestialAltitude * horizon * 0.7 + 10);
+    if (sky.isMoon) {
+      canvas.drawCircle(body, 30,
+          Paint()..color = SkyPalette.moonColor.withValues(alpha: 0.12));
+      canvas.drawCircle(body, 16, Paint()..color = SkyPalette.moonColor);
+      canvas.drawCircle(body.translate(6, -3), 14,
           Paint()..color = _skyTop.withValues(alpha: 0.85));
     } else {
-      // El sol cruza el cielo con la hora: sale a la izquierda.
-      final dayPos = ((hour - 5.5) / 15).clamp(0.0, 1.0);
-      final sun = Offset(
-          w * (0.1 + 0.8 * dayPos),
-          horizon - math.sin(dayPos * math.pi) * horizon * 0.7 + 10);
-      canvas.drawCircle(sun, 46,
-          Paint()..color = ArtColors.sun.withValues(alpha: 0.18));
-      canvas.drawCircle(sun, 22, Paint()..color = ArtColors.sun);
+      canvas.drawCircle(body, 46,
+          Paint()..color = sky.sunColor.withValues(alpha: 0.2));
+      canvas.drawCircle(body, 22, Paint()..color = sky.sunColor);
     }
     _clouds(canvas, size, horizon);
   }
@@ -295,9 +288,7 @@ class EventScenePainter extends CustomPainter {
     final paint = Paint()
       ..color = dark
           ? ArtColors.silhouette.withValues(alpha: 0.45)
-          : (_night
-              ? ArtColors.nightBottom.withValues(alpha: 0.7)
-              : ArtColors.parchmentMist);
+          : sky.cloud.withValues(alpha: 0.6 - 0.2 * sky.night);
     final rng = math.Random(dark ? 3 : 11);
     final count = dark ? 7 : 4;
     for (var i = 0; i < count; i++) {
@@ -397,7 +388,7 @@ class EventScenePainter extends CustomPainter {
   }
 
   void _window(Canvas canvas, Rect r) {
-    final lit = _night || _daytime == _Daytime.dusk || _storm;
+    final lit = _lit || _storm;
     canvas.drawRect(r,
         Paint()..color = lit ? ArtColors.torch : _shade(ArtColors.stoneDark));
     if (lit) {
@@ -498,7 +489,7 @@ class EventScenePainter extends CustomPainter {
       c.drawPath(flag, Paint()..color = _shade(ArtColors.legionRed));
       c.drawCircle(top, 5, Paint()..color = _shade(ArtColors.bronze));
     }
-    if (_night || _daytime == _Daytime.dusk) {
+    if (_lit) {
       _torch(c, Offset(w * 0.34, base - 58));
       _torch(c, Offset(w * 0.64, base - 58));
     }
@@ -688,7 +679,7 @@ class EventScenePainter extends CustomPainter {
     c.drawRect(const Rect.fromLTWH(-12, 6, 24, 16), Paint()..color = _shade(ArtColors.felt));
     c.restore();
     _window(c, Rect.fromLTWH(body.left + 12, body.bottom - 24, 10, 12));
-    if (_night || _daytime == _Daytime.dusk) _torch(c, Offset(body.right + 4, body.bottom - 30), scale: 0.8);
+    if (_lit) _torch(c, Offset(body.right + 4, body.bottom - 30), scale: 0.8);
     _cypress(c, Offset(w * 0.78, hz + h * 0.1), h * 0.2, sway: math.sin(t * 0.7) * 1.5);
   }
 
@@ -771,5 +762,5 @@ class EventScenePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(EventScenePainter old) =>
-      old.category != category || old.hour.floor() != hour.floor();
+      old.category != category || old.sky.hour != sky.hour;
 }

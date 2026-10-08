@@ -17,6 +17,7 @@ import '../../domain/entities/geo.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import '../theme/art_palette.dart';
+import '../theme/sky.dart';
 
 /// Posición (0..1) de cada evento sobre el camino.
 List<double> eventMarks(Mission mission) {
@@ -86,6 +87,7 @@ class _RouteMapViewState extends ConsumerState<RouteMapView>
               mission: m,
               clock: _clock,
               animate: !AppMotion.reduced(context),
+              sky: ref.watch(skyPaletteProvider),
             ),
           ),
         ),
@@ -176,6 +178,9 @@ class RouteMapPainter extends CustomPainter {
   final bool animate;
   final bool thumbnail;
 
+  /// Hora del mapa en vivo: de noche se oscurece y aparece la luna.
+  final SkyPalette? sky;
+
   RouteMapPainter({
     required this.atlas,
     required this.geometry,
@@ -183,6 +188,7 @@ class RouteMapPainter extends CustomPainter {
     this.clock,
     this.animate = false,
     this.thumbnail = false,
+    this.sky,
   }) : super(repaint: clock);
 
   double get _aspect =>
@@ -234,12 +240,33 @@ class RouteMapPainter extends CustomPainter {
       } else {
         _paintRome(c, size, cam);
       }
+      if (sky != null) _paintHour(c, size, sky!);
       _background?.dispose();
       _background = recorder.endRecording();
       _backgroundSize = size;
     }
     canvas.drawPicture(_background!);
     _paintRoute(canvas, cam);
+  }
+
+  // ─── La hora sobre el mapa: tinte de noche o de atardecer y el astro ───
+  void _paintHour(Canvas canvas, Size size, SkyPalette sky) {
+    final tint = sky.night * 0.32 + sky.dusk * 0.12 + sky.dawn * 0.06;
+    if (tint > 0.01) {
+      final hue = Color.lerp(SkyKeyframe.night.top, SkyKeyframe.dusk.mid,
+          (sky.dusk + sky.dawn) / (sky.night + sky.dusk + sky.dawn + 0.001))!;
+      canvas.drawRect(
+          Offset.zero & size, Paint()..color = hue.withValues(alpha: tint));
+    }
+    // Un sol o una luna chicos arriba a la derecha, como en las cartas.
+    final c = Offset(size.width - 22, 22);
+    canvas.drawCircle(c, 13, Paint()..color = AppColors.ink);
+    if (sky.isMoon) {
+      canvas.drawCircle(c, 10, Paint()..color = SkyPalette.moonColor);
+      canvas.drawCircle(c.translate(4, -2), 8.5, Paint()..color = AppColors.ink);
+    } else {
+      canvas.drawCircle(c, 10, Paint()..color = sky.sunColor);
+    }
   }
 
   // ─── Fondo: Italia ───

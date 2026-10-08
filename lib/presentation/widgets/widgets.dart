@@ -33,8 +33,8 @@ extension CurrencyTypeX on CurrencyType {
         CurrencyType.seals => AppColors.tyrian,
       };
 
-  /// Color legible sobre navy: el púrpura de los Sellos no llega a 4.5:1,
-  /// así que el texto usa un tono claro y el púrpura queda para borde e ícono.
+  /// Color del número sobre el chip: los Sellos van en tinta y el púrpura
+  /// queda para borde e ícono.
   Color get textColor =>
       this == CurrencyType.seals ? AppColors.ink : color;
 
@@ -106,9 +106,10 @@ class _CurrencyChipState extends State<CurrencyChip>
     final chip = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: type.color.withValues(alpha: 0.1),
+        // Opaco: el chip también se apoya sobre el cielo del home.
+        color: paperTint(type.color, amount: 0.1, paper: AppColors.paperHigh),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: type.color.withValues(alpha: 0.7), width: 2),
+        border: Border.all(color: type.color, width: 2),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(type.icon, size: fontSize - 1, color: type.color),

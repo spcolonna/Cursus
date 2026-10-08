@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/brand.dart';
-import '../../widgets/event_scene.dart';
-import '../../../domain/entities/entities.dart';
+import '../../widgets/living_sky.dart';
 
 /// Entrada por modo invitado — sin credenciales dummy (GDD §7).
 class LoginScreen extends ConsumerStatefulWidget {
@@ -47,56 +47,72 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.ink,
-      body: Stack(fit: StackFit.expand, children: [
-        // El camino a la hora real; en la Fase I3 pasa a ser el cielo vivo.
-        const EventScene(category: EventCategory.road),
-        const DecoratedBox(
-            decoration: BoxDecoration(gradient: AppGradients.coverScrim)),
-        SafeArea(
-          bottom: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height,
+    // Arriba, el cielo de la hora real con la marca; abajo, la hoja de papel
+    // con todo lo que se lee (texto chico nunca sobre el cielo).
+    final sky = ref.watch(skyPaletteProvider);
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: sky.statusBar,
+      child: Scaffold(
+        backgroundColor: AppColors.paper,
+        body: Column(children: [
+          Expanded(
+            child: Stack(fit: StackFit.expand, children: [
+              const LivingSkyBackground(horizon: 0.8),
+              SafeArea(
+                bottom: false,
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      const BrandSeal(size: 150).animate().scale(
+                            begin: const Offset(0.5, 0.5),
+                            duration: 600.ms,
+                            curve: Curves.elasticOut,
+                          ),
+                      const SizedBox(height: 18),
+                      BrandMark(
+                              size: 40,
+                              layout: BrandLayout.wordmark,
+                              color: sky.titleColor,
+                          shadows: sky.titleHalo)
+                          .animate(delay: 200.ms)
+                          .fadeIn(duration: 500.ms)
+                          .slideY(begin: 0.2, end: 0),
+                    ]),
+                  ),
+                ),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 60),
-                  const BrandSeal(size: 180)
-                      .animate()
-                      .scale(
-                        begin: const Offset(0.5, 0.5),
-                        duration: 600.ms,
-                        curve: Curves.elasticOut,
-                      ),
-                  const SizedBox(height: 20),
-                  const BrandMark(size: 40, layout: BrandLayout.wordmark)
-                      .animate(delay: 200.ms)
-                      .fadeIn(duration: 500.ms)
-                      .slideY(begin: 0.2, end: 0),
-                  const SizedBox(height: 6),
+            ]),
+          ),
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: AppGradients.paper,
+              border: Border(top: BorderSide(color: AppColors.ink, width: 2)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(28, 24, 28, 20),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Text(
                     'Roma, 50 a.C. El correo te espera.',
-                    style: AppTextStyles.bodyLarge
-                        .copyWith(color: AppColors.onSky),
+                    style: AppTextStyles.prose(size: 17),
                     textAlign: TextAlign.center,
                   ).animate(delay: 300.ms).fadeIn(duration: 500.ms),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 20),
                   if (_error != null) ...[
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.paper,
+                        color: paperTint(AppColors.cinnabar, amount: 0.06),
                         borderRadius: BorderRadius.circular(AppRadii.sm),
                         border: Border.all(color: AppColors.cinnabar, width: 2),
                       ),
                       child: Text(_error!,
-                          style: AppTextStyles.ui(13, color: AppColors.cinnabar),
+                          style:
+                              AppTextStyles.ui(13, color: AppColors.cinnabar),
                           textAlign: TextAlign.center),
                     ),
                     const SizedBox(height: 16),
@@ -116,17 +132,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 14),
                   Text(
                     'Sin cuenta. Tus partidas se guardan en este dispositivo.\nMás adelante vas a poder sincronizar en la nube.',
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.onSky),
+                    style: AppTextStyles.ui(13, color: AppColors.inkSoft),
                     textAlign: TextAlign.center,
                   ).animate(delay: 500.ms).fadeIn(duration: 500.ms),
-                  const SizedBox(height: 48),
-                ],
+                ]),
               ),
             ),
           ),
-        ),
-      ]),
+        ]),
+      ),
     );
   }
 }

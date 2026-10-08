@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../feedback/feedback.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../theme/sky.dart';
 import '../../widgets/widgets.dart';
 import '../../widgets/messenger_avatar.dart';
 import '../../widgets/primeros_pasos.dart';
@@ -12,6 +14,7 @@ import '../../widgets/route_map.dart';
 import '../../widgets/art_image.dart';
 import '../../widgets/brand.dart';
 import '../../widgets/event_scene.dart';
+import '../../widgets/living_sky.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/entities/guild.dart';
 import '../../../domain/entities/notifications.dart';
@@ -141,57 +144,79 @@ class _HomeScaffoldState extends ConsumerState<_HomeScaffold> {
     );
   }
 
+  /// Alto de la ventana al cielo, debajo de la barra de estado.
+  static const _skyBand = 128.0;
+
   @override
   Widget build(BuildContext context) {
-    // La página de papel; en la Fase I3 se le suma el cielo vivo arriba.
-    return Scaffold(
-      backgroundColor: AppColors.paperDeep,
-      body: Stack(fit: StackFit.expand, children: [
-        const DecoratedBox(
-            decoration: BoxDecoration(gradient: AppGradients.page)),
-        Column(children: [
-          SafeArea(
-            bottom: false,
-            child: _TopBar(state: state),
+    // Arriba, una ventana al cielo de la hora real; abajo, la página de
+    // papel donde vive todo lo que se lee.
+    final sky = ref.watch(skyPaletteProvider);
+    final top = MediaQuery.paddingOf(context).top;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: sky.statusBar,
+      child: Scaffold(
+        backgroundColor: AppColors.paperDeep,
+        body: Column(children: [
+          SizedBox(
+            height: top + _skyBand,
+            child: Stack(fit: StackFit.expand, children: [
+              LivingSkyBackground(
+                  horizon: 0.76,
+                  topInset: top,
+                  celestialSpan: (0.36, 0.46)),
+              Padding(
+                padding: EdgeInsets.only(top: top),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: _TopBar(state: state, sky: sky),
+                ),
+              ),
+            ]),
           ),
-          Expanded(child: _Body(state: state)),
-          _BottomNav(state: state),
+          Expanded(
+            // Container (no DecoratedBox): así el borde corre al contenido.
+            child: Container(
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: AppColors.ink, width: 2)),
+              ),
+              child: Stack(fit: StackFit.expand, children: [
+                const PaperPage(),
+                Column(children: [
+                  Expanded(child: _Body(state: state)),
+                  _BottomNav(state: state),
+                ]),
+              ]),
+            ),
+          ),
         ]),
-      ]),
+      ),
     );
   }
 }
 
 // ─── Top Bar ──────────────────────────────────────────────────────────────────
+/// Sobre el cielo: el nombre en grande (tinta o cal según la hora) y las
+/// monedas en chips opacos. Nada de texto chico acá (regla de legibilidad).
 class _TopBar extends StatelessWidget {
   final HomeState state;
-  const _TopBar({required this.state});
+  final SkyPalette sky;
+  const _TopBar({required this.state, required this.sky});
 
   @override
   Widget build(BuildContext context) {
     final m = state.messenger;
-    return Container(
+    return Padding(
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: AppColors.paper,
-        border: Border(
-          bottom: BorderSide(
-              color: AppColors.ochreDeep.withValues(alpha: 0.3), width: 1.5),
-        ),
-      ),
       child: Row(children: [
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(kGameName.toUpperCase(),
-                maxLines: 1,
-                overflow: TextOverflow.fade,
-                softWrap: false,
-                style: AppTextStyles.brandWordmark(18, AppColors.ochreDeep)),
-            Text('Roma · 50 a.C.',
-                style:
-                    AppTextStyles.ui(12, color: AppColors.inkSoft)),
-          ]),
+          child: Text(kGameName.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.fade,
+              softWrap: false,
+              style: AppTextStyles.brandWordmark(22, sky.titleColor)
+                  .copyWith(shadows: sky.titleHalo)),
         ),
         if (m != null) ...[
           CurrencyChip(type: CurrencyType.denarios, value: m.denarios),

@@ -43,4 +43,17 @@ Casi planos: dos tonos del mismo pigmento. `page` · `paper` · `ochre` · `cinn
 
 ## Fondos por pantalla
 
-`GradientScaffold` pinta la página de papel. Con `background:` (escena de evento) la escena queda arriba y se funde en el papel. El cielo vivo según la hora llega en la Fase I3 (ver plan de identidad).
+`GradientScaffold` pinta la página de papel. Con `background:` (escena de evento) la escena queda arriba y se funde en el papel. De noche (`SkyPalette.dimPaper`) la página baja a `pageNight` (`paperDeep → paperNight`).
+
+### Cielo vivo (`theme/sky.dart`)
+
+Cuatro cielos que se funden sin saltos según la hora real (smoothstep entre anclas; cortes de fase 5.5 / 8 / 18 / 20.5 h):
+
+| Cielo | Arriba | Medio | Horizonte | Tierra | Hora pura |
+|---|---|---|---|---|---|
+| Alba | `#9DB7D5` | `#E9C3B0` | `#F6C9A6` | `#5B5470` | 6:30 |
+| Día | `#8EC3D6` | `#BFD9D6` | `#F4E3B5` | `#6E7F4E` | 9:00-17:00 |
+| Atardecer | `#7A3B5C` | `#C4544A` | `#F0A35E` | `#3A2230` | 19:15 |
+| Noche | `#0F1024` | `#1B2147` | `#2F5D9E` | `#0A0B18` | 21:00-4:30 |
+
+`titleColor` elige tinta o cal según el cielo de arriba (≥3:1 a toda hora, lo valida `test/sky_test.dart`); `titleHalo` lo sostiene cuando pasa una nube. Con `scrimSky` encima, la cal se lee sobre cualquier cielo.

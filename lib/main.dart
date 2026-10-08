@@ -96,8 +96,13 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
       theme: AppTheme.theme,
       routerConfig: appRouter,
       // Logros y rangos nuevos se festejan sobre cualquier pantalla.
-      builder: (context, child) =>
-          CelebrationHost(router: appRouter, child: child ?? const SizedBox()),
+      // La barra de estado va en tinta sobre el papel; las pantallas con
+      // cielo (home, login) la cambian con su propio AnnotatedRegion.
+      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
+        child: CelebrationHost(
+            router: appRouter, child: child ?? const SizedBox()),
+      ),
     );
   }
 }
