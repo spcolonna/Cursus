@@ -6,16 +6,26 @@ import '../../domain/repositories/repositories.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Salidas de analytics. Hoy: consola (debug) y un buffer en el dispositivo
-// que un tester puede copiar desde Ajustes. Para Firebase se agrega un sink
-// más a la lista (ver docs/ANALYTICS.md) sin tocar ningún otro archivo.
+// que un tester puede copiar desde Ajustes, más Firebase cuando está
+// inicializado (firebase_analytics_sink.dart).
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// Fachada que usa la app: reparte a todos los sinks, respeta el opt-out y
 /// nunca tira.
 class AnalyticsService implements AnalyticsSink {
   final List<AnalyticsSink> sinks;
-  bool enabled;
-  AnalyticsService(this.sinks, {this.enabled = true});
+  bool _enabled;
+  AnalyticsService(this.sinks, {bool enabled = true}) : _enabled = enabled;
+
+  bool get enabled => _enabled;
+
+  /// El opt-out llega también a los sinks que miden por su cuenta.
+  set enabled(bool value) {
+    _enabled = value;
+    for (final s in sinks.whereType<AnalyticsCollectionControl>()) {
+      s.setCollectionEnabled(value).catchError((_) {});
+    }
+  }
 
   /// Disparar y olvidar, para los notifiers.
   void track(AnalyticsEvent event) {
@@ -49,6 +59,12 @@ class AnalyticsService implements AnalyticsSink {
       } catch (_) {}
     }
   }
+}
+
+/// Un sink que además mide cosas solo (Firebase): hay que apagarlo entero
+/// cuando el jugador se da de baja.
+abstract class AnalyticsCollectionControl {
+  Future<void> setCollectionEnabled(bool enabled);
 }
 
 /// Imprime cada evento en modo debug. En release no hace nada.

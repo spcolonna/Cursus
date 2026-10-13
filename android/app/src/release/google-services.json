@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "902471474784",
+    "project_id": "cursus-prod",
+    "storage_bucket": "cursus-prod.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:902471474784:android:80881005fa179d917a6d05",
+        "android_client_info": {
+          "package_name": "com.spcolonna.cursus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBav4nPvX9Neiq05DovDruz45tMtaq-Vs8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

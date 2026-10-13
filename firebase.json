@@ -1,0 +1,21 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "cursus-prod",
+          "appId": "1:902471474784:android:80881005fa179d917a6d05",
+          "fileOutput": "android/app/src/release/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "cursus-prod",
+          "appId": "1:902471474784:ios:e8e30ff52a8f02b77a6d05",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/config/prod/GoogleService-Info.plist"
+        }
+      }
+    }
+  }
+}

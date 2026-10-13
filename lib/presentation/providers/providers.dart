@@ -16,6 +16,10 @@ import '../../domain/usecases/weekly_usecases.dart';
 import '../../domain/usecases/analytics_usecases.dart';
 import '../../domain/entities/notifications.dart';
 import '../../infrastructure/analytics/analytics_service.dart';
+import '../../infrastructure/analytics/firebase_analytics_sink.dart';
+import '../../infrastructure/firebase/firebase_remote_flags.dart';
+import '../../infrastructure/firebase/firebase_setup.dart';
+import '../../domain/entities/remote_flags.dart';
 import '../../infrastructure/local/local_repositories.dart';
 import '../../infrastructure/notifications/notification_service.dart';
 import '../../infrastructure/audio/sfx_service.dart';
@@ -45,11 +49,20 @@ final retentionRepositoryProvider =
     Provider<RetentionRepository>((_) => LocalRetentionRepository());
 final analyticsBufferProvider =
     Provider<LocalBufferAnalyticsSink>((_) => LocalBufferAnalyticsSink());
-/// Para sumar Firebase: agregar su sink a esta lista.
 final analyticsProvider = Provider<AnalyticsService>((ref) => AnalyticsService([
       ConsoleAnalyticsSink(),
       ref.read(analyticsBufferProvider),
+      if (firebaseReady) FirebaseAnalyticsSink(),
     ]));
+
+// ─── Ajustes remotos (Remote Config) ──────────────────────────────────────────
+final remoteFlagsSourceProvider = Provider<RemoteFlagsSource>((_) =>
+    firebaseReady ? FirebaseRemoteFlags() : const DefaultRemoteFlags());
+
+/// Los ajustes de esta sesión: se fijan al arrancar y no cambian en medio
+/// de una partida.
+final remoteFlagsProvider =
+    Provider<RemoteFlags>((ref) => ref.watch(remoteFlagsSourceProvider).current);
 final trackSessionUseCaseProvider = Provider((ref) => TrackSessionUseCase(
     ref.read(retentionRepositoryProvider), ref.read(analyticsProvider)));
 final iapServiceProvider = Provider<IapService>((ref) => IapService(

@@ -6,6 +6,7 @@ import '../entities/content.dart';
 import '../entities/progression.dart';
 import '../entities/weekly.dart';
 import '../entities/analytics.dart';
+import '../entities/remote_flags.dart';
 
 abstract class AuthRepository {
   Future<User?> getCurrentUser();
@@ -126,6 +127,13 @@ abstract class WeeklyRepository {
 abstract class AnalyticsSink {
   Future<void> log(AnalyticsEvent event);
   Future<void> setUserProperty(String name, String? value);
+}
+
+/// Ajustes remotos. [current] siempre responde (defaults o lo último
+/// activado); [refresh] busca valores nuevos para la próxima vez y nunca tira.
+abstract class RemoteFlagsSource {
+  RemoteFlags get current;
+  Future<void> refresh();
 }
 
 /// Días activos y sesiones de este dispositivo. null = primera apertura.

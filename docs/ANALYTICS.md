@@ -113,37 +113,33 @@ Cualquier cambio de diseño se compara **por cohorte**: la semana anterior al ca
    - 200-500 testers durante 30 días.
    - Con 300 jugadores, un D7 de 15% tiene un margen de ±4 puntos (IC 95%). Sirve para decidir, no para afinar.
 
-## 7. Cómo enchufar Firebase
+## 7. Firebase
 
-La app ya manda todo a `AnalyticsService`. Firebase es un sink más.
+Ya está enchufado (fase L1). Firebase es un sink más de `AnalyticsService`; si no inicializa (config rota, tests), el juego sigue con los sinks locales.
 
-1. **Crear el proyecto** en console.firebase.google.com, con apps iOS (bundle ID `com.spcolonna.cursus`) y Android.
-2. **Configurar Flutter:**
-   ```bash
-   dart pub global activate flutterfire_cli
-   flutterfire configure
-   flutter pub add firebase_core firebase_analytics
-   ```
-3. **Inicializar** en `main.dart`, antes de crear el `ProviderContainer`:
-   ```dart
-   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-   ```
-4. **Crear el sink** en `lib/infrastructure/analytics/firebase_analytics_sink.dart`:
-   ```dart
-   class FirebaseAnalyticsSink implements AnalyticsSink {
-     final _fa = FirebaseAnalytics.instance;
-     @override
-     Future<void> log(AnalyticsEvent e) =>
-         _fa.logEvent(name: e.name, parameters: e.params);
-     @override
-     Future<void> setUserProperty(String name, String? value) =>
-         _fa.setUserProperty(name: name, value: value);
-   }
-   ```
-5. **Sumarlo a la lista** de `analyticsProvider` en `providers.dart`.
-6. **Conectar el opt-out:** en el switch de Ajustes y en `main.dart`, llamar también a `FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(v)`.
-7. **Registrar los parámetros** como dimensiones personalizadas en la consola: `route_id`, `kind`, `grade`, `chapter`, `tier`. Sin eso no se pueden cortar los informes.
-8. **Opcional: exportar a BigQuery** (gratis hasta 10 GB). Este SQL calcula la retención clásica por cohorte diaria:
+- **Proyectos:** `cursus-dev` para los builds debug y `cursus-prod` para release y profile, en la cuenta spcolonna@gmail.com. Cada build toma la config nativa de su proyecto:
+  - iOS: `ios/config/<dev|prod>/GoogleService-Info.plist`. La fase *Firebase config* de Runner copia el que corresponde a la configuración.
+  - Android: `android/app/src/<debug|profile|release>/google-services.json`.
+- **Código:**
+  - `infrastructure/firebase/firebase_setup.dart`: `initFirebase()` y Crashlytics, que solo recolecta fuera de debug.
+  - `infrastructure/analytics/firebase_analytics_sink.dart`: el sink de Firebase.
+  - El opt-out de Ajustes apaga también la recolección automática de Firebase (`AnalyticsCollectionControl`).
+- **Ver eventos en vivo:** correr con `-FIRDebugEnabled` (Xcode → scheme → Arguments) o, en Android, `adb shell setprop debug.firebase.analytics.app com.spcolonna.cursus`, y abrir DebugView en la consola de cursus-dev.
+- **Ajustes remotos** (Remote Config, `domain/entities/remote_flags.dart`):
+
+  | Clave | Default | Para qué |
+  |---|---|---|
+  | `min_supported_version` | vacío | Versión mínima: si la instalada es más vieja, `ForceUpdateGate` pide actualizar |
+  | `store_url_ios` / `store_url_android` | vacío | Botón "Actualizar" de ese pedido |
+  | `travel_ads_per_day` | 4 | Adelantos −30 min con anuncio por día (0 a 10) |
+  | `content_bundle_version` | 0 | Paquete de contenido remoto (fase L5) |
+
+  Los valores nuevos se bajan en segundo plano y entran en la **próxima** apertura: nunca cambian las reglas en medio de una partida. Un valor roto cae al default.
+
+**Pendiente en la consola:**
+
+1. **Registrar los parámetros** como dimensiones personalizadas en la consola: `route_id`, `kind`, `grade`, `chapter`, `tier`. Sin eso no se pueden cortar los informes.
+2. **Opcional: exportar a BigQuery** (gratis hasta 10 GB). Este SQL calcula la retención clásica por cohorte diaria:
    ```sql
    WITH first AS (
      SELECT user_pseudo_id, MIN(PARSE_DATE('%Y%m%d', event_date)) AS d0
@@ -170,6 +166,7 @@ La app ya manda todo a `AnalyticsService`. Firebase es un sink más.
   - Declarar *Datos de uso → Interacción con el producto*, no vinculados a la identidad y no usados para rastreo.
   - Firebase suma un identificador de instancia: hay que revisar su guía de etiquetas de privacidad al publicar.
   - Sin AdMob no hace falta el aviso de ATT. Cuando se integren los anuncios con premio (GDD §6.4), sí.
+- **Crashlytics** manda trazas de crash y datos del dispositivo (modelo, versión de SO), sin datos del jugador. En las dos tiendas se declara como *Diagnóstico → Datos de crash*.
 - **Google Play:** en *Data safety*, declarar lo mismo.
 
 ## 9. Limitaciones conocidas

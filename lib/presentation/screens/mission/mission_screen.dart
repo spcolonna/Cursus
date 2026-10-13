@@ -11,7 +11,6 @@ import '../../widgets/route_map.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/usecases/usecases.dart';
-import '../../../infrastructure/monetization/rewarded_ads_service.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 class MissionScreen extends ConsumerStatefulWidget {
@@ -610,9 +609,11 @@ class _TravelAdButtonState extends ConsumerState<_TravelAdButton> {
 
   @override
   Widget build(BuildContext context) {
-    final remaining = RewardedAdsService.travelSkipCapPerDay - _usedToday;
+    final cap = ref.watch(remoteFlagsProvider).travelAdsPerDay;
+    final remaining = cap - _usedToday;
+    if (cap <= 0) return const SizedBox.shrink();
     if (remaining <= 0) {
-      return Text('Ya usaste los 4 adelantos de hoy',
+      return Text('Ya usaste los $cap adelantos de hoy',
           style: AppTextStyles.bodySmall, textAlign: TextAlign.center);
     }
 

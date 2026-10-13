@@ -73,7 +73,8 @@ class PlayerProgress {
   Future<void> markEventTooltipSeen() => markTooltipSeen(_kTooltipEvent);
   Future<void> markShopTooltipSeen() => markTooltipSeen(_kTooltipShop);
 
-  /// Cap 4/día para rewarded −30 min (GDD §6.4).
+  /// Adelantos −30 min usados hoy; el tope diario es remoto
+  /// (`RemoteFlags.travelAdsPerDay`, GDD §6.4).
   Future<int> travelAdsUsedToday() async {
     final p = await SharedPreferences.getInstance();
     final today = _dayKey();

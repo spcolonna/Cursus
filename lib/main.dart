@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,9 +11,14 @@ import 'presentation/feedback/feedback.dart';
 import 'presentation/widgets/art_image.dart';
 import 'presentation/widgets/celebration_host.dart';
 import 'presentation/widgets/music_director.dart';
+import 'presentation/widgets/force_update_gate.dart';
+import 'infrastructure/firebase/firebase_setup.dart';
+import 'infrastructure/firebase/firebase_remote_flags.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Crashes, analytics y ajustes remotos. Sin Firebase el juego sigue igual.
+  await initFirebase();
 
   // Las fuentes van empaquetadas: su licencia OFL tiene que figurar en la app.
   LicenseRegistry.addLicense(() async* {
@@ -34,6 +41,9 @@ void main() async {
   ));
 
   final container = ProviderContainer();
+  final flags = container.read(remoteFlagsSourceProvider);
+  if (flags is FirebaseRemoteFlags) await flags.init();
+  unawaited(flags.refresh());
   final scheduler = container.read(notificationSchedulerProvider);
   await scheduler.init();
   // Tocar un aviso deja la ruta pendiente; el Home la abre cuando está listo.
@@ -117,8 +127,10 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
         value: SystemUiOverlayStyle.dark,
         child: MusicDirector(
           router: appRouter,
-          child: CelebrationHost(
-              router: appRouter, child: child ?? const SizedBox()),
+          child: ForceUpdateGate(
+            child: CelebrationHost(
+                router: appRouter, child: child ?? const SizedBox()),
+          ),
         ),
       ),
     );

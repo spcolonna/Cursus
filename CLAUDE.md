@@ -30,6 +30,7 @@ lib/
 │   ├── entities/progression.dart paga por ruta, PlayerStats, AchievementDef, ProgressionState
 │   ├── entities/weekly.dart      encargos semanales: WeeklyCommissionDef, WeeklyState, semana ISO
 │   ├── entities/analytics.dart   diccionario de eventos (AnalyticsEvent), RetentionLog, D_n/stickiness
+│   ├── entities/remote_flags.dart RemoteFlags: ajustes remotos con defaults seguros, compareVersions
 │   ├── entities/geo.dart         GeoAtlas: proyección del mapa, trazado de cada ruta (Italia o Roma)
 │   ├── repositories/             contratos abstractos + GameContentCatalog (contenido inyectado)
 │   ├── usecases/usecases.dart    use cases del loop (ResolveEvent, CompleteMission, AscendSkill…)
@@ -38,7 +39,8 @@ lib/
 │   ├── usecases/weekly_usecases.dart       GetWeekly, RecordWeeklyProgress, ClaimWeeklyCommission
 │   └── usecases/analytics_usecases.dart    TrackSession (sesiones y días activos)
 ├── infrastructure/local/local_repositories.dart   SharedPreferences (sin backend)
-├── infrastructure/analytics/      AnalyticsService (fachada + opt-out), sinks de consola y buffer local
+├── infrastructure/analytics/      AnalyticsService (fachada + opt-out), sinks de consola, buffer local y Firebase
+├── infrastructure/firebase/       initFirebase (+ Crashlytics), FirebaseRemoteFlags (Remote Config)
 ├── infrastructure/audio/sfx_service.dart  enum Sfx + pool de players (los WAV salen de tool/gen_sfx.py)
 ├── infrastructure/audio/music_service.dart  MusicTrack + MusicService: loop, crossfade, ducking, pausa en 2.º plano
 ├── data/game_content.dart        CONTENIDO: tutorial, rutas fase 1, pool de eventos reales
@@ -75,6 +77,7 @@ lib/
     ├── widgets/skill_tree_board.dart     árbol de caminos visual (5 columnas, sellos 6-10)
     ├── widgets/celebration_host.dart     logros, rangos y escalones de facción sobre toda la app
     ├── widgets/music_director.dart       qué tema suena según ruta, hora y arco (musicTrackFor)
+    ├── widgets/force_update_gate.dart    pide actualizar si la versión es menor a min_supported_version
     ├── providers/providers.dart  Riverpod: DI + notifiers (home, guild, world, titles…) + skyPaletteProvider
     └── screens/                  splash, login, onboarding, character, home (+ home/parts/),
                                   mission, event, mission_result, profile, shop, skills, achievements
@@ -112,7 +115,9 @@ Implementado: cielo vivo según la hora real (home, splash, login, escenas, mapa
 
 También: avisos locales (eventos, entrega, ocioso, contratos; el tap abre la misión) y auto-resolución de eventos a los 60 min.
 
-Pendiente (ver roadmap): IAP real (`shop_screen.dart` tiene paywall dummy), rewarded ads, migrar contenido a JSON, backend Firebase, auth real (hoy login dummy).
+Firebase (L1): cursus-dev en debug y cursus-prod en release; Crashlytics, Analytics y Remote Config (ver docs/ANALYTICS.md §7).
+
+Pendiente (plan de lanzamiento L2-L9): cuentas y guardado en la nube, reloj confiable, validar compras en servidor y AdMob real, contenido a JSON, inglés, arte final, release.
 
 ## Comandos
 

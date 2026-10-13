@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 /// simulado de ~2s para playtests. Cuando haya IDs reales, reemplazar
 /// [_showSimulatedAd] por google_mobile_ads RewardedAd.
 class RewardedAdsService {
-  static const travelSkipCapPerDay = 4;
-
   /// Muestra un rewarded. Devuelve true si el jugador completó la recompensa.
   Future<bool> showRewarded({
     required BuildContext context,

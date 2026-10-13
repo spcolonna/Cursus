@@ -36,6 +36,12 @@ dependencies:
 
   # Monetization
   in_app_purchase: ^3.2.0
+  firebase_core: ^4.15.0
+  firebase_analytics: ^12.6.0
+  firebase_crashlytics: ^5.4.0
+  firebase_remote_config: ^6.7.0
+  package_info_plus: ^10.2.2
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:
