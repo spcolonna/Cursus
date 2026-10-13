@@ -19,6 +19,8 @@ import '../../infrastructure/analytics/analytics_service.dart';
 import '../../infrastructure/analytics/firebase_analytics_sink.dart';
 import '../../infrastructure/firebase/firebase_remote_flags.dart';
 import '../../infrastructure/firebase/firebase_setup.dart';
+import '../../infrastructure/cloud/cloud_sync_service.dart';
+import '../../infrastructure/cloud/firebase_cloud.dart';
 import '../../domain/entities/remote_flags.dart';
 import '../../infrastructure/local/local_repositories.dart';
 import '../../infrastructure/notifications/notification_service.dart';
@@ -61,6 +63,37 @@ final remoteFlagsSourceProvider = Provider<RemoteFlagsSource>((_) =>
 
 /// Los ajustes de esta sesión: se fijan al arrancar y no cambian en medio
 /// de una partida.
+// ─── Cuenta y guardado en la nube ─────────────────────────────────────────────
+/// Sin Firebase (tests, config rota) queda deshabilitado: todo sigue local.
+final cloudSyncProvider = Provider<CloudSyncService>((ref) {
+  final service = firebaseReady
+      ? CloudSyncService(
+          account: FirebaseCloudAccount(), remote: FirestoreSaveRemote())
+      : CloudSyncService(account: null, remote: null);
+  ref.onDispose(service.status.dispose);
+  return service;
+});
+
+/// Recarga todo el estado de juego desde el dispositivo (tras restaurar o
+/// borrar una partida). Después hay que volver a '/' para que el splash
+/// decida a dónde ir.
+void reloadGameState(WidgetRef ref) {
+  ref.read(celebrationQueueProvider.notifier).clear();
+  for (final p in <ProviderOrFamily>[
+    authProvider,
+    homeProvider,
+    guildProvider,
+    worldProvider,
+    weeklyProvider,
+    progressionProvider,
+    primerosPasosProvider,
+    completedMissionsProvider,
+    missionProgressProvider,
+  ]) {
+    ref.invalidate(p);
+  }
+}
+
 final remoteFlagsProvider =
     Provider<RemoteFlags>((ref) => ref.watch(remoteFlagsSourceProvider).current);
 final trackSessionUseCaseProvider = Provider((ref) => TrackSessionUseCase(
@@ -307,6 +340,7 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
   Future<void> refresh() async {
     // No usar AsyncLoading — evita flashes en UI y re-triggers innecesarios
     state = AsyncData(await _load());
+    ref.read(cloudSyncProvider).markDirty();
   }
 
   /// Primero repara arcos y auto-resuelve eventos vencidos (escribe), después lee.
@@ -588,6 +622,7 @@ class GuildNotifier extends AsyncNotifier<GuildState> {
   Future<void> refresh() async {
     final newState = await ref.read(getGuildStateUseCaseProvider).execute();
     state = AsyncData(newState);
+    ref.read(cloudSyncProvider).markDirty();
   }
 
   Future<({DailyPayReward reward, int day})> claimDailyPay() async {
@@ -652,6 +687,7 @@ class WorldNotifier extends AsyncNotifier<WorldState> {
     final before = state.valueOrNull;
     final newState = await ref.read(worldRepositoryProvider).getState();
     state = AsyncData(newState);
+    ref.read(cloudSyncProvider).markDirty();
     if (before != null) {
       ref
           .read(celebrationQueueProvider.notifier)
@@ -669,6 +705,7 @@ class WeeklyNotifier extends AsyncNotifier<WeeklyState> {
 
   Future<void> refresh() async {
     state = AsyncData(await ref.read(getWeeklyUseCaseProvider).execute());
+    ref.read(cloudSyncProvider).markDirty();
   }
 
   Future<void> recordDelivery(Mission mission, String grade) async {
@@ -916,6 +953,9 @@ class CelebrationQueue extends Notifier<List<Celebration>> {
   void pop() {
     if (state.isNotEmpty) state = state.sublist(1);
   }
+
+  /// Una partida restaurada no festeja lo que ya se ganó.
+  void clear() => state = const [];
 }
 
 final celebrationQueueProvider =

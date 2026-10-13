@@ -42,6 +42,10 @@ dependencies:
   firebase_remote_config: ^6.7.0
   package_info_plus: ^10.2.2
   url_launcher: ^6.3.3
+  firebase_auth: ^6.7.0
+  cloud_firestore: ^6.10.0
+  google_sign_in: ^7.2.0
+  sign_in_with_apple: ^8.1.0
 
 dev_dependencies:
   flutter_test:

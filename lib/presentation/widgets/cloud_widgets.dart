@@ -1,0 +1,309 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../domain/entities/save_snapshot.dart';
+import '../../domain/repositories/repositories.dart';
+import '../../infrastructure/cloud/cloud_sync_service.dart';
+import '../../infrastructure/cloud/firebase_cloud.dart';
+import '../providers/providers.dart';
+import '../theme/app_theme.dart';
+import 'components.dart';
+
+// ─── Elegir partida ───────────────────────────────────────────────────────────
+
+/// Pregunta qué partida queda y la aplica. Si gana la de la nube, recarga el
+/// juego desde el splash.
+Future<void> resolveSaveConflict(
+    BuildContext context, WidgetRef ref, SaveConflict conflict) async {
+  final keepRemote = await showGameDialog<bool>(
+    context,
+    barrierDismissible: false,
+    builder: (_) => _ConflictDialog(conflict),
+  );
+  if (keepRemote == null) return;
+  await ref.read(cloudSyncProvider).resolve(conflict, keepRemote: keepRemote);
+  if (keepRemote && context.mounted) {
+    reloadGameState(ref);
+    context.go('/');
+  }
+}
+
+class _ConflictDialog extends StatelessWidget {
+  final SaveConflict conflict;
+  const _ConflictDialog(this.conflict);
+
+  @override
+  Widget build(BuildContext context) => GameDialog(
+        icon: Icons.cloud_sync_outlined,
+        title: 'Tenés dos partidas',
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: GameButton(
+              label: 'USAR LA DE LA NUBE',
+              icon: Icons.cloud_download_outlined,
+              fontSize: 15,
+              onTap: () => Navigator.pop(context, true),
+            ),
+          ),
+          SizedBox(
+            width: double.infinity,
+            child: GameButton(
+              label: 'Usar la de este teléfono',
+              fontSize: 14,
+              variant: GameButtonVariant.secondary,
+              onTap: () => Navigator.pop(context, false),
+            ),
+          ),
+        ],
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Text(
+            'La que no elijas se pierde.',
+            style: AppTextStyles.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _SaveRow(
+              icon: Icons.cloud_outlined,
+              label: 'Nube',
+              summary: conflict.remote.summary),
+          const SizedBox(height: AppSpacing.sm),
+          _SaveRow(
+              icon: Icons.smartphone,
+              label: 'Este teléfono',
+              summary: conflict.local.summary),
+        ]),
+      );
+}
+
+class _SaveRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final SaveSummary summary;
+  const _SaveRow(
+      {required this.icon, required this.label, required this.summary});
+
+  @override
+  Widget build(BuildContext context) {
+    final when = summary.savedAt == null ? '' : ' · ${timeAgo(summary.savedAt!)}';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.paper,
+        borderRadius: BorderRadius.circular(AppRadii.sm),
+        border: Border.all(color: AppColors.inkMuted, width: 1.5),
+      ),
+      child: Row(children: [
+        Icon(icon, size: 22, color: AppColors.ink),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('$label$when', style: AppTextStyles.ui(12, color: AppColors.inkSoft)),
+            Text(summary.name, style: AppTextStyles.titleSmall),
+            Text('${summary.completedMissions} entregas',
+                style: AppTextStyles.ui(13, color: AppColors.inkSoft)),
+          ]),
+        ),
+      ]),
+    );
+  }
+}
+
+String timeAgo(DateTime t, {DateTime? now}) {
+  final d = (now ?? DateTime.now()).difference(t);
+  if (d.inMinutes < 1) return 'recién';
+  if (d.inHours < 1) return 'hace ${d.inMinutes} min';
+  if (d.inDays < 1) return 'hace ${d.inHours} h';
+  if (d.inDays == 1) return 'ayer';
+  return 'hace ${d.inDays} días';
+}
+
+// ─── Botones de proveedor ─────────────────────────────────────────────────────
+
+String providerLabel(AccountProvider p) => switch (p) {
+      AccountProvider.apple => 'Continuar con Apple',
+      AccountProvider.google => 'Continuar con Google',
+    };
+
+IconData providerIcon(AccountProvider p) => switch (p) {
+      AccountProvider.apple => Icons.apple,
+      AccountProvider.google => Icons.g_mobiledata_rounded,
+    };
+
+// ─── Ajustes: cuenta ──────────────────────────────────────────────────────────
+
+/// Estado del guardado, vincular la cuenta y borrar todo.
+class AccountCard extends ConsumerStatefulWidget {
+  const AccountCard({super.key});
+
+  @override
+  ConsumerState<AccountCard> createState() => _AccountCardState();
+}
+
+class _AccountCardState extends ConsumerState<AccountCard> {
+  bool _busy = false;
+
+  Future<void> _link(AccountProvider provider) async {
+    final sync = ref.read(cloudSyncProvider);
+    setState(() => _busy = true);
+    try {
+      final (outcome, conflict) = await sync.link(provider);
+      if (!mounted) return;
+      if (conflict != null) {
+        await resolveSaveConflict(context, ref, conflict);
+      } else if (outcome == LinkOutcome.switchedAccount) {
+        // Se bajó la partida de esa cuenta.
+        reloadGameState(ref);
+        context.go('/');
+      } else if (outcome == LinkOutcome.linked) {
+        showGameSnack(context, 'Cuenta vinculada. Tu partida queda a salvo.');
+      }
+    } catch (e) {
+      if (mounted) showErrorSnack(context, 'No se pudo vincular. Probá de nuevo.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _delete() async {
+    final ok = await showGameDialog<bool>(
+      context,
+      builder: (_) => const _DeleteDialog(),
+    );
+    if (ok != true || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await ref.read(cloudSyncProvider).deleteEverything();
+      await ref.read(authProvider.notifier).signOut();
+      if (!mounted) return;
+      reloadGameState(ref);
+      context.go('/login');
+    } catch (e) {
+      if (mounted) {
+        setState(() => _busy = false);
+        showErrorSnack(context,
+            'No se pudo borrar la cuenta. Revisá la conexión y probá de nuevo.');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sync = ref.watch(cloudSyncProvider);
+    final account = sync.account;
+    final linked = account?.linkedProviders ?? const <AccountProvider>{};
+    final toLink = availableProviders().difference(linked);
+    return GameCard(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        ValueListenableBuilder<CloudStatus>(
+          valueListenable: sync.status,
+          builder: (_, status, __) => FutureBuilder<DateTime?>(
+            future: sync.store.syncedAt(),
+            builder: (_, snap) => _StatusLine(status: status, at: snap.data),
+          ),
+        ),
+        if (linked.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Vinculada con ${linked.map((p) => p == AccountProvider.apple ? 'Apple' : 'Google').join(' y ')}. '
+            'Podés recuperar tu partida en otro teléfono.',
+            style: AppTextStyles.ui(13, color: AppColors.inkSoft),
+          ),
+        ] else if (toLink.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Vinculá una cuenta para no perder la partida si cambiás de teléfono.',
+            style: AppTextStyles.ui(13, color: AppColors.inkSoft),
+          ),
+          for (final p in toLink) ...[
+            const SizedBox(height: AppSpacing.sm),
+            GameButton(
+              label: providerLabel(p),
+              icon: providerIcon(p),
+              fontSize: 14,
+              variant: GameButtonVariant.secondary,
+              onTap: _busy ? null : () => _link(p),
+            ),
+          ],
+        ],
+        const SizedBox(height: AppSpacing.md),
+        GameButton(
+          label: 'Borrar cuenta y datos',
+          icon: Icons.delete_forever_outlined,
+          fontSize: 14,
+          variant: GameButtonVariant.ghost,
+          isLoading: _busy,
+          onTap: _busy ? null : _delete,
+        ),
+      ]),
+    );
+  }
+}
+
+class _StatusLine extends StatelessWidget {
+  final CloudStatus status;
+  final DateTime? at;
+  const _StatusLine({required this.status, this.at});
+
+  @override
+  Widget build(BuildContext context) {
+    final (icon, text) = switch (status) {
+      CloudStatus.unavailable => (
+          Icons.smartphone,
+          'Tu partida se guarda en este teléfono.'
+        ),
+      CloudStatus.syncing => (Icons.cloud_upload_outlined, 'Guardando en la nube…'),
+      CloudStatus.synced => (
+          Icons.cloud_done_outlined,
+          at == null
+              ? 'Partida guardada en la nube.'
+              : 'Partida guardada en la nube ${timeAgo(at!)}.'
+        ),
+      CloudStatus.offline => (
+          Icons.cloud_off_outlined,
+          'Sin conexión: se guarda en el teléfono y se sube cuando vuelva.'
+        ),
+    };
+    return Row(children: [
+      Icon(icon, size: 22, color: AppColors.ink),
+      const SizedBox(width: AppSpacing.md),
+      Expanded(child: Text(text, style: AppTextStyles.bodyMedium)),
+    ]);
+  }
+}
+
+class _DeleteDialog extends StatelessWidget {
+  const _DeleteDialog();
+
+  @override
+  Widget build(BuildContext context) => GameDialog(
+        icon: Icons.delete_forever_outlined,
+        accent: AppColors.cinnabar,
+        title: '¿Borrar todo?',
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: GameButton(
+              label: 'BORRAR PARA SIEMPRE',
+              variant: GameButtonVariant.danger,
+              fontSize: 15,
+              onTap: () => Navigator.pop(context, true),
+            ),
+          ),
+          GameButton(
+            label: 'Cancelar',
+            fontSize: 14,
+            variant: GameButtonVariant.secondary,
+            onTap: () => Navigator.pop(context, false),
+          ),
+        ],
+        child: Text(
+          'Se borran tu cuenta, tus mensajeros, tu progreso y las monedas, '
+          'en este teléfono y en la nube. No se puede deshacer.',
+          style: AppTextStyles.bodyMedium,
+          textAlign: TextAlign.center,
+        ),
+      );
+}

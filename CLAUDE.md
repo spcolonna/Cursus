@@ -8,6 +8,7 @@ Juego móvil Flutter. Mensajero en la Roma del 50 a.C.: las misiones corren en *
 - [docs/ANALYTICS.md](docs/ANALYTICS.md) — eventos, métricas de retención y cómo enchufar Firebase. Todo evento nuevo sale de una factory de `AnalyticsEvent`.
 - [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) — ilustraciones: estilo base, prompt de cada pieza y dónde va el archivo.
 - [docs/AUDIO.md](docs/AUDIO.md) — identidad sonora, el motivo D-A-E y la hoja de cues de música, SFX y aviso.
+- [docs/CUENTAS.md](docs/CUENTAS.md) — cuenta anónima, guardado en la nube (qué viaja), vincular Google/Apple, borrar cuenta.
 
 ## Skills de este proyecto (usalas antes de improvisar)
 
@@ -31,6 +32,7 @@ lib/
 │   ├── entities/weekly.dart      encargos semanales: WeeklyCommissionDef, WeeklyState, semana ISO
 │   ├── entities/analytics.dart   diccionario de eventos (AnalyticsEvent), RetentionLog, D_n/stickiness
 │   ├── entities/remote_flags.dart RemoteFlags: ajustes remotos con defaults seguros, compareVersions
+│   ├── entities/save_snapshot.dart SaveSnapshot (partida en un paquete), migración y decideSync
 │   ├── entities/geo.dart         GeoAtlas: proyección del mapa, trazado de cada ruta (Italia o Roma)
 │   ├── repositories/             contratos abstractos + GameContentCatalog (contenido inyectado)
 │   ├── usecases/usecases.dart    use cases del loop (ResolveEvent, CompleteMission, AscendSkill…)
@@ -41,6 +43,7 @@ lib/
 ├── infrastructure/local/local_repositories.dart   SharedPreferences (sin backend)
 ├── infrastructure/analytics/      AnalyticsService (fachada + opt-out), sinks de consola, buffer local y Firebase
 ├── infrastructure/firebase/       initFirebase (+ Crashlytics), FirebaseRemoteFlags (Remote Config)
+├── infrastructure/cloud/          kCloudSaveKeys, CloudSyncService, Auth (anónimo/Google/Apple) y Firestore
 ├── infrastructure/audio/sfx_service.dart  enum Sfx + pool de players (los WAV salen de tool/gen_sfx.py)
 ├── infrastructure/audio/music_service.dart  MusicTrack + MusicService: loop, crossfade, ducking, pausa en 2.º plano
 ├── data/game_content.dart        CONTENIDO: tutorial, rutas fase 1, pool de eventos reales
@@ -78,6 +81,7 @@ lib/
     ├── widgets/celebration_host.dart     logros, rangos y escalones de facción sobre toda la app
     ├── widgets/music_director.dart       qué tema suena según ruta, hora y arco (musicTrackFor)
     ├── widgets/force_update_gate.dart    pide actualizar si la versión es menor a min_supported_version
+    ├── widgets/cloud_widgets.dart        elegir partida (conflicto) y AccountCard de Ajustes
     ├── providers/providers.dart  Riverpod: DI + notifiers (home, guild, world, titles…) + skyPaletteProvider
     └── screens/                  splash, login, onboarding, character, home (+ home/parts/),
                                   mission, event, mission_result, profile, shop, skills, achievements
@@ -107,7 +111,7 @@ Para búsquedas amplias (¿dónde se usa X?, ¿existe Y?), delegá en el subagen
 5. **`domain/` no importa Flutter ni `data/`** (lo verifica `test/fixes_test.dart`; el contenido llega por `GameContentCatalog`). El contenido (`data/`) no contiene lógica; la lógica (`usecases/`) no contiene prosa.
 6. **Las consecuencias narrativas son duras; las mecánicas, suaves.** Nunca se quitan skills, monedas ni mensajeros.
 7. **Cap de poder del árbol: +25%** de efectividad por camino maxeado. El azar siempre permite fallar en riesgo 4-5.
-8. **Persistencia local:** todo pasa por `local_repositories.dart` (SharedPreferences, JSON con sufijo `_v2`). Al cambiar el esquema de una entidad, agregá migración.
+8. **Persistencia local primero:** todo pasa por `local_repositories.dart` (SharedPreferences, JSON con sufijo `_v2`). Al cambiar el esquema de una entidad, agregá migración. Una clave nueva se clasifica como partida (`kCloudSaveKeys`, viaja a la nube) o del teléfono (lo controla `cloud_save_test.dart`).
 
 ## Estado real (2026-07)
 
@@ -116,8 +120,9 @@ Implementado: cielo vivo según la hora real (home, splash, login, escenas, mapa
 También: avisos locales (eventos, entrega, ocioso, contratos; el tap abre la misión) y auto-resolución de eventos a los 60 min.
 
 Firebase (L1): cursus-dev en debug y cursus-prod en release; Crashlytics, Analytics y Remote Config (ver docs/ANALYTICS.md §7).
+Cuentas (L2): cuenta anónima, guardado en Firestore con elección de partida, borrar cuenta; Google/Apple listos en código, apagados hasta configurar la consola (docs/CUENTAS.md). Todo en plan Spark: nada de Cloud Functions.
 
-Pendiente (plan de lanzamiento L2-L9): cuentas y guardado en la nube, reloj confiable, validar compras en servidor y AdMob real, contenido a JSON, inglés, arte final, release.
+Pendiente (plan de lanzamiento L3-L9): reloj confiable, validar compras en servidor y AdMob real, contenido a JSON, inglés, arte final, release.
 
 ## Comandos
 

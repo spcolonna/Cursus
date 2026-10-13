@@ -7,6 +7,7 @@ import '../entities/progression.dart';
 import '../entities/weekly.dart';
 import '../entities/analytics.dart';
 import '../entities/remote_flags.dart';
+import '../entities/save_snapshot.dart';
 
 abstract class AuthRepository {
   Future<User?> getCurrentUser();
@@ -140,4 +141,41 @@ abstract class RemoteFlagsSource {
 abstract class RetentionRepository {
   Future<RetentionLog?> load();
   Future<void> save(RetentionLog log);
+}
+
+// ─── Cuenta y guardado en la nube ─────────────────────────────────────────────
+
+enum AccountProvider { google, apple }
+
+/// La identidad en la nube. Arranca anónima e invisible; vincular con Google
+/// o Apple permite recuperar la partida en otro dispositivo.
+abstract class CloudAccount {
+  String? get uid;
+  bool get isAnonymous;
+  Set<AccountProvider> get linkedProviders;
+
+  /// Asegura una sesión (anónima si no hay ninguna). Devuelve el uid o null
+  /// sin red o sin Auth habilitado.
+  Future<String?> ensureSignedIn();
+
+  /// Vincula la cuenta anónima actual. Si esa cuenta de Google/Apple ya
+  /// tenía partida, entra en ella y devuelve [LinkOutcome.switchedAccount].
+  Future<LinkOutcome> link(AccountProvider provider);
+
+  /// Entra con una cuenta existente (bienvenida: "Ya tengo partida").
+  Future<LinkOutcome> signInWith(AccountProvider provider);
+
+  /// Borra la cuenta de Auth (reautentica si hace falta).
+  Future<void> deleteAccount();
+  Future<void> signOut();
+}
+
+enum LinkOutcome { linked, switchedAccount, canceled }
+
+abstract class CloudSaveRemote {
+  Future<SaveSnapshot?> fetch(String uid);
+
+  /// Sube la partida y devuelve la revisión con la que quedó.
+  Future<int> put(String uid, SaveSnapshot snapshot);
+  Future<void> delete(String uid);
 }

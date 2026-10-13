@@ -4,9 +4,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../feedback/feedback.dart';
+import '../../../infrastructure/cloud/cloud_sync_service.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/brand.dart';
+import '../../widgets/cloud_widgets.dart';
 import '../../widgets/living_sky.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -28,9 +30,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _checkAuth() async {
-    // Wait for animation to play
-    await Future.delayed(const Duration(milliseconds: 2200));
+    // Mientras se ve la animación, se compara la partida con la nube (una
+    // restauración automática tiene que estar escrita antes de leer nada).
+    final sync = ref.read(cloudSyncProvider);
+    final results = await Future.wait<Object?>([
+      Future.delayed(const Duration(milliseconds: 2200)),
+      sync.start().timeout(const Duration(seconds: 6), onTimeout: () => null),
+    ]);
     if (!mounted) return;
+    final conflict = results[1] as SaveConflict?;
+    if (conflict != null) {
+      await resolveSaveConflict(context, ref, conflict);
+      if (!mounted) return;
+    }
 
     // Si la sesión todavía está cargando, se la espera: mandar al login a
     // un jugador que ya tiene partida es peor que un splash un poco más largo.

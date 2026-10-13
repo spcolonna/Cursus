@@ -102,6 +102,8 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
       onPause: () {
         sessions.pause();
         music.pauseForBackground();
+        // Al salir, la partida sube ya (el teléfono puede cerrar la app).
+        ref.read(cloudSyncProvider).flush();
       },
     );
   }

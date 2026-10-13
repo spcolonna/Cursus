@@ -18,6 +18,7 @@ import 'package:intl/intl.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/sky.dart';
+import '../../widgets/cloud_widgets.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/entities/analytics.dart';
 import '../../../domain/entities/notifications.dart';
@@ -72,6 +73,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const SizedBox(height: 20),
                 SectionHeader(title: 'DATOS DE USO'),
                 const _UsageDataCard(),
+                const SizedBox(height: 20),
+                SectionHeader(title: 'CUENTA'),
+                const AccountCard(),
                 const SizedBox(height: 20),
                 if (kDebugMode) ...[
                   SectionHeader(title: 'CIELO (SOLO DEBUG)'),

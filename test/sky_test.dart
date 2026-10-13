@@ -129,7 +129,7 @@ void main() {
       ));
       await tester.pump(const Duration(seconds: 2));
       expect(tester.takeException(), isNull);
-      expect(find.text('ENTRAR COMO INVITADO'), findsOneWidget);
+      expect(find.text('EMPEZAR'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
     });
   }

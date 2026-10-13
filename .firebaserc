@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "cursus-dev",
+    "dev": "cursus-dev",
+    "prod": "cursus-prod"
+  }
+}

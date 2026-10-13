@@ -206,6 +206,7 @@
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				89885E718A658F1BD18A3BD1 /* [CP] Embed Pods Frameworks */,
+				D6DDB20C9D6DB93657F23BE3 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -278,27 +279,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		C0A5F0031F00000000C0FFEE /* Firebase config */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${SRCROOT}/config/dev/GoogleService-Info.plist",
-				"${SRCROOT}/config/prod/GoogleService-Info.plist",
-			);
-			name = "Firebase config";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.plist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Debug usa cursus-dev; Release y Profile, cursus-prod.\nif [ \"${CONFIGURATION}\" = \"Debug\" ]; then ENV=dev; else ENV=prod; fi\ncp \"${SRCROOT}/config/${ENV}/GoogleService-Info.plist\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.plist\"\n";
-		};
 		3B06AD1E1E4923F5004D2608 /* Thin Binary */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -389,6 +369,44 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C0A5F0031F00000000C0FFEE /* Firebase config */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/config/dev/GoogleService-Info.plist",
+				"${SRCROOT}/config/prod/GoogleService-Info.plist",
+			);
+			name = "Firebase config";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Debug usa cursus-dev; Release y Profile, cursus-prod.\nif [ \"${CONFIGURATION}\" = \"Debug\" ]; then ENV=dev; else ENV=prod; fi\ncp \"${SRCROOT}/config/${ENV}/GoogleService-Info.plist\" \"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/GoogleService-Info.plist\"\n# Google Sign-In vuelve a la app por el REVERSED_CLIENT_ID del proyecto (solo si Google esta habilitado).\nREV=$(/usr/libexec/PlistBuddy -c \"Print :REVERSED_CLIENT_ID\" \"${SRCROOT}/config/${ENV}/GoogleService-Info.plist\" 2>/dev/null)\nINFO=\"${BUILT_PRODUCTS_DIR}/${INFOPLIST_PATH}\"\nif [ -n \"$REV\" ] && ! grep -q \"$REV\" \"$INFO\"; then\n  /usr/libexec/PlistBuddy -c \"Add :CFBundleURLTypes array\" \"$INFO\" 2>/dev/null\n  /usr/libexec/PlistBuddy -c \"Add :CFBundleURLTypes:0 dict\" -c \"Add :CFBundleURLTypes:0:CFBundleURLSchemes array\" -c \"Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string $REV\" \"$INFO\"\nfi\n";
+		};
+		D6DDB20C9D6DB93657F23BE3 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
