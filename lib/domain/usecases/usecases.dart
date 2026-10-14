@@ -10,6 +10,7 @@ import 'event_selection.dart';
 import 'forecast.dart';
 import '../repositories/content_catalog.dart';
 import '../repositories/repositories.dart';
+import '../entities/game_clock.dart';
 
 // ─── Sign In ──────────────────────────────────────────────────────────────────
 class SignInUseCase {
@@ -274,7 +275,7 @@ class AutoResolveExpiredEventsUseCase {
       // Se relee por misión: la anterior pudo haber dejado flags nuevos.
       final world = await _world.getState();
       await _autoResolveExpired(
-          mission, messengers, world, now ?? DateTime.now(), report);
+          mission, messengers, world, now ?? GameClock.now(), report);
     }
     return report;
   }
@@ -743,7 +744,7 @@ class SkipToNextEventUseCase {
 
   // Calcular cuánto cuesta adelantar (preview sin ejecutar)
   static int costFor(Mission mission, {DateTime? now}) {
-    final at = now ?? DateTime.now();
+    final at = now ?? GameClock.now();
     final minutesAhead = mission.minutesToNextStopAt(at);
     // Sin eventos por delante y ya en destino: no hay nada que cobrar.
     if (minutesAhead <= 0 && mission.nextUpcomingEventAt(at) == null) return 0;
@@ -764,7 +765,7 @@ class SkipToNextEventUseCase {
       throw Exception('Denarios insuficientes (necesitás $cost, tenés ${payer.denarios})');
     }
 
-    final updatedMission = mission.fastForward(DateTime.now());
+    final updatedMission = mission.fastForward(GameClock.now());
     await _mission.saveMission(updatedMission);
     await _messenger.saveMessenger(payer.copyWith(
       denarios: payer.denarios - cost,
@@ -786,7 +787,7 @@ class AdvanceMissionUseCase {
     final mission = await _mission.getActiveMissionFor(messengerId);
     if (mission == null) return null;
     final updated =
-        mission.fastForward(DateTime.now(), max: Duration(minutes: minutes));
+        mission.fastForward(GameClock.now(), max: Duration(minutes: minutes));
     await _mission.saveMission(updated);
     return updated;
   }
@@ -924,7 +925,7 @@ class CompleteMissionUseCase {
     final result = MissionResult(
       grade: grade, timeScore: timeScore,
       packageScore: packageScore, decisionScore: decisionScore,
-      arrivedAt: DateTime.now(),
+      arrivedAt: GameClock.now(),
       denarios: denarioReward,
     );
     await _mission.completeMission(mission.id, result);
@@ -979,7 +980,7 @@ class CompleteMissionUseCase {
       if (patron != null) {
         final world = await _world.getState();
         final gain =
-            world.applyPatronDelivery(patron, grade, dateKey(DateTime.now()));
+            world.applyPatronDelivery(patron, grade, dateKey(GameClock.now()));
         if (gain.gained > 0) {
           await _world.saveState(gain.world);
           repDelta = {patron: gain.gained};
@@ -1208,7 +1209,7 @@ class ResolveEventUseCase {
     final cfg = _content.eventById(eventId);
     if (cfg == null) return null;
 
-    final now = DateTime.now();
+    final now = GameClock.now();
     final remaining = mission.deadlineAt.difference(now);
     if (remaining.inMinutes < 10) return null;
 
@@ -1441,7 +1442,7 @@ class ClaimDailyPayUseCase {
     }
     await _guild.saveState(state.copyWith(
       streakDay: day,
-      lastPayDate: dateKey(DateTime.now()),
+      lastPayDate: dateKey(GameClock.now()),
     ));
     return (reward: reward, day: day);
   }

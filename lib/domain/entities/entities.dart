@@ -1,4 +1,5 @@
 import 'world.dart';
+import 'game_clock.dart';
 
 // ─── Skill progression config ─────────────────────────────────────────────────
 /// XP necesario para subir un nivel de skill.
@@ -293,8 +294,8 @@ class Mission {
     this.payFactor = 1.0,
   });
 
-  Duration get timeRemaining => deadlineAt.difference(DateTime.now());
-  bool get isOverdue => DateTime.now().isAfter(deadlineAt);
+  Duration get timeRemaining => deadlineAt.difference(GameClock.now());
+  bool get isOverdue => GameClock.now().isAfter(deadlineAt);
 
   String get timeRemainingLabel {
     final r = timeRemaining;
@@ -308,7 +309,7 @@ class Mission {
 
   /// Evento que bloquea el viaje ahora: el primero sin resolver cuyo momento
   /// ya llegó. Un evento futuro nunca se muestra antes de su `triggersAt`.
-  MissionEvent? get pendingEvent => blockingEventAt(DateTime.now());
+  MissionEvent? get pendingEvent => blockingEventAt(GameClock.now());
 
   /// Evento que bloquea el viaje en [now] (ver [pendingEvent]).
   MissionEvent? blockingEventAt(DateTime now) => events
@@ -374,7 +375,7 @@ class Mission {
   Mission delayedBy(int minutes) {
     if (minutes <= 0) return this;
     final d = Duration(minutes: minutes);
-    final now = DateTime.now();
+    final now = GameClock.now();
     return copyWith(
       deadlineAt: deadlineAt.add(d),
       events: events.map((e) {
@@ -498,7 +499,7 @@ class MissionEvent {
     this.outcome,
   });
 
-  bool get isExpired => DateTime.now().isAfter(deadlineAt);
+  bool get isExpired => GameClock.now().isAfter(deadlineAt);
 
   MissionEvent copyWith({
     EventStatus? status,

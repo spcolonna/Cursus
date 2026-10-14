@@ -19,6 +19,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../../domain/entities/entities.dart';
 import '../../domain/entities/notifications.dart';
 import '../../domain/repositories/repositories.dart';
+import '../../domain/entities/game_clock.dart';
 
 const _prefsKey = 'notification_prefs_v1';
 const _registryKey = 'notification_registry_v1';
@@ -197,7 +198,7 @@ class LocalNotificationService implements NotificationScheduler {
     if (!prefs.enabled) return;
     if (await permissionStatus() != NotificationPermission.granted) return;
 
-    final now = DateTime.now();
+    final now = GameClock.now();
     final ids = <int>[];
 
     // Los próximos eventos, en orden y acotados: iOS no aguanta más.
@@ -258,7 +259,7 @@ class LocalNotificationService implements NotificationScheduler {
     if (!prefs.enabled) return;
     if (await permissionStatus() != NotificationPermission.granted) return;
 
-    final now = DateTime.now();
+    final now = GameClock.now();
     if (idleMessengerName != null && prefs.allows(NotificationKind.idle)) {
       await _schedule(
         kind: NotificationKind.idle,
@@ -346,7 +347,7 @@ class LocalNotificationService implements NotificationScheduler {
     int? fixedId,
   }) async {
     final at = applyQuietHours(when, kind);
-    if (!at.isAfter(DateTime.now())) return null;
+    if (!at.isAfter(GameClock.now())) return null;
 
     // Tope global: por debajo del límite de iOS y del cupo diario del GDD.
     final already = await _plugin.pendingNotificationRequests();
@@ -358,7 +359,9 @@ class LocalNotificationService implements NotificationScheduler {
       id: id,
       title: title,
       body: body,
-      scheduledDate: tz.TZDateTime.from(at, tz.local),
+      // El sistema dispara con el reloj del teléfono: pasamos la hora del
+      // juego a la del dispositivo.
+      scheduledDate: tz.TZDateTime.from(GameClock.toDevice(at), tz.local),
       notificationDetails: _details(kind),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       payload: '$payload|${at.toIso8601String()}',

@@ -2,6 +2,7 @@ import '../entities/entities.dart';
 import '../entities/weekly.dart';
 import '../repositories/content_catalog.dart';
 import '../repositories/repositories.dart';
+import '../entities/game_clock.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Encargos semanales: leer (y renovar el lunes), registrar avance y cobrar.
@@ -19,7 +20,7 @@ class GetWeeklyUseCase {
   /// El tablón de esta semana. Si cambió la semana (o nunca hubo), arma uno
   /// nuevo: lo que no se cobró a tiempo se pierde, como en el gremio.
   Future<WeeklyState> execute({DateTime? now}) async {
-    final at = now ?? DateTime.now();
+    final at = now ?? GameClock.now();
     final saved = await _repo.load();
     if (saved != null && saved.weekKey == isoWeekKey(at)) return saved;
     final fresh = WeeklyState.freshFor(at, _content.weeklyCommissions);

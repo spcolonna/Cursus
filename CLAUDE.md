@@ -33,6 +33,7 @@ lib/
 │   ├── entities/analytics.dart   diccionario de eventos (AnalyticsEvent), RetentionLog, D_n/stickiness
 │   ├── entities/remote_flags.dart RemoteFlags: ajustes remotos con defaults seguros, compareVersions
 │   ├── entities/save_snapshot.dart SaveSnapshot (partida en un paquete), migración y decideSync
+│   ├── entities/game_clock.dart  GameClock: la hora del juego (toda regla de tiempo la lee de acá)
 │   ├── entities/geo.dart         GeoAtlas: proyección del mapa, trazado de cada ruta (Italia o Roma)
 │   ├── repositories/             contratos abstractos + GameContentCatalog (contenido inyectado)
 │   ├── usecases/usecases.dart    use cases del loop (ResolveEvent, CompleteMission, AscendSkill…)
@@ -44,6 +45,7 @@ lib/
 ├── infrastructure/analytics/      AnalyticsService (fachada + opt-out), sinks de consola, buffer local y Firebase
 ├── infrastructure/firebase/       initFirebase (+ Crashlytics), FirebaseRemoteFlags (Remote Config)
 ├── infrastructure/cloud/          kCloudSaveKeys, CloudSyncService, Auth (anónimo/Google/Apple) y Firestore
+├── infrastructure/time/           TrustedTimeService: ancla GameClock al servidor y al reloj monotónico (canal cursus/clock)
 ├── infrastructure/audio/sfx_service.dart  enum Sfx + pool de players (los WAV salen de tool/gen_sfx.py)
 ├── infrastructure/audio/music_service.dart  MusicTrack + MusicService: loop, crossfade, ducking, pausa en 2.º plano
 ├── data/game_content.dart        CONTENIDO: tutorial, rutas fase 1, pool de eventos reales
@@ -112,6 +114,7 @@ Para búsquedas amplias (¿dónde se usa X?, ¿existe Y?), delegá en el subagen
 6. **Las consecuencias narrativas son duras; las mecánicas, suaves.** Nunca se quitan skills, monedas ni mensajeros.
 7. **Cap de poder del árbol: +25%** de efectividad por camino maxeado. El azar siempre permite fallar en riesgo 4-5.
 8. **Persistencia local primero:** todo pasa por `local_repositories.dart` (SharedPreferences, JSON con sufijo `_v2`). Al cambiar el esquema de una entidad, agregá migración. Una clave nueva se clasifica como partida (`kCloudSaveKeys`, viaja a la nube) o del teléfono (lo controla `cloud_save_test.dart`).
+9. **La hora del juego es `GameClock.now()`, nunca `DateTime.now()`** en reglas, timers, diarios, semanales ni avisos (los avisos se programan con `GameClock.toDevice`). Cambiar la hora del teléfono no tiene que adelantar nada. `test/game_clock_test.dart` traba los `DateTime.now()` nuevos en `domain/`.
 
 ## Estado real (2026-07)
 
@@ -121,8 +124,9 @@ También: avisos locales (eventos, entrega, ocioso, contratos; el tap abre la mi
 
 Firebase (L1): cursus-dev en debug y cursus-prod en release; Crashlytics, Analytics y Remote Config (ver docs/ANALYTICS.md §7).
 Cuentas (L2): cuenta anónima, guardado en Firestore con elección de partida, borrar cuenta; Google/Apple listos en código, apagados hasta configurar la consola (docs/CUENTAS.md). Todo en plan Spark: nada de Cloud Functions.
+Reloj confiable (L3): `GameClock` anclado a la hora del servidor (cabecera Date de HTTPS) y, sin red, al reloj monotónico del sistema.
 
-Pendiente (plan de lanzamiento L3-L9): reloj confiable, validar compras en servidor y AdMob real, contenido a JSON, inglés, arte final, release.
+Pendiente (plan de lanzamiento L4-L9): precios y estados de compra, AdMob real, contenido a JSON, inglés, arte final, release.
 
 ## Comandos
 

@@ -30,6 +30,7 @@ import '../../infrastructure/progress/player_progress.dart';
 import '../../infrastructure/monetization/iap_service.dart';
 import '../../infrastructure/monetization/rewarded_ads_service.dart';
 import '../theme/sky.dart';
+import '../../domain/entities/game_clock.dart';
 
 // ─── Infrastructure ───────────────────────────────────────────────────────────
 final authRepositoryProvider    = Provider<AuthRepository>((_) => LocalAuthRepository());
@@ -629,7 +630,7 @@ class GuildNotifier extends AsyncNotifier<GuildState> {
     final result = await ref.read(claimDailyPayUseCaseProvider).execute();
     ref.read(analyticsProvider).track(AnalyticsEvent.dailyPay(result.day));
     await ref.read(progressionProvider.notifier).record(
-        change: (s) => s.recordDailyPay(DateTime.now()));
+        change: (s) => s.recordDailyPay(GameClock.now()));
     await refresh();
     await ref.read(homeProvider.notifier).refresh(); // monedas del mensajero
     return result;
@@ -820,7 +821,7 @@ class MissionProgressNotifier extends Notifier<MissionProgressState> {
 
   void _tick(Mission mission) {
     if (_disposed) return;
-    final now = DateTime.now();
+    final now = GameClock.now();
 
     // Solo invalidar homeProvider la PRIMERA vez que cada evento llega
     for (final e in mission.events) {

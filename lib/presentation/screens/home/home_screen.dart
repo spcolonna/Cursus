@@ -24,6 +24,7 @@ import '../../../domain/entities/world.dart';
 import '../../../domain/usecases/usecases.dart';
 import '../../../data/game_content.dart';
 import '../../../infrastructure/progress/player_progress.dart';
+import '../../../domain/entities/game_clock.dart';
 
 part 'parts/slot.dart';
 part 'parts/guild.dart';

@@ -14,11 +14,19 @@ import 'presentation/widgets/music_director.dart';
 import 'presentation/widgets/force_update_gate.dart';
 import 'infrastructure/firebase/firebase_setup.dart';
 import 'infrastructure/firebase/firebase_remote_flags.dart';
+import 'infrastructure/time/trusted_time_service.dart';
+
+/// Reloj del juego: anclado al servidor, inmune a cambiar la hora del teléfono.
+final _clock = TrustedTimeService();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Crashes, analytics y ajustes remotos. Sin Firebase el juego sigue igual.
   await initFirebase();
+  // Hora del juego antes de leer cualquier timer; el servidor la corrige
+  // en segundo plano.
+  await _clock.restore();
+  unawaited(_clock.syncWithServer());
 
   // Las fuentes van empaquetadas: su licencia OFL tiene que figurar en la app.
   LicenseRegistry.addLicense(() async* {
@@ -96,6 +104,7 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
     sessions.open();
     _lifecycle = AppLifecycleListener(
       onResume: () {
+        _resyncClock();
         sessions.open();
         music.resumeFromBackground();
       },
@@ -106,6 +115,14 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
         ref.read(cloudSyncProvider).flush();
       },
     );
+  }
+
+  /// Al volver, la hora del juego se reestima (el teléfono pudo dormir o
+  /// cambiar de hora) y las misiones se recalculan con ella.
+  Future<void> _resyncClock() async {
+    await _clock.restore();
+    if (mounted) ref.invalidate(homeProvider);
+    if (await _clock.syncWithServer() && mounted) ref.invalidate(homeProvider);
   }
 
   @override

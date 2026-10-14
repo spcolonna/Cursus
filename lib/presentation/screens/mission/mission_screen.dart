@@ -11,6 +11,7 @@ import '../../widgets/route_map.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/usecases/usecases.dart';
+import '../../../domain/entities/game_clock.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 class MissionScreen extends ConsumerStatefulWidget {
@@ -253,7 +254,7 @@ class _TravelView extends ConsumerWidget {
         const SizedBox(height: 10),
 
         PeriodicBuilder(builder: (_) {
-          final now = DateTime.now();
+          final now = GameClock.now();
           final pct = (mission.progressAt(now) * 100).round();
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -366,7 +367,7 @@ class _RevealedNextEvent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final now = GameClock.now();
     final next = mission.nextUpcomingEventAt(now);
     if (next == null) return const SizedBox.shrink();
 
@@ -509,7 +510,7 @@ class _SkipButtonState extends ConsumerState<_SkipButton> {
         if (cost == 0) return const SizedBox.shrink();
 
         final hasNextEvent =
-            widget.mission.nextUpcomingEventAt(DateTime.now()) != null;
+            widget.mission.nextUpcomingEventAt(GameClock.now()) != null;
         final skipLabel = hasNextEvent
             ? 'Adelantar al próximo evento'
             : 'Adelantar al final de la misión';

@@ -18,6 +18,7 @@ import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import '../theme/art_palette.dart';
 import '../theme/sky.dart';
+import '../../domain/entities/game_clock.dart';
 
 /// Posición (0..1) de cada evento sobre el camino.
 List<double> eventMarks(Mission mission) {
@@ -457,7 +458,7 @@ class RouteMapPainter extends CustomPainter {
     if (metrics.isEmpty) return;
     final metric = metrics.first;
     final len = metric.length;
-    final now = DateTime.now();
+    final now = GameClock.now();
     final progress =
         mission == null ? 0.0 : mission!.progressAt(now).clamp(0.0, 1.0);
 

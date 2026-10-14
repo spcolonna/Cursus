@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../domain/entities/game_clock.dart';
 
 /// Preferencias de onboarding / engagement (checklist + tooltips + cosmética).
 class PlayerProgress {
@@ -166,7 +167,7 @@ class PlayerProgress {
   }
 
   String _dayKey() {
-    final n = DateTime.now();
+    final n = GameClock.now();
     return '${n.year}-${n.month}-${n.day}';
   }
 }

@@ -19,5 +19,19 @@ import UserNotifications
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+
+    // Reloj monotónico (incluye el tiempo dormido y no se puede cambiar a
+    // mano): lo usa TrustedTimeService para el reloj del juego.
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "CursusClock") {
+      let channel = FlutterMethodChannel(
+        name: "cursus/clock", binaryMessenger: registrar.messenger())
+      channel.setMethodCallHandler { call, result in
+        if call.method == "elapsedRealtime" {
+          result(Int(clock_gettime_nsec_np(CLOCK_MONOTONIC) / 1_000_000))
+        } else {
+          result(FlutterMethodNotImplemented)
+        }
+      }
+    }
   }
 }

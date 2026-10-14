@@ -157,7 +157,7 @@ class _UrgentEventButton extends StatelessWidget {
             PeriodicBuilder(
               period: const Duration(seconds: 30),
               builder: (_) {
-                final left = event.deadlineAt.difference(DateTime.now());
+                final left = event.deadlineAt.difference(GameClock.now());
                 return Text(
                   left.isNegative
                       ? 'Tu mensajero va a decidir solo'
@@ -241,7 +241,7 @@ class _ActiveMissionBanner extends StatelessWidget {
         const SizedBox(height: 6),
         // Al llegar, la línea de estado se vuelve la llamada a la acción.
         PeriodicBuilder(builder: (context) {
-          final now = DateTime.now();
+          final now = GameClock.now();
           if (mission.readyToDeliverAt(now)) {
             return Row(children: [
               const Icon(Icons.flag_rounded, color: AppColors.ochreDeep, size: 18),

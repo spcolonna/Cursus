@@ -1,4 +1,5 @@
 import 'entities.dart';
+import 'game_clock.dart';
 
 // ─── El Gremio: contratos del día + paga diaria ──────────────────────────────
 // Los contratos son 3 misiones diarias del "tablón del gremio" (reset a
@@ -196,11 +197,11 @@ class GuildState {
     this.rerollUsed = false,
   });
 
-  bool get canClaimDailyPay => lastPayDate != dateKey(DateTime.now());
+  bool get canClaimDailyPay => lastPayDate != dateKey(GameClock.now());
 
   /// Día de racha que corresponde cobrar hoy (1-7, cíclico).
   int get nextPayDay {
-    final today = DateTime.now();
+    final today = GameClock.now();
     final yesterday = dateKey(today.subtract(const Duration(days: 1)));
     if (lastPayDate == yesterday) return (streakDay % 7) + 1;
     return 1; // se cortó la racha (o primer día)

@@ -13,6 +13,7 @@ import '../../domain/repositories/repositories.dart';
 import '../../data/game_content.dart';
 import '../../data/game_content_expansion.dart';
 import '../../data/story_content.dart';
+import '../../domain/entities/game_clock.dart';
 
 const _uuid = Uuid();
 
@@ -429,7 +430,7 @@ class LocalMissionRepository implements MissionRepository {
   @override
   Future<Mission> createTutorialMission(int index, String messengerId) async {
     final cfg = tutorialMissions[index];
-    final now = DateTime.now();
+    final now = GameClock.now();
     final deadline = now.add(Duration(minutes: cfg.durationMinutes));
     final totalSec = cfg.durationMinutes * 60;
 
@@ -480,7 +481,7 @@ class LocalMissionRepository implements MissionRepository {
       {bool revealEvents = false,
       double payFactor = 1.0,
       List<String>? eventIds}) async {
-    final now = DateTime.now();
+    final now = GameClock.now();
     final deadline = now.add(Duration(minutes: route.durationMinutes));
     final cfg = allRealMissions.firstWhere(
             (m) => m.id == route.id, orElse: () => allRealMissions.first);
@@ -504,7 +505,7 @@ class LocalMissionRepository implements MissionRepository {
   @override
   Future<Mission> createStoryMission(StoryMissionConfig config,
       String messengerId, List<RealEventConfig> storyEvents) async {
-    final now = DateTime.now();
+    final now = GameClock.now();
     final deadline = now.add(Duration(minutes: config.durationMinutes));
     final totalSec = config.durationMinutes * 60;
 
@@ -797,7 +798,7 @@ class LocalGuildRepository implements GuildRepository {
   @override
   Future<GuildState> getState() async {
     final p = await SharedPreferences.getInstance();
-    final now = DateTime.now();
+    final now = GameClock.now();
     final raw = p.getString(_kGuild);
 
     GuildState state;

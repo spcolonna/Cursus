@@ -13,6 +13,7 @@ import '../../../domain/usecases/forecast.dart';
 import '../../../domain/usecases/usecases.dart';
 import '../../widgets/event_scene.dart';
 import '../../widgets/primeros_pasos.dart';
+import '../../../domain/entities/game_clock.dart';
 
 class EventScreen extends ConsumerStatefulWidget {
   /// Mensajero cuyo evento se decide; null = el principal.
@@ -356,7 +357,7 @@ class _DecisionCountdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final left = deadline.difference(DateTime.now());
+    final left = deadline.difference(GameClock.now());
     final label = left.isNegative
         ? 'SE TE PASÓ'
         : left.inHours > 0

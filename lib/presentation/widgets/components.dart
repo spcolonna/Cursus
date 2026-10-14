@@ -12,6 +12,7 @@ import 'package:flutter/scheduler.dart';
 
 import '../feedback/feedback.dart';
 import '../theme/app_theme.dart';
+import '../../domain/entities/game_clock.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // CHIPS
@@ -501,7 +502,7 @@ class _LiveProgressBarState extends State<LiveProgressBar>
   @override
   void initState() {
     super.initState();
-    _value.value = widget.progressAt(DateTime.now()).clamp(0.0, 1.0);
+    _value.value = widget.progressAt(GameClock.now()).clamp(0.0, 1.0);
     _ticker = createTicker(_onTick)..start();
   }
 
@@ -512,7 +513,7 @@ class _LiveProgressBarState extends State<LiveProgressBar>
         : Duration.zero;
     if (elapsed - _lastPaint < step) return;
     _lastPaint = elapsed;
-    _value.value = widget.progressAt(DateTime.now()).clamp(0.0, 1.0);
+    _value.value = widget.progressAt(GameClock.now()).clamp(0.0, 1.0);
   }
 
   @override
