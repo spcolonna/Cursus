@@ -8,6 +8,7 @@
 import 'consequence_content.dart';
 import 'faction_content.dart';
 import 'game_content.dart';
+import 'road_events_v2.dart';
 import 'story_rewards.dart';
 import '../domain/entities/entities.dart';
 import '../domain/entities/world.dart';
@@ -24,9 +25,9 @@ List<RealMissionConfig> get allRealMissions => [
       ...storyRewardMissions,
     ];
 
-/// Todo el pool de eventos del camino: base + expansión + consecuencias.
+/// Todo el pool de eventos del camino: base + expansión + consecuencias + v2.
 List<RealEventConfig> get allRealEvents =>
-    [...realEventPool, ...expansionEvents, ...consequenceEvents];
+    [...realEventPool, ...expansionEvents, ...consequenceEvents, ...roadEventsV2];
 
 const List<RealMissionConfig> expansionMissions = [
   RealMissionConfig(
@@ -43,7 +44,7 @@ const List<RealMissionConfig> expansionMissions = [
       'Una invitación para una cena de verano',
       'Un recado personal para la villa de un magistrado',
     ],
-    eventPoolIds: ['evt_patrol', 'evt_pickpocket', 'evt_tax_collector', 'evt_lost_child'],
+    eventPoolIds: ['evt_patrol', 'evt_pickpocket', 'evt_tax_collector', 'evt_lost_child', 'evt_aqueduct_works', 'evt_compitalia'],
     minEvents: 1,
     maxEvents: 1,
   ),
@@ -61,7 +62,7 @@ const List<RealMissionConfig> expansionMissions = [
       'Una ofrenda sellada para el templo',
       'Correspondencia de un sacerdote a su familia en Roma',
     ],
-    eventPoolIds: ['evt_patrol', 'evt_omen', 'evt_temple_theft', 'evt_wedding_road'],
+    eventPoolIds: ['evt_patrol', 'evt_omen', 'evt_temple_theft', 'evt_wedding_road', 'evt_pilgrims', 'evt_compitalia', 'evt_aqueduct_works'],
     minEvents: 1,
     maxEvents: 1,
   ),
@@ -79,7 +80,7 @@ const List<RealMissionConfig> expansionMissions = [
       'Cartas entre dos villas de la costa',
       'Un pedido urgente de un patricio retirado',
     ],
-    eventPoolIds: ['evt_patrol', 'evt_merchant_offer', 'evt_cart_jam', 'evt_tax_collector', 'evt_ferry'],
+    eventPoolIds: ['evt_patrol', 'evt_merchant_offer', 'evt_cart_jam', 'evt_tax_collector', 'evt_ferry', 'evt_census', 'evt_poet', 'evt_wreck_salvage'],
     minEvents: 1,
     maxEvents: 2,
   ),
@@ -97,7 +98,7 @@ const List<RealMissionConfig> expansionMissions = [
       'Un cargamento de pergaminos comerciales',
       'Una carta entre comerciantes de vino',
     ],
-    eventPoolIds: ['evt_bandits', 'evt_heatwave', 'evt_wolf', 'evt_pickpocket', 'evt_oracle'],
+    eventPoolIds: ['evt_bandits', 'evt_heatwave', 'evt_wolf', 'evt_pickpocket', 'evt_oracle', 'evt_bees', 'evt_gladiator_troupe'],
     minEvents: 1,
     maxEvents: 2,
   ),
@@ -115,7 +116,7 @@ const List<RealMissionConfig> expansionMissions = [
       'Una consulta escrita para la Sibila',
       'Correspondencia de un senador supersticioso',
     ],
-    eventPoolIds: ['evt_storm', 'evt_oracle', 'evt_omen', 'evt_ghost_road', 'evt_bandits', 'evt_merchant_offer'],
+    eventPoolIds: ['evt_storm', 'evt_oracle', 'evt_omen', 'evt_ghost_road', 'evt_bandits', 'evt_merchant_offer', 'evt_pilgrims', 'evt_poet'],
     minEvents: 2,
     maxEvents: 3,
   ),
@@ -133,7 +134,7 @@ const List<RealMissionConfig> expansionMissions = [
       'Órdenes administrativas para el cruce de caminos',
       'Correspondencia militar de rutina',
     ],
-    eventPoolIds: ['evt_bandits', 'evt_injured', 'evt_wolf', 'evt_deserter', 'evt_old_soldier', 'evt_heatwave'],
+    eventPoolIds: ['evt_bandits', 'evt_injured', 'evt_wolf', 'evt_deserter', 'evt_old_soldier', 'evt_heatwave', 'evt_shepherd_dispute', 'evt_apennine_fog', 'evt_fugitive'],
     minEvents: 2,
     maxEvents: 3,
   ),
@@ -151,7 +152,7 @@ const List<RealMissionConfig> expansionMissions = [
       'Registros de aduana entre puertos del norte',
       'Correspondencia de mercaderes de ámbar',
     ],
-    eventPoolIds: ['evt_flood', 'evt_ferry', 'evt_landslide', 'evt_patrol', 'evt_storm', 'evt_spy_drop'],
+    eventPoolIds: ['evt_flood', 'evt_ferry', 'evt_landslide', 'evt_patrol', 'evt_storm', 'evt_spy_drop', 'evt_plague_village', 'evt_salt_road'],
     minEvents: 2,
     maxEvents: 3,
   ),
@@ -169,7 +170,7 @@ const List<RealMissionConfig> expansionMissions = [
       'Cartas entre astilleros de la costa',
       'Un contrato de compra de madera naval',
     ],
-    eventPoolIds: ['evt_landslide', 'evt_storm', 'evt_wolf', 'evt_bridge', 'evt_forge_fire', 'evt_injured'],
+    eventPoolIds: ['evt_landslide', 'evt_storm', 'evt_wolf', 'evt_bridge', 'evt_forge_fire', 'evt_injured', 'evt_mute_boy', 'evt_charcoal_burners', 'evt_fallen_milestone'],
     minEvents: 2,
     maxEvents: 4,
   ),
@@ -187,7 +188,7 @@ const List<RealMissionConfig> expansionMissions = [
       'Correspondencia de un armador del sur',
       'Documentos de embarque hacia Oriente',
     ],
-    eventPoolIds: ['evt_tax_collector', 'evt_deserter', 'evt_spy_drop', 'evt_heatwave', 'evt_merchant_offer', 'evt_rival_messenger'],
+    eventPoolIds: ['evt_tax_collector', 'evt_deserter', 'evt_spy_drop', 'evt_heatwave', 'evt_merchant_offer', 'evt_rival_messenger', 'evt_fugitive', 'evt_bees', 'evt_shepherd_dispute'],
     minEvents: 2,
     maxEvents: 4,
   ),
@@ -205,7 +206,7 @@ const List<RealMissionConfig> expansionMissions = [
       'Órdenes de embarque para las legiones de Oriente',
       'Correspondencia diplomática sellada',
     ],
-    eventPoolIds: ['evt_deserter', 'evt_spy_drop', 'evt_tax_collector', 'evt_letter_bribe', 'evt_heatwave', 'evt_old_soldier', 'evt_wedding_road'],
+    eventPoolIds: ['evt_deserter', 'evt_spy_drop', 'evt_tax_collector', 'evt_letter_bribe', 'evt_heatwave', 'evt_old_soldier', 'evt_wedding_road', 'evt_pontine_barge', 'evt_dice_game', 'evt_horse_sick'],
     minEvents: 3,
     maxEvents: 4,
   ),
@@ -223,7 +224,7 @@ const List<RealMissionConfig> expansionMissions = [
       'Tratados fronterizos para el gobernador de la región',
       'Correspondencia militar confidencial',
     ],
-    eventPoolIds: ['evt_flood', 'evt_landslide', 'evt_ghost_road', 'evt_wolf', 'evt_storm', 'evt_patrol', 'evt_omen', 'evt_deserter'],
+    eventPoolIds: ['evt_flood', 'evt_landslide', 'evt_ghost_road', 'evt_wolf', 'evt_storm', 'evt_patrol', 'evt_omen', 'evt_deserter', 'evt_plague_village', 'evt_apennine_fog', 'evt_charcoal_burners'],
     minEvents: 4,
     maxEvents: 6,
   ),
@@ -241,7 +242,7 @@ const List<RealMissionConfig> expansionMissions = [
       'Un tratado comercial con la Galia',
       'Correspondencia diplomática de largo alcance',
     ],
-    eventPoolIds: ['evt_storm', 'evt_bandits', 'evt_ghost_road', 'evt_wolf', 'evt_landslide', 'evt_oracle', 'evt_merchant_offer', 'evt_old_soldier', 'evt_letter_bribe', 'evt_deserter'],
+    eventPoolIds: ['evt_storm', 'evt_bandits', 'evt_ghost_road', 'evt_wolf', 'evt_landslide', 'evt_oracle', 'evt_merchant_offer', 'evt_old_soldier', 'evt_letter_bribe', 'evt_deserter', 'evt_hostage_escort', 'evt_fallen_milestone', 'evt_charcoal_burners'],
     minEvents: 5,
     maxEvents: 7,
   ),

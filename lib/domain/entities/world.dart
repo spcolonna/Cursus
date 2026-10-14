@@ -124,7 +124,7 @@ int patronRepFor(String grade) => switch (grade) {
     };
 
 /// Cuántos eventos recientes recuerda el sorteo para no repetirlos.
-const int kRecentEventMemory = 6;
+const int kRecentEventMemory = 12;
 
 class JournalEntry {
   final DateTime date;

@@ -6,14 +6,18 @@
 //
 // Arco 1: "La Sombra del Senado" — 5 capítulos, 3 finales.
 // Arco 2: "La Taberna del Buey" — 5 capítulos, 3 finales (story_lucius.dart).
+// Arco 3: "El Águila de la Decimotercera" — 5 capítulos, 3 finales
+//         (story_legion.dart).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import '../domain/entities/entities.dart';
 import '../domain/entities/world.dart';
 import 'game_content.dart';
+import 'story_legion.dart';
 import 'story_lucius.dart';
 
 export '../domain/entities/content.dart';
+export 'story_legion.dart';
 export 'story_lucius.dart';
 
 // ═══════════════════════════════════════════════════════════════
@@ -35,15 +39,22 @@ const List<StoryArcDef> storyArcs = [
     minRank: 3,
     requiredArc: kArcClaudius,
   ),
+  StoryArcDef(
+    id: kArcLegion,
+    title: 'El Águila de la Decimotercera',
+    stageCount: 5,
+    minRank: 3,
+    requiredArc: kArcLucius,
+  ),
 ];
 
 /// Todos los capítulos de todos los arcos.
 List<StoryMissionConfig> get allStoryChapters =>
-    [...storyArcClaudius, ...storyArcLucius];
+    [...storyArcClaudius, ...storyArcLucius, ...storyArcLegion];
 
 /// Todos los eventos de historia.
 List<RealEventConfig> get allStoryEvents =>
-    [...storyEventPool, ...luciusEventPool];
+    [...storyEventPool, ...luciusEventPool, ...legionEventPool];
 
 /// Capítulo que corresponde jugar para un arco/stage según los flags.
 StoryMissionConfig? storyMissionFor(
@@ -438,7 +449,7 @@ const List<RealEventConfig> storyEventPool = [
     id: 's2_northman_offer',
     category: EventCategory.subura,
     title: 'El hombre del norte',
-    description: 'A tres cuadras del templo, un hombre de acento norteño te corta el paso con educación quirúrgica. "Doscientos denarios. Solo por dejarme ver el sello. Ni abrirla, ni tocarla. Ver el sello." Nadie ofrece doscientos denarios por mirar cera. Salvo que la cera diga todo.',
+    description: 'Un hombre de acento norteño te corta el paso con educación quirúrgica. "Doscientos denarios. Solo por ver el sello. Ni abrirla, ni tocarla." Nadie paga eso por mirar cera. Salvo que la cera diga todo.',
     options: [
       RealOptionConfig(
         id: 'opt_show_seal', text: 'Le mostrás el sello — solo el sello',
@@ -530,7 +541,7 @@ const List<RealEventConfig> storyEventPool = [
     id: 's3_broken_seal',
     category: EventCategory.inn,
     title: 'La carta que quema',
-    description: 'Cruzando el Tíber, un carro te obliga a saltar y el rollo cae al empedrado. El tercer sello — solo el tercero — se parte limpio, y el rollo se abre lo justo. No querías leer. Leíste: "...las pruebas contra Petro, cuyo oro sostiene la red clandestina de mensajeros del llamado Varus..." El mundo se te para. Claudius no limpia Roma. Corta la rama donde estás parado vos.',
+    description: 'En el puente del Tíber el rollo cae y el tercer sello se parte. Leés sin querer: "...las pruebas contra Petro, cuyo oro sostiene la red de mensajeros de Varus..." Claudius no limpia Roma: corta la rama donde estás parado vos.',
     options: [
       RealOptionConfig(
         id: 'opt_loyal_varus', text: 'Esto lo tiene que ver Varus. Esta noche.',
@@ -612,7 +623,7 @@ const List<RealEventConfig> storyEventPool = [
     id: 's4_claudius_men',
     category: EventCategory.subura,
     title: 'Los hombres de Claudius',
-    description: 'A cinco cuadras de la villa de Petro, tres hombres con capas buenas y espadas mejores te cierran el paso. El del medio sonríe: "El Senador Claudius lamenta informarte que tu carrera de correo termina esta noche." Saben adónde vas. Saben qué llevás.',
+    description: 'Cerca de la villa de Petro, tres hombres con capas buenas y espadas mejores te cierran el paso. El del medio sonríe: "El Senador Claudius lamenta informarte que tu carrera de correo termina esta noche."',
     options: [
       RealOptionConfig(
         id: 'opt_fight_through', text: 'La red te enseñó a pelear. Demostralo.',
@@ -833,7 +844,7 @@ const List<RealEventConfig> storyEventPool = [
     id: 's5_two_doors',
     category: EventCategory.subura,
     title: 'Dos puertas, un mensaje',
-    description: 'Primera entrega: la villa de Claudius. Segunda: la de Petro. El mismo sobre, la misma letra de la Viuda, el mismo mensaje sin firma. Tu trabajo: que ambos lo reciban en mano y te vean la cara al leerlo. Esa es la parte del contrato que nadie explica.',
+    description: 'Primera entrega: la villa de Claudius. Segunda: la de Petro. El mismo sobre, la misma letra de la Viuda, sin firma. Tu trabajo: que ambos lo reciban en mano y te vean la cara al leerlo. Eso nadie te lo explicó.',
     options: [
       RealOptionConfig(
         id: 'opt_claudius_first', text: 'Claudius primero — el más peligroso, mejor temprano',
@@ -956,6 +967,23 @@ const Map<String, String> flagDescriptions = {
       'Llevás el correo de la Décima: se abrió la ruta militar a Capua.',
   'ending_lucius_book':
       'La Viuda te abrió el mercado de la noche: hay un mapa nuevo en la tienda.',
+
+  // ── Arco 3: El Águila de la Decimotercera
+  'swore_neutral':
+      'Le juraste a Varus que la valija no tiene bando. Hay quien lo oyó.',
+  'eyes_open': 'Llevás la valija con los ojos abiertos. Varus lo sabe.',
+  'read_aufidio':
+      'Leíste la carta de Aufidio. Sabés cuándo marcha la Decimotercera.',
+  'legion_caesar': 'Elegiste a la legión: el aviso de Aufidio volvió al norte.',
+  'legion_senate': 'Elegiste al Senado: el aviso de Aufidio va a la Curia.',
+  'legion_guild':
+      'Elegiste la regla de Varus: entregaste la carta y callaste.',
+  'ending_legion_caesar':
+      'Llevás el correo de la Decimotercera: se abrió la ruta de Ariminum a Ravenna.',
+  'ending_legion_senate':
+      'El Senado te confía su correo: se abrió la ruta de la Curia a Ariminum.',
+  'ending_legion_guild':
+      'La valija sin bando es tuya: se abrió la ruta neutral de Roma a Ravenna.',
 };
 
 /// Texto para mostrar de un flag recién activado (null si es interno).

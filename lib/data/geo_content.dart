@@ -50,6 +50,8 @@ const _cities = <String, LonLat>{
 const _appiaToCapua = ['Roma', 'Aricia', 'Forum Appii', 'Tarracina', 'Capua'];
 const _appiaOut = ['Roma', 'Aricia', 'Forum Appii'];
 const _appiaBack = ['Forum Appii', 'Aricia', 'Roma'];
+const _flaminiaOut = ['Roma', 'Narnia', 'Ariminum'];
+const _flaminiaBack = ['Ariminum', 'Narnia', 'Roma'];
 
 const _routeWaypoints = <String, List<String>>{
   'real_01': ['Roma', 'Ostia'],
@@ -82,6 +84,19 @@ const _routeWaypoints = <String, List<String>>{
   'lucius_5_family': _appiaBack,
   'lucius_5_legion': _appiaBack,
   'lucius_5_book': _appiaBack,
+  // Arco 3: la Flaminia y el Rubicón.
+  'legion_1': _flaminiaOut,
+  'legion_1_sexto': _flaminiaOut,
+  'legion_2': ['Ariminum', 'Ravenna'],
+  'legion_3': ['Ravenna', 'Ariminum'],
+  'legion_4_caesar': ['Ariminum', 'Ravenna'],
+  'legion_4_senate': _flaminiaBack,
+  'legion_4_guild': ['Ariminum', 'Ravenna'],
+  'legion_5_caesar': ['Ravenna', 'Ariminum'],
+  'legion_5_guild': ['Ravenna', 'Ariminum', 'Narnia', 'Roma'],
+  'real_ravenna': ['Ariminum', 'Ravenna'],
+  'real_curia': _flaminiaOut,
+  'real_valija': [..._flaminiaOut, 'Ravenna'],
 };
 
 const _seaRoutes = {'real_18', 'real_19'};

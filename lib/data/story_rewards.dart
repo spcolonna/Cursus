@@ -10,6 +10,12 @@
 //   end_lucius_family → la Posta del Buey: −10 de fatiga en la Appia.
 //   end_lucius_legion → ruta militar a Capua (real_21).
 //   end_lucius_book   → Mapa del contrabandista en la tienda.
+// Arco 3:
+//   end_legion_caesar → correo de la Decimotercera, Ariminum–Ravenna
+//                       (real_ravenna).
+//   end_legion_senate → correo del Senado al norte, Roma–Ariminum
+//                       (real_curia).
+//   end_legion_guild  → la valija neutral, Roma–Ravenna (real_valija).
 // Ningún premio suma al score de una decisión (cap de +25%).
 // ═══════════════════════════════════════════════════════════════
 
@@ -62,6 +68,76 @@ const List<RealMissionConfig> storyRewardMissions = [
     ],
     minEvents: 2,
     maxEvents: 3,
+  ),
+  // ── Arco 3: El Águila de la Decimotercera ──
+  RealMissionConfig(
+    id: 'real_ravenna',
+    origin: 'Ariminum',
+    destination: 'Ravenna — castra de la XIII',
+    distanceKm: 60,
+    durationMinutes: 240,
+    danger: 0.40,
+    requiredRank: 4,
+    patron: Faction.legions,
+    requiredFlag: 'ending_legion_caesar',
+    lore: 'El correo de la Decimotercera de un lado al otro del Rubicón. '
+        'Los puestos te conocen; el río, también.',
+    packageOptions: [
+      'Partes de forraje para las cohortes de la costa',
+      'Una orden del legado, doblada en cuatro y sin firma',
+    ],
+    eventPoolIds: [
+      'evt_patrol', 'evt_deserter', 'evt_old_soldier', 'evt_flood',
+      'evt_storm',
+    ],
+    minEvents: 1,
+    maxEvents: 2,
+  ),
+  RealMissionConfig(
+    id: 'real_curia',
+    origin: 'Roma',
+    destination: 'Ariminum — correo del Senado',
+    distanceKm: 330,
+    durationMinutes: 720,
+    danger: 0.50,
+    requiredRank: 4,
+    patron: Faction.patricians,
+    requiredFlag: 'ending_legion_senate',
+    lore: 'Las cartas de la Curia hacia el norte, por la Flaminia. '
+        'Cada senador quiere saber primero; vos llegás antes que todos.',
+    packageOptions: [
+      'Un decreto del Senado con el lacre todavía blando',
+      'Cartas de un cónsul para los magistrados de Ariminum',
+    ],
+    eventPoolIds: [
+      'evt_patrol', 'evt_spy_drop', 'evt_letter_bribe', 'evt_landslide',
+      'evt_deserter', 'evt_rival_messenger',
+    ],
+    minEvents: 2,
+    maxEvents: 3,
+  ),
+  RealMissionConfig(
+    id: 'real_valija',
+    origin: 'Roma',
+    destination: 'Ravenna — valija neutral',
+    distanceKm: 390,
+    durationMinutes: 1440,
+    danger: 0.45,
+    requiredRank: 4,
+    patron: Faction.guild,
+    requiredFlag: 'ending_legion_guild',
+    lore: 'La valija con el sello del Gremio, la única que los dos bandos '
+        'dejan pasar sin abrir. Pesa poco y vale mucho.',
+    packageOptions: [
+      'Cartas de madres para hijos en los dos campamentos',
+      'Un pagaré entre dos mercaderes que no se hablan',
+    ],
+    eventPoolIds: [
+      'evt_patrol', 'evt_deserter', 'evt_rival_messenger', 'evt_storm',
+      'evt_bridge', 'evt_old_soldier', 'evt_merchant_offer',
+    ],
+    minEvents: 3,
+    maxEvents: 4,
   ),
 ];
 

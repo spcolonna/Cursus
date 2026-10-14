@@ -104,6 +104,15 @@ const List<NpcDef> allNpcs = [
     look: 'older woman, silver hair in a severe bun, black stola, '
         'gold she-wolf brooch, candlelit tavern behind',
   ),
+  NpcDef(
+    id: 'aufidio',
+    name: 'Aufidio',
+    role: 'centurión de la Decimotercera',
+    faction: Faction.legions,
+    look: 'weathered centurion in his late forties, grey stubble, Gallic '
+        'campaign scars on the forearms, phalerae on a leather harness, '
+        'vine staff, tired honest eyes',
+  ),
 ];
 
 NpcDef? npcById(String id) => allNpcs.where((n) => n.id == id).firstOrNull;

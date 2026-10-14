@@ -132,7 +132,17 @@ Estos cubren todos los eventos. Conviene hacerlos primero.
 | `endings/end_lucius_legion.jpg` | A messenger riding along the Via Appia with a bronze bull plaque on the chest, legion milestones and a camp in the distance. Duty. |
 | `endings/end_lucius_book.jpg` | A messenger in a dark alley of the Subura unfolding a hand-drawn smuggler's map, coins on the table, a she-wolf brooch glinting. Secrets as currency. |
 
-## 7. Retratos (12)
+## 6c. Arco de la Decimotercera: finales (3)
+
+Los capítulos (`story/legion_*.jpg`) son opcionales; los finales valen la pena.
+
+| Archivo | Prompt |
+|---|---|
+| `endings/end_legion_caesar.jpg` | A messenger wading a narrow muddy river at night with orders held above the head, a legion waiting without torches on the bank behind, a general watching the water. Fate. |
+| `endings/end_legion_senate.jpg` | A dusty messenger standing alone in the middle of the Curia, hundreds of senators in white togas shouting from the benches, an older senator with a purple stripe nodding. A voice. |
+| `endings/end_legion_guild.jpg` | A plain table in a courier post house at dawn, two enemies in military cloaks at each end, an old courier master signing last, a sealed leather satchel in the middle. Neutrality. |
+
+## 7. Retratos (13)
 
 Cada prompt arranca con el estilo base más el bloque de retrato. La descripción física sale de `look` en [`lib/data/npc_content.dart`](../lib/data/npc_content.dart): si un personaje cambia en la historia, se cambia ahí y se regenera.
 
@@ -150,6 +160,7 @@ Cada prompt arranca con el estilo base más el bloque de retrato. La descripció
 | `npcs/lucius.png` | Lucius, tabernero del Buey | innkeeper in his fifties, bald, thick forearms, leather apron, suspicious squint, clay cup in hand |
 | `npcs/petro.png` | Petro, senador rival | plump senator, rosy cheeks, rings on every finger, laurel-patterned toga border, politician smile |
 | `npcs/viuda.png` | la Viuda, dueña de La Loba Dorada | older woman, silver hair in a severe bun, black stola, gold she-wolf brooch, candlelit tavern behind |
+| `npcs/aufidio.png` | Aufidio, centurión de la Decimotercera | weathered centurion in his late forties, grey stubble, Gallic campaign scars on the forearms, phalerae on a leather harness, vine staff, tired honest eyes |
 
 ## 8. Eventos puntuales (opcional)
 

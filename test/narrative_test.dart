@@ -269,6 +269,47 @@ void main() {
       expect(ready.nextStoryMission?.id, 'lucius_1_varus');
       expect(ready.storyArcTitle, 'La Taberna del Buey');
     });
+
+    test('la Decimotercera espera a que termine Lucius', () {
+      final afterClaudius = _world(
+        flags: {'ending_varus'},
+        completedArcs: {'$kArcClaudius:end_varus'},
+      );
+      expect(nextStoryStep(_content, afterClaudius)!.arc.id, kArcLucius);
+
+      final done = _world(
+        flags: {'ending_varus', 'ending_lucius_legion'},
+        completedArcs: {
+          '$kArcClaudius:end_varus',
+          '$kArcLucius:end_lucius_legion',
+        },
+      );
+      final next = nextStoryStep(_content, done)!;
+      expect(next.arc.id, kArcLegion);
+      expect(next.chapter.id, 'legion_1_sexto');
+      expect(next.requiredRank, 3);
+      expect(storyMissionFor(kArcLegion, 0, {})!.id, 'legion_1');
+    });
+
+    test('la Decimotercera sigue el camino y abre un premio por final', () {
+      final unlockFlags = {
+        ...restStops.map((r) => r.flag),
+        ...allRealMissions.map((r) => r.requiredFlag).whereType<String>(),
+        ...shopCatalogue.map((i) => i.requiredFlag).whereType<String>(),
+      };
+      final endings = <String>{};
+      for (final path in ['legion_caesar', 'legion_senate', 'legion_guild']) {
+        expect(storyMissionFor(kArcLegion, 3, {path})!.requiredFlag, path);
+        final last = storyMissionFor(kArcLegion, 4, {path})!;
+        expect(last.requiredFlag, path);
+        expect(last.isFinal, isTrue);
+        endings.add(last.endingId!);
+        expect(last.setFlagsOnComplete!.any(unlockFlags.contains), isTrue,
+            reason: '${last.endingId} no abre nada');
+      }
+      expect(endings.length, 3);
+      expect(storyMissionFor(kArcLegion, 3, {})!.isDefaultVariant, isTrue);
+    });
   });
 
   // ─── Premios de los finales ────────────────────────────────────────────────
@@ -381,7 +422,11 @@ void main() {
     });
 
     test('la prosa nueva respeta los topes de largo', () {
-      for (final e in [...consequenceEvents, ...luciusEventPool]) {
+      for (final e in [
+        ...consequenceEvents,
+        ...luciusEventPool,
+        ...legionEventPool,
+      ]) {
         expect(e.description.length, lessThanOrEqualTo(240), reason: e.id);
         for (final o in e.options) {
           for (final t in [o.outcomeSuccess, o.outcomePartial, o.outcomeFail]) {
@@ -423,11 +468,13 @@ void main() {
 
     test('recuerda solo los últimos eventos', () {
       var w = WorldState.initial();
-      for (var i = 0; i < 10; i++) {
+      const n = kRecentEventMemory + 4;
+      for (var i = 0; i < n; i++) {
         w = w.recordEvents(['e$i']);
       }
       expect(w.recentEvents.length, kRecentEventMemory);
-      expect(w.recentEvents.last, 'e9');
+      expect(w.recentEvents.first, 'e4');
+      expect(w.recentEvents.last, 'e${n - 1}');
     });
   });
 }
