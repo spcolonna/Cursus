@@ -8,6 +8,7 @@
 // aritmética que usa ResolveEventUseCase._calculateOutcome — si alguien toca
 // la fórmula y no toca esto, el test `forecast coincide con la fórmula` falla.
 
+import '../entities/domain_strings.dart';
 import '../entities/entities.dart';
 import '../entities/skill_tree.dart';
 
@@ -15,13 +16,7 @@ import '../entities/skill_tree.dart';
 enum ForecastBand { assured, favourable, uncertain, risky, reckless }
 
 extension ForecastBandX on ForecastBand {
-  String get label => switch (this) {
-        ForecastBand.assured => 'Lo tenés dominado',
-        ForecastBand.favourable => 'Buenas chances',
-        ForecastBand.uncertain => 'Incierto',
-        ForecastBand.risky => 'Arriesgado',
-        ForecastBand.reckless => 'Temerario',
-      };
+  String get label => ds('ui.forecast.band.$name');
 }
 
 class OptionForecast {
@@ -180,41 +175,30 @@ String _reason({
   // arreglar hoy mismo (descanso, poción).
   // Agotado se avisa siempre; cansado, solo si ya pinta mal.
   if (fatiguePenalty > 0 && fatigue >= 70) {
-    return 'Vas agotado: cualquier cosa te puede salir mal.';
+    return ds('ui.forecast.exhausted');
   }
   if (fatiguePenalty > 0 && band.index >= ForecastBand.uncertain.index) {
-    return 'El cansancio te está pesando en las manos.';
+    return ds('ui.forecast.tired');
   }
 
   // Sin habilidad de por medio: solo pesa el riesgo del camino.
   if (option.requiredSkills.isEmpty) {
-    return switch (band) {
-      ForecastBand.assured => 'Es la opción prudente. Lenta, pero segura.',
-      ForecastBand.favourable => 'No necesitás nada especial para intentarlo.',
-      ForecastBand.uncertain =>
-        'Salís del paso, pero sin oficio no sale redondo.',
-      ForecastBand.risky => 'Puro pulso y suerte. Puede salir feo.',
-      ForecastBand.reckless => 'Esto es tirarse al vacío y esperar lo mejor.',
-    };
+    return ds('ui.forecast.noskill.${band.name}');
   }
 
   if (perkBonus > 0 && band.index <= ForecastBand.favourable.index) {
-    return 'Tu camino de ${strongestSkill?.label ?? 'oficio'} '
-        'te da una ventaja acá.';
+    return ds('ui.forecast.perk',
+        {'skill': strongestSkill?.label ?? ds('ui.forecast.craft')});
   }
 
-  final skillLabel = weakestSkill?.label ?? 'tu oficio';
+  final args = {
+    'skill': weakestSkill?.label ?? ds('ui.forecast.your_craft'),
+    'level': lowestSkillLevel,
+  };
   return switch (band) {
-    ForecastBand.assured =>
-      '$skillLabel Nv.$lowestSkillLevel te sobra para esto.',
-    ForecastBand.favourable =>
-      '$skillLabel Nv.$lowestSkillLevel debería alcanzar.',
     ForecastBand.uncertain => effectiveRisk >= 4
-        ? 'Tu $skillLabel ayuda, pero el peligro es alto.'
-        : 'Podés lograrlo, aunque no está garantizado.',
-    ForecastBand.risky =>
-      'Con $skillLabel Nv.$lowestSkillLevel, esto es una apuesta.',
-    ForecastBand.reckless =>
-      'Te falta $skillLabel para algo así. Sería un milagro.',
+        ? ds('ui.forecast.skill.uncertain_danger', args)
+        : ds('ui.forecast.skill.uncertain', args),
+    _ => ds('ui.forecast.skill.${band.name}', args),
   };
 }

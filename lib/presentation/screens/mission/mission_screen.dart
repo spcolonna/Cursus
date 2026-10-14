@@ -13,6 +13,8 @@ import '../../../domain/entities/entities.dart';
 import '../../../domain/usecases/usecases.dart';
 import '../../../domain/entities/game_clock.dart';
 import '../../../infrastructure/monetization/rewarded_ads_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../domain/entities/content_l10n.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 class MissionScreen extends ConsumerStatefulWidget {
@@ -184,7 +186,8 @@ class _TopBar extends StatelessWidget {
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(
-              '${mission.origin} → ${mission.destination}',
+              '${ContentL10n.place(mission.origin)} → '
+              '${ContentL10n.place(mission.destination)}',
               style: AppTextStyles.ui(15,
                   color: AppColors.ochreDeep, weight: FontWeight.bold),
               maxLines: 1,
@@ -192,8 +195,8 @@ class _TopBar extends StatelessWidget {
             ),
             Text(
               mission.isTutorial
-                  ? 'Prueba de Varus · ${messenger.name}'
-                  : 'En camino · ${messenger.name}',
+                  ? AppLocalizations.of(context).missionTrialOf(messenger.name)
+                  : AppLocalizations.of(context).missionOnRoadOf(messenger.name),
               style: AppTextStyles.ui(12, color: AppColors.inkSoft),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -260,7 +263,10 @@ class _TravelView extends ConsumerWidget {
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(readyToDeliver ? '¡Llegaste!' : '$pct% del camino',
+              Text(
+                  readyToDeliver
+                      ? AppLocalizations.of(context).missionArrived
+                      : AppLocalizations.of(context).slotProgress(pct),
                   style: AppTextStyles.ui(13,
                       color: readyToDeliver
                           ? AppColors.ochreDeep
@@ -269,7 +275,7 @@ class _TravelView extends ConsumerWidget {
                           ? FontWeight.bold
                           : FontWeight.normal)),
               if (!readyToDeliver)
-                Text(_timeLeft(mission, now),
+                Text(_timeLeft(context, mission, now),
                     style: AppTextStyles.ui(13,
                         color: AppColors.ochreDeep, weight: FontWeight.bold)),
             ],
@@ -332,7 +338,7 @@ class _TravelView extends ConsumerWidget {
         // ── Historial de eventos resueltos
         if (resolved.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.xl),
-          Text('EVENTOS RESUELTOS',
+          Text(AppLocalizations.of(context).missionResolvedHeader,
               style: AppTextStyles.ui(12,
                   color: AppColors.inkMuted,
                   weight: FontWeight.bold,
@@ -350,9 +356,9 @@ class _TravelView extends ConsumerWidget {
     );
   }
 
-  String _timeLeft(Mission mission, DateTime now) {
+  String _timeLeft(BuildContext context, Mission mission, DateTime now) {
     final left = mission.deadlineAt.difference(now);
-    if (left.isNegative) return '¡Llegaste!';
+    if (left.isNegative) return AppLocalizations.of(context).missionArrived;
     if (left.inSeconds < 60) return '${left.inSeconds}s';
     if (left.inMinutes < 60) {
       return '${left.inMinutes}m ${left.inSeconds % 60}s';
@@ -373,11 +379,12 @@ class _RevealedNextEvent extends StatelessWidget {
     if (next == null) return const SizedBox.shrink();
 
     final left = next.triggersAt.difference(now);
+    final l = AppLocalizations.of(context);
     final etaLabel = left.inHours > 0
-        ? 'en ${left.inHours}h ${left.inMinutes % 60}m'
+        ? l.missionEtaIn('${left.inHours}h ${left.inMinutes % 60}m')
         : left.inMinutes > 0
-            ? 'en ${left.inMinutes}m'
-            : 'inminente';
+            ? l.missionEtaIn('${left.inMinutes}m')
+            : l.missionEtaImminent;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -393,7 +400,7 @@ class _RevealedNextEvent extends StatelessWidget {
         Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('PRÓXIMO EVENTO REVELADO',
+            Text(l.missionNextRevealed,
                 style: AppTextStyles.ui(12,
                     color: AppColors.ochreDeep, letterSpacing: 1)),
             const SizedBox(height: 2),
@@ -441,10 +448,12 @@ class _DeliverButtonState extends ConsumerState<_DeliverButton> {
           Expanded(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Llegaste a ${widget.mission.destination}',
+              Text(
+                  AppLocalizations.of(context).missionArrivedAt(
+                      ContentL10n.place(widget.mission.destination)),
                   style: AppTextStyles.ui(15,
                       color: AppColors.verdigris, weight: FontWeight.bold)),
-              Text('Entregá el mensaje para cobrar.',
+              Text(AppLocalizations.of(context).missionDeliverHint,
                   style: AppTextStyles.bodyMedium),
             ]),
           ),
@@ -456,7 +465,7 @@ class _DeliverButtonState extends ConsumerState<_DeliverButton> {
       SizedBox(
         width: double.infinity,
         child: GameButton(
-          label: 'ENTREGAR MENSAJE',
+          label: AppLocalizations.of(context).missionDeliver,
           icon: Icons.assignment_turned_in,
           fontSize: 17,
           isLoading: _loading,
@@ -512,9 +521,9 @@ class _SkipButtonState extends ConsumerState<_SkipButton> {
 
         final hasNextEvent =
             widget.mission.nextUpcomingEventAt(GameClock.now()) != null;
-        final skipLabel = hasNextEvent
-            ? 'Adelantar al próximo evento'
-            : 'Adelantar al final de la misión';
+        final l = AppLocalizations.of(context);
+        final skipLabel =
+            hasNextEvent ? l.missionSkipToEvent : l.missionSkipToEnd;
 
         // Paga la billetera común (la del principal).
         final wallet = ref.watch(homeProvider).valueOrNull?.messenger;
@@ -526,11 +535,11 @@ class _SkipButtonState extends ConsumerState<_SkipButton> {
           borderColor: canAfford
               ? AppColors.egyptianBlue.withValues(alpha: 0.5)
               : AppColors.paperLine,
-          semanticLabel: '$skipLabel por $cost denarios',
+          semanticLabel: l.missionSkipSemantics(skipLabel, cost),
           onTap: canAfford && !_loading
               ? _skip
               : () => showGameSnack(
-                  context, 'Te faltan denarios para adelantar.',
+                  context, l.missionSkipNoFunds,
                   isError: true),
           child: Row(children: [
             Icon(Icons.fast_forward_rounded, color: color, size: 20),
@@ -539,7 +548,7 @@ class _SkipButtonState extends ConsumerState<_SkipButton> {
                 child: Text(
                     canAfford
                         ? skipLabel
-                        : 'Sin denarios suficientes para adelantar',
+                        : l.missionSkipNoFundsLabel,
                     style: AppTextStyles.ui(13, color: color))),
             const SizedBox(width: AppSpacing.sm),
             if (_loading)
@@ -579,7 +588,7 @@ class _SkipButtonState extends ConsumerState<_SkipButton> {
       }
 
       showGameSnack(
-          context, 'Adelantaste el tiempo (−${result.cost} denarios)');
+          context, AppLocalizations.of(context).missionSkipped(result.cost));
     } catch (e) {
       if (mounted) showErrorSnack(context, e);
     } finally {
@@ -615,12 +624,14 @@ class _TravelAdButtonState extends ConsumerState<_TravelAdButton> {
     final remaining = cap - _usedToday;
     if (cap <= 0) return const SizedBox.shrink();
     if (remaining <= 0) {
-      return Text('Ya usaste los $cap adelantos de hoy',
+      return Text(AppLocalizations.of(context).missionAdsUsed(cap),
           style: AppTextStyles.bodySmall, textAlign: TextAlign.center);
     }
 
     return GameButton(
-      label: _loading ? 'Cargando…' : 'Ver anuncio · −30 min ($remaining hoy)',
+      label: _loading
+          ? AppLocalizations.of(context).loading
+          : AppLocalizations.of(context).missionWatchAd(remaining),
       icon: Icons.play_circle_outline,
       fontSize: 13,
       variant: GameButtonVariant.secondary,
@@ -638,7 +649,7 @@ class _TravelAdButtonState extends ConsumerState<_TravelAdButton> {
           );
       if (!mounted) return;
       if (outcome == AdOutcome.unavailable) {
-        showGameSnack(context, 'No hay anuncios disponibles ahora. Probá en un rato.');
+        showGameSnack(context, AppLocalizations.of(context).adsUnavailable);
         return;
       }
       if (outcome != AdOutcome.rewarded) return;
@@ -650,7 +661,7 @@ class _TravelAdButtonState extends ConsumerState<_TravelAdButton> {
       final used = await ref.read(playerProgressProvider).travelAdsUsedToday();
       if (mounted) {
         setState(() => _usedToday = used);
-        showGameSnack(context, 'Adelantaste 30 minutos de camino');
+        showGameSnack(context, AppLocalizations.of(context).missionAdSkipped);
       }
     } catch (e) {
       if (mounted) showErrorSnack(context, e);
@@ -698,7 +709,9 @@ class _ResolvedEventTile extends StatelessWidget {
                   style: AppTextStyles.ui(13, weight: FontWeight.bold)),
               if (outcome?.chosenOptionText != null) ...[
                 const SizedBox(height: 3),
-                Text('Decidiste: ${outcome!.chosenOptionText}',
+                Text(
+                    AppLocalizations.of(context)
+                        .missionYouChose(outcome!.chosenOptionText!),
                     style: AppTextStyles.bodySmall
                         .copyWith(color: AppColors.inkSoft)),
               ],
@@ -731,8 +744,10 @@ class _RouteVisual extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _CityLabel(label: mission.origin, isOrigin: true),
-            _CityLabel(label: mission.destination, isOrigin: false),
+            _CityLabel(
+                label: ContentL10n.place(mission.origin), isOrigin: true),
+            _CityLabel(
+                label: ContentL10n.place(mission.destination), isOrigin: false),
           ],
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -803,10 +818,11 @@ class _EventPanel extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(children: [
-                      GameChip('EVENTO', color: AppColors.sienna),
-                      Spacer(),
-                      GameChip('Progreso pausado',
+                    Row(children: [
+                      GameChip(AppLocalizations.of(context).eventChip,
+                          color: AppColors.sienna),
+                      const Spacer(),
+                      GameChip(AppLocalizations.of(context).missionPaused,
                           icon: Icons.pause_circle, color: AppColors.sienna),
                     ]),
                     const SizedBox(height: AppSpacing.md),
@@ -824,7 +840,7 @@ class _EventPanel extends StatelessWidget {
           const SizedBox(height: 20),
 
           GameButton(
-            label: 'DECIDIR',
+            label: AppLocalizations.of(context).slotDecide,
             icon: Icons.alt_route,
             onTap: () => context.push('/event?m=${mission.messengerId}'),
           ),

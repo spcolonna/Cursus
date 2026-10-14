@@ -1,3 +1,4 @@
+import '../entities/domain_strings.dart';
 import '../entities/entities.dart';
 import '../entities/weekly.dart';
 import '../repositories/content_catalog.dart';
@@ -85,10 +86,10 @@ class ClaimWeeklyCommissionUseCase {
     final state = await _get.execute(now: now);
     final idx = state.entries.indexWhere((e) => e.id == id);
     final def = _defsById(_content)[id];
-    if (idx < 0 || def == null) throw Exception('Encargo inexistente');
+    if (idx < 0 || def == null) throw Exception(ds('ui.error.weekly_missing'));
     final entry = state.entries[idx];
-    if (entry.claimed) throw Exception('Encargo ya cobrado');
-    if (entry.progress < def.target) throw Exception('Encargo incompleto');
+    if (entry.claimed) throw Exception(ds('ui.error.weekly_claimed'));
+    if (entry.progress < def.target) throw Exception(ds('ui.error.weekly_incomplete'));
 
     final all = await _messengers.getAllMessengers();
     if (all.isNotEmpty) {

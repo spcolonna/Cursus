@@ -10,6 +10,7 @@ import '../../widgets/cloud_widgets.dart';
 import '../../../domain/repositories/repositories.dart';
 import '../../../infrastructure/cloud/firebase_cloud.dart';
 import '../../widgets/living_sky.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Bienvenida: empezar sin cuenta (GDD §7) o recuperar una partida vinculada.
 class LoginScreen extends ConsumerStatefulWidget {
@@ -41,7 +42,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'No se pudo entrar. Probá de nuevo.';
+          _error = AppLocalizations.of(context).loginError;
           _loading = false;
         });
       }
@@ -69,7 +70,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'No se pudo recuperar la partida. Probá de nuevo.';
+          _error = AppLocalizations.of(context).loginRestoreError;
           _loading = false;
         });
       }
@@ -128,7 +129,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 padding: const EdgeInsets.fromLTRB(28, 24, 28, 20),
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
                   Text(
-                    'Roma, 50 a.C. El correo te espera.',
+                    AppLocalizations.of(context).loginTagline,
                     style: AppTextStyles.prose(size: 17),
                     textAlign: TextAlign.center,
                   ).animate(delay: 300.ms).fadeIn(duration: 500.ms),
@@ -152,7 +153,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: GameButton(
-                      label: 'EMPEZAR',
+                      label: AppLocalizations.of(context).loginStart,
                       icon: Icons.directions_walk,
                       onTap: _loading ? null : _enterAsGuest,
                       isLoading: _loading,
@@ -167,8 +168,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       width: double.infinity,
                       child: GameButton(
                         label: providers.length == 1
-                            ? 'Ya tengo partida'
-                            : 'Ya tengo partida: ${p == AccountProvider.apple ? 'Apple' : 'Google'}',
+                            ? AppLocalizations.of(context).loginHaveSave
+                            : AppLocalizations.of(context).loginHaveSaveWith(
+                                p == AccountProvider.apple ? 'Apple' : 'Google'),
                         icon: providerIcon(p),
                         fontSize: 14,
                         variant: GameButtonVariant.secondary,
@@ -179,9 +181,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 14),
                   Text(
                     providers.isEmpty
-                        ? 'Sin registrarte. Tu partida se guarda sola.'
-                        : 'Sin registrarte. Tu partida se guarda sola; '
-                            'en Ajustes podés vincular una cuenta.',
+                        ? AppLocalizations.of(context).loginNoSignup
+                        : AppLocalizations.of(context).loginNoSignupLink,
                     style: AppTextStyles.ui(13, color: AppColors.inkSoft),
                     textAlign: TextAlign.center,
                   ).animate(delay: 500.ms).fadeIn(duration: 500.ms),

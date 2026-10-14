@@ -19,15 +19,6 @@ import 'art_palette.dart';
 
 enum SkyPhase { dawn, day, dusk, night }
 
-extension SkyPhaseX on SkyPhase {
-  String get label => switch (this) {
-        SkyPhase.dawn => 'Alba',
-        SkyPhase.day => 'Día',
-        SkyPhase.dusk => 'Atardecer',
-        SkyPhase.night => 'Noche',
-      };
-}
-
 /// Un cielo fijo: arriba, al medio, sobre el horizonte y la tierra.
 class SkyKeyframe {
   final Color top, mid, horizon, land;

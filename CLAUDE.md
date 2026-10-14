@@ -9,6 +9,7 @@ Juego móvil Flutter. Mensajero en la Roma del 50 a.C.: las misiones corren en *
 - [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) — ilustraciones: estilo base, prompt de cada pieza y dónde va el archivo.
 - [docs/AUDIO.md](docs/AUDIO.md) — identidad sonora, el motivo D-A-E y la hoja de cues de música, SFX y aviso.
 - [docs/CUENTAS.md](docs/CUENTAS.md) — cuenta anónima, guardado en la nube (qué viaja), vincular Google/Apple, borrar cuenta.
+- [docs/LOCALIZACION.md](docs/LOCALIZACION.md) — español/inglés: ARB de la UI, tabla del contenido, glosario y voz.
 - [docs/MONETIZACION.md](docs/MONETIZACION.md) — compras (precios, estados, sin doble crédito), AdMob rewarded y consentimiento, qué falta para publicar.
 
 ## Skills de este proyecto (usalas antes de improvisar)
@@ -119,6 +120,7 @@ Para búsquedas amplias (¿dónde se usa X?, ¿existe Y?), delegá en el subagen
 7. **Cap de poder del árbol: +25%** de efectividad por camino maxeado. El azar siempre permite fallar en riesgo 4-5.
 8. **Persistencia local primero:** todo pasa por `local_repositories.dart` (SharedPreferences, JSON con sufijo `_v2`). Al cambiar el esquema de una entidad, agregá migración. Una clave nueva se clasifica como partida (`kCloudSaveKeys`, viaja a la nube) o del teléfono (lo controla `cloud_save_test.dart`).
 9. **La hora del juego es `GameClock.now()`, nunca `DateTime.now()`** en reglas, timers, diarios, semanales ni avisos (los avisos se programan con `GameClock.toDevice`). Cambiar la hora del teléfono no tiene que adelantar nada. `test/game_clock_test.dart` traba los `DateTime.now()` nuevos en `domain/`.
+10. **El contenido se lee traducido:** nada fuera de `lib/data/` lee las constantes en español directo; se pasa por `StaticGameContent` o `localized_content.dart` (`lTutorialMissions`, `lRealEvents`…).
 
 ## Estado real (2026-07)
 
@@ -130,9 +132,10 @@ Firebase (L1): cursus-dev en debug y cursus-prod en release; Crashlytics, Analyt
 Cuentas (L2): cuenta anónima, guardado en Firestore con elección de partida, borrar cuenta; Google/Apple listos en código, apagados hasta configurar la consola (docs/CUENTAS.md). Todo en plan Spark: nada de Cloud Functions.
 Reloj confiable (L3): `GameClock` anclado a la hora del servidor (cabecera Date de HTTPS) y, sin red, al reloj monotónico del sistema.
 Contenido (L5): validador de todo el contenido (`test/content_validator_test.dart`: ids únicos, referencias, presupuesto de texto, nada muerto); el inglés irá como traducción encima, indexada por id (sin migrar la estructura a JSON).
+Idiomas (L6): español neutro en UI e inglés completo (UI, contenido, dominio, avisos); selector en Ajustes, por defecto el del teléfono.
 Monetización (L4): precios de la tienda localizados, estados de compra y crédito idempotente por transacción; AdMob rewarded con ids de prueba y consentimiento UMP. Sin validar recibos en servidor (necesita Blaze).
 
-Pendiente (plan de lanzamiento L6-L9): inglés y UI en español neutro, arte final, release.
+Pendiente (plan de lanzamiento L7-L9): arte final, release.
 
 ## Comandos
 
@@ -148,7 +151,8 @@ flutter test tool/gen_icon_test.dart && dart run flutter_launcher_icons && dart 
 
 ## Convenciones
 
-- **Todo el contenido de cara al jugador va en español rioplatense** (vos/tenés/mirá). El código y los comentarios, también en español.
+- **Idiomas: español (fuente) e inglés.** La UI va en `lib/l10n/app_*.arb` en **español neutro** (tú: tienes/mira) — nunca texto literal en `presentation/` (`test/ui_literals_test.dart`). El contenido (`lib/data/`) y el narrador conservan el **rioplatense** (vos/tenés/mirá); su inglés va en `assets/l10n/content_en.json` y los textos que arma el dominio en `kDomainStrings` (`ds()`). Contenido nuevo → agregá su inglés (`test/content_l10n_test.dart` lo exige). Ver docs/LOCALIZACION.md.
+- El código y los comentarios, en español.
 - IDs en snake_case con prefijo: `evt_`, `opt_`, `claudius_`, `boost_`, `route_`.
 - Comentarios de sección con `// ─── Título ───` y `// ═══` para bloques grandes: seguí ese estilo.
 - Al cerrar una fase del roadmap, actualizá el GDD (es documento vivo: si código y GDD difieren, uno de los dos está mal).

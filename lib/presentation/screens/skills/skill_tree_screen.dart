@@ -12,6 +12,7 @@ import '../../../domain/entities/entities.dart';
 import '../../../domain/entities/skill_tree.dart';
 import '../../../domain/usecases/usecases.dart';
 import '../../../infrastructure/progress/player_progress.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ─── Caminos del Mensajero ───────────────────────────────────────────────────
 // Árbol de habilidades: 5 caminos de 10 niveles con nombre y perk.
@@ -45,7 +46,8 @@ class _SkillTreeScreenState extends ConsumerState<SkillTreeScreen> {
         data: (state) {
           if (state.slots.isEmpty) {
             return Center(
-                child: Text('Sin mensajero', style: AppTextStyles.titleLarge));
+                child: Text(AppLocalizations.of(context).profileNoMessenger,
+                    style: AppTextStyles.titleLarge));
           }
           final primary = state.slots.first.messenger;
           final selected = state.slots
@@ -147,7 +149,8 @@ class _SkillTreeScreenState extends ConsumerState<SkillTreeScreen> {
         const SizedBox(width: 12),
         Expanded(
             child:
-                Text('Caminos del Mensajero', style: AppTextStyles.titleLarge)),
+                Text(AppLocalizations.of(context).skillsTitle,
+                    style: AppTextStyles.titleLarge)),
         // Sellos del Gremio
         CurrencyChip(type: CurrencyType.seals, value: primary.seals),
       ]),
@@ -235,15 +238,15 @@ class _SkillPickCard extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-                picks == 1
-                    ? 'Tenés 1 nivel para elegir'
-                    : 'Tenés $picks niveles para elegir',
+                AppLocalizations.of(context).skillsPicks(picks),
                 style: AppTextStyles.ui(15,
                     color: AppColors.sienna, weight: FontWeight.bold)),
           ),
         ]),
         const SizedBox(height: 4),
-        Text('Se aplica a ${messenger.name}. Hasta nivel $kMaxSkillLevel.',
+        Text(
+            AppLocalizations.of(context)
+                .skillsAppliesTo(messenger.name, kMaxSkillLevel),
             style: AppTextStyles.bodyMedium
                 .copyWith(color: AppColors.inkSoft, fontSize: 12)),
         const SizedBox(height: 10),
@@ -278,9 +281,7 @@ class _IntroCard extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Niveles 1-5 se ganan jugando. Los niveles 6-10 se ascienden '
-              'con Sellos del Gremio: contratos del día, rachas y notas S. '
-              'Los Sellos son de la cuenta: los comparten todos tus mensajeros.',
+              AppLocalizations.of(context).skillsIntro,
               style: AppTextStyles.bodyMedium
                   .copyWith(color: AppColors.ink, height: 1.4),
             ),
@@ -427,11 +428,13 @@ class _PathCard extends StatelessWidget {
                                 color: AppColors.ink,
                                 weight: FontWeight.bold)),
                         const SizedBox(width: 8),
-                        GameChip('Nv.$level/10',
+                        GameChip(
+                            AppLocalizations.of(context)
+                                .skillLevelOf(level, 10),
                             color: level >= 6 ? AppColors.tyrian : _color),
                       ]),
                       const SizedBox(height: 3),
-                      Text('«${node.name}»',
+                      Text(AppLocalizations.of(context).quotedTitle(node.name),
                           style: AppTextStyles.proseItalic(size: 13)),
                     ]),
               ),
@@ -470,7 +473,7 @@ class _PathCard extends StatelessWidget {
                 border: Border.all(color: AppColors.ink, width: 2),
               ),
               child: Center(
-                child: Text('CAMINO COMPLETADO',
+                child: Text(AppLocalizations.of(context).skillsPathComplete,
                     style: AppTextStyles.ui(13,
                         color: AppColors.paper,
                         weight: FontWeight.bold,
@@ -538,7 +541,7 @@ class _NextLevelRow extends StatelessWidget {
     if (level < kMaxSkillLevel) {
       final xp = messenger.skillXp[skill] ?? 0;
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('Siguiente: «${next.name}» — ${next.perk}',
+        Text(AppLocalizations.of(context).skillsNext(next.name, next.perk),
             style: AppTextStyles.bodyMedium
                 .copyWith(color: AppColors.ink)),
         const SizedBox(height: 8),
@@ -579,7 +582,7 @@ class _NextLevelRow extends StatelessWidget {
         const Icon(Icons.workspace_premium, color: AppColors.tyrian, size: 16),
         const SizedBox(width: 6),
         Expanded(
-          child: Text('Ascenso: «${next.name}»',
+          child: Text(AppLocalizations.of(context).skillsAscent(next.name),
               style: AppTextStyles.ui(13, weight: FontWeight.bold)),
         ),
       ]),
@@ -592,15 +595,15 @@ class _NextLevelRow extends StatelessWidget {
       const SizedBox(height: 4),
       // A partir de Nv.5 la XP deja de subir de nivel, pero se sigue ganando:
       // decirlo evita que el jugador crea que perdió el progreso.
-      Text('La experiencia ya no sube este camino: de acá en más van Sellos.',
+      Text(AppLocalizations.of(context).skillsXpCapped,
           style: AppTextStyles.bodySmall),
       const SizedBox(height: 10),
       SizedBox(
         width: double.infinity,
         child: GameButton(
           label: canAfford
-              ? 'ASCENDER — $cost SELLOS'
-              : 'NECESITÁS $cost SELLOS (tenés $seals)',
+              ? AppLocalizations.of(context).skillsAscend(cost)
+              : AppLocalizations.of(context).skillsNeedSeals(cost, seals),
           variant: GameButtonVariant.secret,
           fontSize: 14,
           isLoading: ascending,
@@ -635,7 +638,7 @@ class _LevelDelta extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.35), width: 1.5),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('QUÉ GANÁS',
+        Text(AppLocalizations.of(context).skillsWhatYouGain,
             style: AppTextStyles.ui(12,
                 color: AppColors.inkSoft, letterSpacing: 1.2)),
         const SizedBox(height: 5),
@@ -764,7 +767,7 @@ class _AscendedDialog extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: GameButton(
-            label: 'CONTINUAR',
+            label: AppLocalizations.of(context).onboardingNext,
             fontSize: 15,
             onTap: () => Navigator.pop(context),
           ),
@@ -809,12 +812,14 @@ class _AscendedDialog extends StatelessWidget {
           ]),
         ),
         const SizedBox(height: AppSpacing.md),
-        Text('¡SUBISTE DE NIVEL!',
+        Text(AppLocalizations.of(context).skillsLevelUp,
             style: AppTextStyles.heading(22,
                 color: AppColors.ochreDeep,
                 letterSpacing: 1)),
         const SizedBox(height: AppSpacing.sm),
-        Text('${skill.label} Nv.${node.level} — «${node.name}»',
+        Text(
+            AppLocalizations.of(context)
+                .skillsLevelUpLine(skill.label, node.level, node.name),
             style: AppTextStyles.ui(15, weight: FontWeight.bold),
             textAlign: TextAlign.center),
         const SizedBox(height: 6),

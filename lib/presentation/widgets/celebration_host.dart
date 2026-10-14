@@ -11,6 +11,7 @@ import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import 'music_director.dart';
 import 'widgets.dart';
+import '../../l10n/app_localizations.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CELEBRACIONES — vive sobre toda la app (MaterialApp.router → builder) y
@@ -100,21 +101,22 @@ class _CelebrationHostState extends ConsumerState<CelebrationHost> {
 
   Widget _achievementToast(AchievementDef a) {
     final r = a.reward;
+    final l = AppLocalizations.of(context);
     return _Toast(
       key: ValueKey(a.id),
-      header: 'LOGRO CONSEGUIDO',
+      header: l.celebAchievementHeader,
       title: a.name,
-      semanticLabel: 'Logro conseguido: ${a.name}. Tocá para ver tus logros.',
+      semanticLabel: l.celebAchievementSemantics(a.name),
       leading: AchievementMedal(kind: a.kind, unlocked: true, size: 52),
       chips: [
         if (r.denarios > 0)
-          GameChip('+${r.denarios} Denarios',
+          GameChip(l.rewardDenarii(r.denarios),
               icon: CurrencyType.denarios.icon, color: AppColors.egyptianBlue),
         if (r.seals > 0)
-          GameChip('+${r.seals} Sello',
+          GameChip(l.rewardSeals(r.seals),
               icon: CurrencyType.seals.icon, color: AppColors.tyrian),
         if (r.title != null)
-          GameChip('«${r.title}»',
+          GameChip(l.quotedTitle(r.title!),
               icon: Icons.military_tech, color: AppColors.sienna),
       ],
       onDone: _pop,
@@ -130,12 +132,12 @@ class _CelebrationHostState extends ConsumerState<CelebrationHost> {
         .read(gameContentProvider)
         .factionUnlocks
         .where((u) => u.faction == f && u.tier == tier);
+    final l = AppLocalizations.of(context);
     return _Toast(
       key: ValueKey('faction${f.name}${tier.name}'),
-      header: 'NUEVO ESCALÓN',
+      header: l.celebTierHeader,
       title: '${f.label}: ${tier.label}',
-      semanticLabel: '${f.label} ahora te tiene por ${tier.label}. '
-          'Tocá para ver tu reputación.',
+      semanticLabel: l.celebTierSemantics(f.label, tier.label),
       leading: FactionBadge(faction: f, size: 52),
       chips: [
         for (final u in opened)
@@ -369,7 +371,7 @@ class _RankUpOverlayState extends State<_RankUpOverlay>
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.xl),
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    Text('¡NUEVO RANGO!',
+                    Text(AppLocalizations.of(context).celebRankHeader,
                         style: AppTextStyles.ui(16,
                             color: AppColors.ochreLight,
                             weight: FontWeight.bold,
@@ -399,7 +401,7 @@ class _RankUpOverlayState extends State<_RankUpOverlay>
                         style: AppTextStyles.heading(34,
                             color: AppColors.ochreLight)),
                     const SizedBox(height: AppSpacing.sm),
-                    Text(_blurb(widget.rank),
+                    Text(_blurb(AppLocalizations.of(context), widget.rank),
                         textAlign: TextAlign.center,
                         style: AppTextStyles.bodyLarge
                             .copyWith(color: AppColors.paper)),
@@ -407,7 +409,7 @@ class _RankUpOverlayState extends State<_RankUpOverlay>
                     SizedBox(
                       width: 220,
                       child: GameButton(
-                        label: 'SEGUIR',
+                        label: AppLocalizations.of(context).celebContinue,
                         icon: Icons.arrow_forward,
                         onTap: _close,
                       ),
@@ -422,12 +424,10 @@ class _RankUpOverlayState extends State<_RankUpOverlay>
     );
   }
 
-  static String _blurb(int rank) => switch (rank) {
-        2 =>
-          'En el correo ya saben tu nombre.\nSe abren rutas que antes no te daban.',
-        3 =>
-          'Te confían lo que no se puede perder.\nYa nadie te manda a llevar recados.',
-        4 => 'Los otros mensajeros te piden consejo.\nRoma empieza a notarte.',
-        _ => 'Tu nombre se dice en las postas de todo el Imperio.',
+  static String _blurb(AppLocalizations l, int rank) => switch (rank) {
+        2 => l.rankBlurb2,
+        3 => l.rankBlurb3,
+        4 => l.rankBlurb4,
+        _ => l.rankBlurb5,
       };
 }

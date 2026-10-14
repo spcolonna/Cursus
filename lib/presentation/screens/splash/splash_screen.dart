@@ -10,6 +10,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/brand.dart';
 import '../../widgets/cloud_widgets.dart';
 import '../../widgets/living_sky.dart';
+import '../../../l10n/app_localizations.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -94,7 +95,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
                   const SizedBox(height: 8),
 
-                  Text('Imperio Romano, 50 a.C.',
+                  Text(AppLocalizations.of(context).splashSubtitle,
                           style: AppTextStyles.bodyMedium)
                       .animate(delay: 800.ms)
                       .fadeIn(duration: 600.ms),

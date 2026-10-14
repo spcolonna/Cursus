@@ -18,17 +18,18 @@ class _UnlockSlotButtonState extends ConsumerState<_UnlockSlotButton> {
     final payer = widget.state.messenger!;
     final canAfford = payer.aureos >= cost;
     final accent = canAfford ? AppColors.ochreDeep : AppColors.inkMuted;
+    final l = AppLocalizations.of(context);
 
     return GameCard(
       borderColor:
           canAfford ? AppColors.ochreDeep.withValues(alpha: 0.6) : AppColors.paperLine,
-      semanticLabel: 'Contratar nuevo mensajero por $cost aureos',
+      semanticLabel: l.hireSemantics(cost),
       onTap: _loading
           ? null
           : canAfford
               ? () => _showUnlockDialog(context)
-              : () => showGameSnack(context,
-                  'Necesitás $cost aureos (tenés ${payer.aureos}).',
+              : () => showGameSnack(
+                  context, l.hireNeedAurei(cost, payer.aureos),
                   isError: true),
       child: Row(children: [
         Container(
@@ -52,14 +53,14 @@ class _UnlockSlotButtonState extends ConsumerState<_UnlockSlotButton> {
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Contratar nuevo mensajero',
+            Text(l.hireTitle,
                 style: AppTextStyles.ui(14,
                     color: accent, weight: FontWeight.bold)),
             const SizedBox(height: 3),
             Text(
                 canAfford
-                    ? 'Salta el tutorial — ya conoce el oficio'
-                    : 'Necesitás $cost aureos (tenés ${payer.aureos})',
+                    ? l.hireSkipsTutorial
+                    : l.hireNeedAurei(cost, payer.aureos),
                 style: AppTextStyles.bodySmall.copyWith(
                     color: canAfford
                         ? AppColors.inkSoft
@@ -93,7 +94,8 @@ class _UnlockSlotButtonState extends ConsumerState<_UnlockSlotButton> {
           );
       AppFeedback.reward();
       if (mounted) {
-        showGameSnack(this.context, '${result.name} se suma al correo.');
+        showGameSnack(this.context,
+            AppLocalizations.of(this.context).hireJoined(result.name));
       }
     } catch (e) {
       if (mounted) showErrorSnack(this.context, e);
@@ -129,13 +131,14 @@ class _NewMessengerDialogState extends State<_NewMessengerDialog> {
     final border = OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadii.sm + 2),
         borderSide: const BorderSide(color: AppColors.paperLine));
+    final l = AppLocalizations.of(context);
     return GameDialog(
-      title: 'Nuevo mensajero',
+      title: l.hireDialogTitle,
       actions: [
         SizedBox(
           width: double.infinity,
           child: GameButton(
-            label: 'CONTRATAR',
+            label: l.hireConfirm,
             fontSize: 15,
             onTap: () {
               final name = _ctrl.text.trim();
@@ -149,7 +152,7 @@ class _NewMessengerDialogState extends State<_NewMessengerDialog> {
           ),
         ),
         GameButton(
-          label: 'Cancelar',
+          label: l.cancel,
           fontSize: 14,
           variant: GameButtonVariant.secondary,
           onTap: () => Navigator.pop(context),
@@ -169,7 +172,7 @@ class _NewMessengerDialogState extends State<_NewMessengerDialog> {
           ),
         ),
         const SizedBox(height: 10),
-        Text('Ya conoce el oficio. Varus confía en este nuevo correo.',
+        Text(l.hireDialogBody,
             style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
         const SizedBox(height: AppSpacing.lg),
         TextField(
@@ -180,9 +183,9 @@ class _NewMessengerDialogState extends State<_NewMessengerDialog> {
             if (_showError) setState(() => _showError = false);
           },
           decoration: InputDecoration(
-            hintText: 'Nombre del mensajero',
+            hintText: l.charNameLabel,
             hintStyle: AppTextStyles.ui(14, color: AppColors.inkMuted),
-            errorText: _showError ? 'Ponele un nombre' : null,
+            errorText: _showError ? l.hireNameError : null,
             filled: true,
             fillColor: AppColors.paperDeep,
             border: border,
@@ -195,7 +198,7 @@ class _NewMessengerDialogState extends State<_NewMessengerDialog> {
         Row(children: [
           Expanded(
               child: _GenderOption(
-            label: 'Hombre',
+            label: l.genderMan,
             gender: MessengerGender.male,
             slotIndex: widget.slotIndex,
             selected: _gender == MessengerGender.male,
@@ -204,7 +207,7 @@ class _NewMessengerDialogState extends State<_NewMessengerDialog> {
           const SizedBox(width: 10),
           Expanded(
               child: _GenderOption(
-            label: 'Mujer',
+            label: l.genderWoman,
             gender: MessengerGender.female,
             slotIndex: widget.slotIndex,
             selected: _gender == MessengerGender.female,

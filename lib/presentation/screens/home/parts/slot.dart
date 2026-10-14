@@ -37,11 +37,11 @@ class _MessengerSlotCard extends ConsumerWidget {
           routes: slot.availableRoutes,
           messenger: m);
     } else {
-      content = const EmptyState(
-        key: ValueKey('empty'),
+      content = EmptyState(
+        key: const ValueKey('empty'),
         icon: Icons.castle,
-        title: 'Sin misiones disponibles',
-        body: 'Completá misiones para desbloquear nuevas rutas.',
+        title: AppLocalizations.of(context).slotNoMissionsTitle,
+        body: AppLocalizations.of(context).slotNoMissionsBody,
       );
     }
 
@@ -82,7 +82,8 @@ class _MessengerCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       borderColor: AppColors.ochreDeep.withValues(alpha: 0.4),
       onTap: () => context.push('/profile'),
-      semanticLabel: 'Ver perfil de ${messenger.name}',
+      semanticLabel:
+          AppLocalizations.of(context).slotViewProfile(messenger.name),
       child: Row(children: [
         MessengerHero(messenger, size: 48),
         const SizedBox(width: AppSpacing.md),
@@ -97,20 +98,24 @@ class _MessengerCard extends StatelessWidget {
               Consumer(builder: (context, ref, _) {
                 final title = ref.watch(titlesProvider).valueOrNull?.equipped;
                 if (title == null) return const SizedBox.shrink();
-                return Text('«$title»',
+                return Text(AppLocalizations.of(context).quotedTitle(title),
                     style: AppTextStyles.ui(12,
                         color: AppColors.ochreDeep, weight: FontWeight.bold));
               }),
             const SizedBox(height: AppSpacing.xs),
             Wrap(spacing: 6, runSpacing: 4, children: [
-              GameChip('${messenger.rankTitle} · Rank ${messenger.rank}',
+              GameChip(
+                  AppLocalizations.of(context)
+                      .slotRank(messenger.rankTitle, messenger.rank),
                   color: AppColors.ochreDeep),
               GameChip(messenger.status.label, color: AppColors.egyptianBlue),
             ]),
             if (!messenger.tutorialComplete) ...[
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Prueba ${messenger.tutorialMissionIndex + 1}/${tutorialMissions.length} de Varus',
+                AppLocalizations.of(context).slotTrial(
+                    messenger.tutorialMissionIndex + 1,
+                    lTutorialMissions.length),
                 style: AppTextStyles.ui(12, color: AppColors.sienna),
               ),
             ],
@@ -138,13 +143,13 @@ class _UrgentEventButton extends StatelessWidget {
       gradient: AppGradients.event,
       borderColor: AppColors.cinnabar,
       onTap: () => context.push('/event?m=${mission.messengerId}'),
-      semanticLabel: 'Evento pendiente: ${event.title}. Decidir.',
+      semanticLabel: AppLocalizations.of(context).slotEventSemantics(event.title),
       child: Row(children: [
         const Icon(Icons.warning_rounded, color: AppColors.cinnabar, size: 26),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('¡EVENTO PENDIENTE!',
+            Text(AppLocalizations.of(context).slotEventPending,
                 style: AppTextStyles.ui(13,
                     color: AppColors.cinnabar,
                     weight: FontWeight.bold,
@@ -160,8 +165,9 @@ class _UrgentEventButton extends StatelessWidget {
                 final left = event.deadlineAt.difference(GameClock.now());
                 return Text(
                   left.isNegative
-                      ? 'Tu mensajero va a decidir solo'
-                      : 'Decide solo en ${left.inMinutes} min',
+                      ? AppLocalizations.of(context).slotDecidesAlone
+                      : AppLocalizations.of(context)
+                          .slotDecidesIn(left.inMinutes),
                   style: AppTextStyles.bodySmall,
                 );
               },
@@ -180,7 +186,7 @@ class _UrgentEventButton extends StatelessWidget {
                   color: AppColors.ink, offset: Offset(0, 3), blurRadius: 0)
             ],
           ),
-          child: Text('DECIDIR',
+          child: Text(AppLocalizations.of(context).slotDecide,
               style: AppTextStyles.ui(13,
                   color: AppColors.ink, weight: FontWeight.bold)),
         ),
@@ -214,7 +220,9 @@ class _ActiveMissionBanner extends StatelessWidget {
       borderColor: accentColor.withValues(alpha: 0.5),
       onTap: () => context.push('/mission?m=${mission.messengerId}'),
       semanticLabel:
-          'Misión ${mission.origin} a ${mission.destination}. Ver viaje.',
+          AppLocalizations.of(context).slotMissionSemantics(
+              ContentL10n.place(mission.origin),
+              ContentL10n.place(mission.destination)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           Icon(isTut ? Icons.assignment : Icons.map,
@@ -222,7 +230,8 @@ class _ActiveMissionBanner extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              '${mission.origin} → ${mission.destination}',
+              '${ContentL10n.place(mission.origin)} → '
+              '${ContentL10n.place(mission.destination)}',
               style: AppTextStyles.ui(15,
                   color: accentColor, weight: FontWeight.bold),
               maxLines: 1,
@@ -247,7 +256,9 @@ class _ActiveMissionBanner extends StatelessWidget {
               const Icon(Icons.flag_rounded, color: AppColors.ochreDeep, size: 18),
               const SizedBox(width: 6),
               Expanded(
-                child: Text('¡Llegó a ${mission.destination}! Tocá para entregar',
+                child: Text(
+                    AppLocalizations.of(context)
+                        .slotArrived(ContentL10n.place(mission.destination)),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.ui(13,
@@ -266,7 +277,8 @@ class _ActiveMissionBanner extends StatelessWidget {
           return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('$pct% del camino', style: AppTextStyles.bodySmall),
+                Text(AppLocalizations.of(context).slotProgress(pct),
+                    style: AppTextStyles.bodySmall),
                 PackageBadge(state: mission.packageState),
               ]);
         }),
@@ -295,22 +307,25 @@ class _TutorialCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final idx = tutorialMissions.indexOf(tutorial);
+    final idx = lTutorialMissions.indexOf(tutorial);
     final n = idx + 1;
-    final total = tutorialMissions.length;
+    final total = lTutorialMissions.length;
 
     return GameCard(
       gradient: AppGradients.ochreTint,
       borderColor: AppColors.sienna,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          GameChip('PRUEBA $n/$total', color: AppColors.sienna),
+          GameChip(AppLocalizations.of(context).slotTrialChip(n, total),
+              color: AppColors.sienna),
           const Spacer(),
           GameChip(_durationLabel(tutorial.durationMinutes),
               icon: Icons.schedule, color: AppColors.ochreDeep),
         ]),
         const SizedBox(height: AppSpacing.md),
-        Text('${tutorial.origin} → ${tutorial.destination}',
+        Text(
+            '${ContentL10n.place(tutorial.origin)} → '
+            '${ContentL10n.place(tutorial.destination)}',
             style: AppTextStyles.heading(18,
                 color: AppColors.ochreDeep)),
         const SizedBox(height: AppSpacing.sm),
@@ -319,7 +334,7 @@ class _TutorialCard extends ConsumerWidget {
         SizedBox(
           width: double.infinity,
           child: GameButton(
-            label: '¡ACEPTAR PRUEBA!',
+            label: AppLocalizations.of(context).slotAcceptTrial,
             fontSize: 17,
             onTap: () async {
               try {
@@ -379,7 +394,7 @@ class _RoutesPreview extends StatelessWidget {
     final inline = routes.take(_kInlineRoutes).toList();
     final rest = routes.length - inline.length;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const _SectionLabel('RUTAS DISPONIBLES'),
+      _SectionLabel(AppLocalizations.of(context).slotRoutesHeader),
       const SizedBox(height: AppSpacing.sm),
       for (final (i, r) in inline.indexed)
         Padding(
@@ -391,13 +406,13 @@ class _RoutesPreview extends StatelessWidget {
         ),
       if (rest > 0)
         GameButton(
-          label: 'VER LAS ${routes.length} RUTAS',
+          label: AppLocalizations.of(context).slotSeeAllRoutes(routes.length),
           icon: Icons.map_outlined,
           fontSize: 14,
           variant: GameButtonVariant.secondary,
           onTap: () => showGameSheet(
             context,
-            title: 'Rutas para ${messenger.name}',
+            title: AppLocalizations.of(context).slotRoutesFor(messenger.name),
             builder: (sheet) => ListView(
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
@@ -435,8 +450,8 @@ class _RouteCard extends ConsumerWidget {
     final isInjured =
         messenger.status == MessengerStatus.injured || messenger.health <= 0;
     final canAccept = messenger.status == MessengerStatus.idle && !isInjured;
-    final busyLabel =
-        isInjured ? 'Herido: curate en la tienda' : 'Mensajero ocupado';
+    final l = AppLocalizations.of(context);
+    final busyLabel = isInjured ? l.slotInjuredHeal : l.slotBusy;
 
     return GameCard(
       padding: const EdgeInsets.all(14),
@@ -452,7 +467,9 @@ class _RouteCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${route.origin} → ${route.destination}',
+                Text(
+                    '${ContentL10n.place(route.origin)} → '
+                    '${ContentL10n.place(route.destination)}',
                     style: AppTextStyles.ui(16,
                         color: AppColors.ochreDeep, weight: FontWeight.bold)),
                 const SizedBox(height: 3),
@@ -471,7 +488,10 @@ class _RouteCard extends ConsumerWidget {
           RiskChip(level: route.dangerLevel),
           // Lo que paga con nota A: rutas más largas y peligrosas, más paga.
           GameChip(
-            'Paga ~${(gradeBaseReward('A') * routePayFactor(route.durationMinutes, route.danger) * route.payBonus).round()}',
+            l.slotPay((gradeBaseReward('A') *
+                    routePayFactor(route.durationMinutes, route.danger) *
+                    route.payBonus)
+                .round()),
             icon: CurrencyType.denarios.icon,
             color: AppColors.egyptianBlue,
             trailingIcon: route.payBonus > 1 ? Icons.arrow_upward : null,
@@ -486,7 +506,7 @@ class _RouteCard extends ConsumerWidget {
         SizedBox(
           width: double.infinity,
           child: GameButton(
-            label: canAccept ? '¡ACEPTAR MISIÓN!' : busyLabel,
+            label: canAccept ? l.slotAcceptMission : busyLabel,
             fontSize: 15,
             onTap: canAccept ? () => _accept(context, ref) : null,
           ),
@@ -521,29 +541,31 @@ class _ConfirmDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) => GameDialog(
         icon: Icons.map,
-        title: 'Confirmar misión',
+        title: AppLocalizations.of(context).slotConfirmTitle,
         actions: [
           SizedBox(
             width: double.infinity,
             child: GameButton(
-              label: 'SALIR AL CAMINO',
+              label: AppLocalizations.of(context).slotSetOut,
               icon: Icons.directions_run,
               fontSize: 15,
               onTap: () => Navigator.pop(context, true),
             ),
           ),
           GameButton(
-            label: 'Cancelar',
+            label: AppLocalizations.of(context).cancel,
             fontSize: 14,
             variant: GameButtonVariant.secondary,
             onTap: () => Navigator.pop(context, false),
           ),
         ],
         child: Column(children: [
-          Text('${route.origin} → ${route.destination}',
+          Text(
+              '${ContentL10n.place(route.origin)} → '
+              '${ContentL10n.place(route.destination)}',
               style: AppTextStyles.titleMedium, textAlign: TextAlign.center),
           const SizedBox(height: 10),
-          Text('Duración: ${route.durationLabel} en tiempo real.',
+          Text(AppLocalizations.of(context).slotDuration(route.durationLabel),
               style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
         ]),
       );
@@ -585,19 +607,19 @@ class _VarusNotificationDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return GameDialog(
       icon: Icons.record_voice_over,
-      title: 'Varus te alcanza en la puerta',
+      title: AppLocalizations.of(context).slotNotifTitle,
       actions: [
         SizedBox(
           width: double.infinity,
           child: GameButton(
-            label: 'AVISAME',
+            label: AppLocalizations.of(context).slotNotifYes,
             icon: Icons.notifications_active_outlined,
             fontSize: 15,
             onTap: () => Navigator.pop(context, true),
           ),
         ),
         GameButton(
-          label: 'Prefiero mirar yo',
+          label: AppLocalizations.of(context).slotNotifNo,
           fontSize: 14,
           variant: GameButtonVariant.secondary,
           onTap: () => Navigator.pop(context, false),
@@ -605,15 +627,13 @@ class _VarusNotificationDialog extends StatelessWidget {
       ],
       child: Column(children: [
         Text(
-          '«El camino toma lo que toma. Cerrá los ojos si querés — yo te '
-          'aviso si pasa algo.»',
+          AppLocalizations.of(context).slotNotifQuote,
           style: AppTextStyles.bodyLarge.copyWith(height: 1.55),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 10),
         Text(
-          'Te avisamos cuando tu mensajero necesite una decisión o llegue a '
-          'destino. Nada entre las 22 y las 8.',
+          AppLocalizations.of(context).slotNotifBody,
           style: AppTextStyles.bodySmall.copyWith(height: 1.4),
           textAlign: TextAlign.center,
         ),

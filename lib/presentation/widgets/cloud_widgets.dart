@@ -9,6 +9,7 @@ import '../../infrastructure/cloud/firebase_cloud.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import 'components.dart';
+import '../../l10n/app_localizations.dart';
 
 // ─── Elegir partida ───────────────────────────────────────────────────────────
 
@@ -36,12 +37,12 @@ class _ConflictDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) => GameDialog(
         icon: Icons.cloud_sync_outlined,
-        title: 'Tenés dos partidas',
+        title: AppLocalizations.of(context).cloudConflictTitle,
         actions: [
           SizedBox(
             width: double.infinity,
             child: GameButton(
-              label: 'USAR LA DE LA NUBE',
+              label: AppLocalizations.of(context).cloudUseRemote,
               icon: Icons.cloud_download_outlined,
               fontSize: 15,
               onTap: () => Navigator.pop(context, true),
@@ -50,7 +51,7 @@ class _ConflictDialog extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: GameButton(
-              label: 'Usar la de este teléfono',
+              label: AppLocalizations.of(context).cloudUseLocal,
               fontSize: 14,
               variant: GameButtonVariant.secondary,
               onTap: () => Navigator.pop(context, false),
@@ -59,19 +60,19 @@ class _ConflictDialog extends StatelessWidget {
         ],
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Text(
-            'La que no elijas se pierde.',
+            AppLocalizations.of(context).cloudConflictBody,
             style: AppTextStyles.bodyMedium,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.md),
           _SaveRow(
               icon: Icons.cloud_outlined,
-              label: 'Nube',
+              label: AppLocalizations.of(context).cloudLabel,
               summary: conflict.remote.summary),
           const SizedBox(height: AppSpacing.sm),
           _SaveRow(
               icon: Icons.smartphone,
-              label: 'Este teléfono',
+              label: AppLocalizations.of(context).cloudThisPhone,
               summary: conflict.local.summary),
         ]),
       );
@@ -86,7 +87,9 @@ class _SaveRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final when = summary.savedAt == null ? '' : ' · ${timeAgo(summary.savedAt!)}';
+    final l = AppLocalizations.of(context);
+    final when =
+        summary.savedAt == null ? '' : ' · ${timeAgo(l, summary.savedAt!)}';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -102,7 +105,7 @@ class _SaveRow extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('$label$when', style: AppTextStyles.ui(12, color: AppColors.inkSoft)),
             Text(summary.name, style: AppTextStyles.titleSmall),
-            Text('${summary.completedMissions} entregas',
+            Text(l.cloudDeliveries(summary.completedMissions),
                 style: AppTextStyles.ui(13, color: AppColors.inkSoft)),
           ]),
         ),
@@ -111,20 +114,20 @@ class _SaveRow extends StatelessWidget {
   }
 }
 
-String timeAgo(DateTime t, {DateTime? now}) {
+String timeAgo(AppLocalizations l, DateTime t, {DateTime? now}) {
   final d = (now ?? DateTime.now()).difference(t);
-  if (d.inMinutes < 1) return 'recién';
-  if (d.inHours < 1) return 'hace ${d.inMinutes} min';
-  if (d.inDays < 1) return 'hace ${d.inHours} h';
-  if (d.inDays == 1) return 'ayer';
-  return 'hace ${d.inDays} días';
+  if (d.inMinutes < 1) return l.agoNow;
+  if (d.inHours < 1) return l.agoMinutes(d.inMinutes);
+  if (d.inDays < 1) return l.agoHours(d.inHours);
+  if (d.inDays == 1) return l.agoYesterday;
+  return l.agoDays(d.inDays);
 }
 
 // ─── Botones de proveedor ─────────────────────────────────────────────────────
 
-String providerLabel(AccountProvider p) => switch (p) {
-      AccountProvider.apple => 'Continuar con Apple',
-      AccountProvider.google => 'Continuar con Google',
+String providerLabel(AppLocalizations l, AccountProvider p) => switch (p) {
+      AccountProvider.apple => l.continueWithApple,
+      AccountProvider.google => l.continueWithGoogle,
     };
 
 IconData providerIcon(AccountProvider p) => switch (p) {
@@ -158,10 +161,12 @@ class _AccountCardState extends ConsumerState<AccountCard> {
         reloadGameState(ref);
         context.go('/');
       } else if (outcome == LinkOutcome.linked) {
-        showGameSnack(context, 'Cuenta vinculada. Tu partida queda a salvo.');
+        showGameSnack(context, AppLocalizations.of(context).cloudLinked);
       }
     } catch (e) {
-      if (mounted) showErrorSnack(context, 'No se pudo vincular. Probá de nuevo.');
+      if (mounted) {
+        showErrorSnack(context, AppLocalizations.of(context).cloudLinkFailed);
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -183,8 +188,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
     } catch (e) {
       if (mounted) {
         setState(() => _busy = false);
-        showErrorSnack(context,
-            'No se pudo borrar la cuenta. Revisá la conexión y probá de nuevo.');
+        showErrorSnack(context, AppLocalizations.of(context).cloudDeleteFailed);
       }
     }
   }
@@ -195,6 +199,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
     final account = sync.account;
     final linked = account?.linkedProviders ?? const <AccountProvider>{};
     final toLink = availableProviders().difference(linked);
+    final l = AppLocalizations.of(context);
     return GameCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         ValueListenableBuilder<CloudStatus>(
@@ -207,20 +212,21 @@ class _AccountCardState extends ConsumerState<AccountCard> {
         if (linked.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Vinculada con ${linked.map((p) => p == AccountProvider.apple ? 'Apple' : 'Google').join(' y ')}. '
-            'Podés recuperar tu partida en otro teléfono.',
+            l.cloudLinkedWith(linked
+                .map((p) => p == AccountProvider.apple ? 'Apple' : 'Google')
+                .join(l.listAnd)),
             style: AppTextStyles.ui(13, color: AppColors.inkSoft),
           ),
         ] else if (toLink.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Vinculá una cuenta para no perder la partida si cambiás de teléfono.',
+            l.cloudLinkPrompt,
             style: AppTextStyles.ui(13, color: AppColors.inkSoft),
           ),
           for (final p in toLink) ...[
             const SizedBox(height: AppSpacing.sm),
             GameButton(
-              label: providerLabel(p),
+              label: providerLabel(l, p),
               icon: providerIcon(p),
               fontSize: 14,
               variant: GameButtonVariant.secondary,
@@ -230,7 +236,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
         ],
         const SizedBox(height: AppSpacing.md),
         GameButton(
-          label: 'Borrar cuenta y datos',
+          label: l.cloudDeleteAccount,
           icon: Icons.delete_forever_outlined,
           fontSize: 14,
           variant: GameButtonVariant.ghost,
@@ -249,22 +255,17 @@ class _StatusLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final (icon, text) = switch (status) {
-      CloudStatus.unavailable => (
-          Icons.smartphone,
-          'Tu partida se guarda en este teléfono.'
-        ),
-      CloudStatus.syncing => (Icons.cloud_upload_outlined, 'Guardando en la nube…'),
+      CloudStatus.unavailable => (Icons.smartphone, l.cloudStatusLocal),
+      CloudStatus.syncing => (Icons.cloud_upload_outlined, l.cloudStatusSyncing),
       CloudStatus.synced => (
           Icons.cloud_done_outlined,
           at == null
-              ? 'Partida guardada en la nube.'
-              : 'Partida guardada en la nube ${timeAgo(at!)}.'
+              ? l.cloudStatusSynced
+              : l.cloudStatusSyncedAgo(timeAgo(l, at!))
         ),
-      CloudStatus.offline => (
-          Icons.cloud_off_outlined,
-          'Sin conexión: se guarda en el teléfono y se sube cuando vuelva.'
-        ),
+      CloudStatus.offline => (Icons.cloud_off_outlined, l.cloudStatusOffline),
     };
     return Row(children: [
       Icon(icon, size: 22, color: AppColors.ink),
@@ -281,27 +282,26 @@ class _DeleteDialog extends StatelessWidget {
   Widget build(BuildContext context) => GameDialog(
         icon: Icons.delete_forever_outlined,
         accent: AppColors.cinnabar,
-        title: '¿Borrar todo?',
+        title: AppLocalizations.of(context).cloudDeleteTitle,
         actions: [
           SizedBox(
             width: double.infinity,
             child: GameButton(
-              label: 'BORRAR PARA SIEMPRE',
+              label: AppLocalizations.of(context).cloudDeleteConfirm,
               variant: GameButtonVariant.danger,
               fontSize: 15,
               onTap: () => Navigator.pop(context, true),
             ),
           ),
           GameButton(
-            label: 'Cancelar',
+            label: AppLocalizations.of(context).cancel,
             fontSize: 14,
             variant: GameButtonVariant.secondary,
             onTap: () => Navigator.pop(context, false),
           ),
         ],
         child: Text(
-          'Se borran tu cuenta, tus mensajeros, tu progreso y las monedas, '
-          'en este teléfono y en la nube. No se puede deshacer.',
+          AppLocalizations.of(context).cloudDeleteBody,
           style: AppTextStyles.bodyMedium,
           textAlign: TextAlign.center,
         ),

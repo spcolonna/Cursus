@@ -13,6 +13,8 @@ import 'package:flutter/scheduler.dart';
 import '../feedback/feedback.dart';
 import '../theme/app_theme.dart';
 import '../../domain/entities/game_clock.dart';
+import '../../domain/entities/content_l10n.dart';
+import '../../l10n/app_localizations.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // CHIPS
@@ -190,7 +192,7 @@ class GameBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => GameIconButton(
         icon: Icons.arrow_back_rounded,
-        semanticLabel: 'Volver',
+        semanticLabel: AppLocalizations.of(context).back,
         isBack: true,
         onTap: onTap ?? () => Navigator.of(context).maybePop(),
       );
@@ -210,7 +212,7 @@ Future<T?> showGameDialog<T>(
   return showGeneralDialog<T>(
     context: context,
     barrierDismissible: barrierDismissible,
-    barrierLabel: 'Cerrar',
+    barrierLabel: AppLocalizations.of(context).close,
     barrierColor: AppColors.scrim,
     transitionDuration: AppMotion.of(context, AppMotion.base),
     pageBuilder: (ctx, _, __) => builder(ctx),
@@ -351,7 +353,7 @@ String userMessageFor(Object error) {
       text.length > 160 ||
       text.trim().isEmpty;
   return looksTechnical
-      ? 'Algo se trabó en el camino. Probá de nuevo en un momento.'
+      ? lookupAppLocalizations(Locale(ContentL10n.lang)).errorGeneric
       : text;
 }
 
@@ -451,12 +453,12 @@ class ErrorState extends StatelessWidget {
   Widget build(BuildContext context) => Center(
         child: EmptyState(
           icon: Icons.report_gmailerrorred_outlined,
-          title: 'No pudimos cargar esto',
+          title: AppLocalizations.of(context).errorLoadTitle,
           body: userMessageFor(error),
           action: onRetry == null
               ? null
               : GameButton(
-                  label: 'REINTENTAR',
+                  label: AppLocalizations.of(context).retry,
                   icon: Icons.refresh,
                   variant: GameButtonVariant.secondary,
                   onTap: onRetry),

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'domain_strings.dart';
+
 // ═════════════════════════════════════════════════════════════════════════════
 // SaveSnapshot: toda la partida en un solo paquete, para subirla a la nube y
 // restaurarla en otro dispositivo. Las claves y sus valores son los mismos
@@ -44,7 +46,7 @@ class SaveSnapshot {
       (data['completed_missions'] as List?)?.isNotEmpty != true;
 
   SaveSummary get summary => SaveSummary(
-        name: (data['user_name'] as String?) ?? 'Mensajero',
+        name: (data['user_name'] as String?) ?? ds('ui.messenger.default_name'),
         completedMissions: (data['completed_missions'] as List?)?.length ?? 0,
         savedAt: savedAt,
       );

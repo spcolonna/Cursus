@@ -16,6 +16,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../providers/providers.dart';
+import '../../../infrastructure/l10n/language_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/sky.dart';
 import '../../widgets/cloud_widgets.dart';
@@ -52,6 +54,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final prefsAsync = ref.watch(notificationPrefsProvider);
+    final l = AppLocalizations.of(context);
 
     return GradientScaffold(
       body: SafeArea(
@@ -61,28 +64,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
               children: [
-                SectionHeader(title: 'AVISOS DEL CAMINO'),
+                SectionHeader(title: l.settingsAlertsHeader),
                 prefsAsync.when(
                   loading: () => const LoadingState(),
                   error: (e, _) => ErrorState(error: e),
                   data: (prefs) => _PrefsCard(prefs: prefs, onChanged: _reload),
                 ),
                 const SizedBox(height: 20),
-                SectionHeader(title: 'SONIDO Y MOVIMIENTO'),
+                SectionHeader(
+                    title: l.settingsLanguage.toUpperCase()),
+                const _LanguageCard(),
+                const SizedBox(height: 20),
+                SectionHeader(title: l.settingsSoundHeader),
                 const _SfxToggleCard(),
                 const SizedBox(height: 20),
-                SectionHeader(title: 'DATOS DE USO'),
+                SectionHeader(title: l.settingsUsageHeader),
                 const _UsageDataCard(),
                 const SizedBox(height: 20),
-                SectionHeader(title: 'CUENTA'),
+                SectionHeader(title: l.settingsAccountHeader),
                 const AccountCard(),
                 const SizedBox(height: 20),
                 if (kDebugMode) ...[
-                  SectionHeader(title: 'CIELO (SOLO DEBUG)'),
+                  SectionHeader(title: l.settingsSkyHeader),
                   const _SkyDebugCard(),
                   const SizedBox(height: 20),
                 ],
-                SectionHeader(title: 'DIAGNÓSTICO'),
+                SectionHeader(title: l.settingsDiagnosticsHeader),
                 FutureBuilder<_Diagnostics>(
                   future: _diagnostics,
                   builder: (context, snap) {
@@ -114,7 +121,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: Row(children: [
           GameBackButton(onTap: () => context.pop()),
           const SizedBox(width: 12),
-          Text('Ajustes', style: AppTextStyles.titleLarge),
+          Text(AppLocalizations.of(context).settingsTitle,
+              style: AppTextStyles.titleLarge),
         ]),
       );
 }
@@ -134,15 +142,15 @@ class _PrefsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(notificationPrefsProvider.notifier);
+    final l = AppLocalizations.of(context);
     return GameCard(
       child: Column(children: [
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           value: prefs.enabled,
-          title: Text('Recibir avisos', style: AppTextStyles.bodyLarge),
+          title: Text(l.settingsAlertsToggle, style: AppTextStyles.bodyLarge),
           subtitle: Text(
-            'Nunca entre las 22 y las 8, salvo un evento de una misión que '
-            'ya está en marcha. Máximo 4 por día.',
+            l.settingsAlertsToggleHint,
             style: AppTextStyles.bodySmall.copyWith(height: 1.35),
           ),
           onChanged: (v) async {
@@ -179,12 +187,13 @@ class _DiagnosticsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheduler = ref.read(notificationSchedulerProvider);
-    final fmt = DateFormat('d/MM HH:mm');
+    final l = AppLocalizations.of(context);
+    final fmt = DateFormat.Md().add_Hm();
     final (permLabel, permColor) = switch (data.permission) {
-      NotificationPermission.granted => ('Concedido', AppColors.verdigris),
-      NotificationPermission.denied => ('Denegado', AppColors.cinnabar),
+      NotificationPermission.granted => (l.permGranted, AppColors.verdigris),
+      NotificationPermission.denied => (l.permDenied, AppColors.cinnabar),
       NotificationPermission.notRequested => (
-          'Todavía no se pidió',
+          l.permNotRequested,
           AppColors.sienna
         ),
     };
@@ -194,24 +203,23 @@ class _DiagnosticsCard extends ConsumerWidget {
         Row(children: [
           Icon(Icons.verified_user_outlined, size: 15, color: permColor),
           const SizedBox(width: 7),
-          Text('Permiso del sistema: ',
+          Text(l.permSystemLabel,
               style: AppTextStyles.bodyMedium.copyWith(fontSize: 12)),
           Text(permLabel,
               style: AppTextStyles.ui(12,
                   color: permColor, weight: FontWeight.bold)),
         ]),
         const SizedBox(height: 6),
-        Text('${data.pending.length} aviso(s) programado(s)',
+        Text(l.diagScheduled(data.pending.length),
             style: AppTextStyles.bodyMedium.copyWith(fontSize: 12)),
         const SizedBox(height: 4),
         Text(
-          'iOS descarta lo que pase de 64 pendientes: por eso se programan '
-          'solo los dos próximos eventos de cada misión.',
+          l.diagIosLimit,
           style: AppTextStyles.bodySmall.copyWith(height: 1.35),
         ),
         const SizedBox(height: 12),
         if (data.pending.isEmpty)
-          Text('Nada en la cola. Aceptá una misión para que se programen.',
+          Text(l.diagQueueEmpty,
               style: AppTextStyles.bodyMedium.copyWith(fontSize: 12))
         else
           ...data.pending.map((n) => Padding(
@@ -244,14 +252,14 @@ class _DiagnosticsCard extends ConsumerWidget {
         Row(children: [
           Expanded(
             child: GameButton(
-              label: 'PROBAR EN 10s',
+              label: l.diagTest,
               icon: Icons.notifications_active_outlined,
               fontSize: 13,
               onTap: () async {
                 await scheduler.fireTestNotification();
                 if (!context.mounted) return;
                 showRewardToast(context, const [],
-                    note: 'Cerrá la app: el aviso llega en 10 segundos.');
+                    note: l.diagTestNote);
                 onReload();
               },
             ),
@@ -259,7 +267,7 @@ class _DiagnosticsCard extends ConsumerWidget {
           const SizedBox(width: 10),
           Expanded(
             child: GameButton(
-              label: 'RECARGAR',
+              label: l.diagReload,
               icon: Icons.refresh,
               fontSize: 13,
               variant: GameButtonVariant.info,
@@ -274,7 +282,7 @@ class _DiagnosticsCard extends ConsumerWidget {
               await scheduler.cancelAll();
               onReload();
             },
-            child: Text('Cancelar todos los avisos',
+            child: Text(l.diagCancelAll,
                 style: AppTextStyles.ui(12, color: AppColors.inkSoft)),
           ),
         ),
@@ -302,12 +310,19 @@ class _SkyDebugCard extends ConsumerWidget {
     final fixed = ref.watch(debugSkyHourProvider);
     final sky = ref.watch(skyPaletteProvider);
     final set = ref.read(debugSkyHourProvider.notifier);
+    final l = AppLocalizations.of(context);
+    final phase = switch (sky.phase) {
+      SkyPhase.dawn => l.skyDawn,
+      SkyPhase.day => l.skyDay,
+      SkyPhase.dusk => l.skyDusk,
+      SkyPhase.night => l.skyNight,
+    };
     return GameCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(
             fixed == null
-                ? 'Reloj real: ${_fmt(sky.hour)} · ${sky.phase.label}'
-                : 'Hora fija: ${_fmt(sky.hour)} · ${sky.phase.label}',
+                ? l.skyRealClock(_fmt(sky.hour), phase)
+                : l.skyFixedHour(_fmt(sky.hour), phase),
             style: AppTextStyles.ui(14, weight: FontWeight.w600)),
         Slider(
           value: sky.hour.clamp(0, 23.99),
@@ -324,7 +339,7 @@ class _SkyDebugCard extends ConsumerWidget {
           OutlinedButton(
               style: OutlinedButton.styleFrom(foregroundColor: AppColors.ink),
               onPressed: () => set.state = null,
-              child: const Text('Reloj')),
+              child: Text(l.skyClock)),
         ]),
       ]),
     );
@@ -382,11 +397,12 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
     final progress = ref.read(playerProgressProvider);
     // La música lee su estado del servicio: main.dart ya lo cargó de prefs.
     final music = ref.read(musicServiceProvider);
+    final l = AppLocalizations.of(context);
     return GameCard(
       child: Column(children: [
         _toggle(
-          title: 'Música',
-          subtitle: 'Lira y aulos: cambia con la hora y en el camino',
+          title: l.settingsMusic,
+          subtitle: l.settingsMusicHint,
           value: music.enabled,
           onChanged: (v) async {
             music.setEnabled(v);
@@ -401,7 +417,7 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
               child: Slider(
                 value: music.volume,
                 semanticFormatterCallback: (v) =>
-                    'Volumen de la música ${(v * 100).round()}%',
+                    l.settingsMusicVolume((v * 100).round()),
                 onChanged: (v) => setState(() => music.setVolume(v)),
                 onChangeEnd: progress.setMusicVolume,
               ),
@@ -409,8 +425,8 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
             const Icon(Icons.volume_up, color: AppColors.inkSoft, size: 22),
           ]),
         _toggle(
-          title: 'Efectos de sonido',
-          subtitle: 'Botones, resultados, entregas y cobros',
+          title: l.settingsSfx,
+          subtitle: l.settingsSfxHint,
           value: _sfx,
           onChanged: (v) async {
             await progress.setSfxEnabled(v);
@@ -420,8 +436,8 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
           },
         ),
         _toggle(
-          title: 'Vibración',
-          subtitle: 'Un golpe suave al tocar y al cobrar',
+          title: l.settingsHaptics,
+          subtitle: l.settingsHapticsHint,
           value: _haptics,
           onChanged: (v) async {
             await progress.setHapticsEnabled(v);
@@ -431,8 +447,8 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
           },
         ),
         _toggle(
-          title: 'Animaciones reducidas',
-          subtitle: 'Menos movimiento: transiciones cortas y sin sacudidas',
+          title: l.settingsReduceMotion,
+          subtitle: l.settingsReduceMotionHint,
           value: _reduceMotion,
           onChanged: (v) async {
             await progress.setReduceMotion(v);
@@ -488,21 +504,21 @@ class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
     final json = await ref.read(analyticsBufferProvider).export(_log);
     await Clipboard.setData(ClipboardData(text: json));
     if (!mounted) return;
-    showGameSnack(context, 'Datos copiados. Pegalos en un mensaje.');
+    showGameSnack(context, AppLocalizations.of(context).usageCopied);
   }
 
   @override
   Widget build(BuildContext context) {
     final log = _log;
     final day = log?.dayIndex(DateTime.now()) ?? 0;
+    final l = AppLocalizations.of(context);
     return GameCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text('Compartir estadísticas', style: AppTextStyles.ui(14)),
+          title: Text(l.usageShare, style: AppTextStyles.ui(14)),
           subtitle: Text(
-              'Qué rutas jugás y cuándo volvés. Anónimo: sin tu nombre '
-              'ni nada que te identifique.',
+              l.usageShareHint,
               style: AppTextStyles.bodyMedium),
           value: _enabled,
           onChanged: (v) async {
@@ -514,11 +530,7 @@ class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
         if (log != null) ...[
           const SizedBox(height: 8),
           Text(
-            'Día ${day + 1} desde que empezaste · '
-            '${log.daysActive} '
-            '${log.daysActive == 1 ? 'día jugado' : 'días jugados'} · '
-            '${log.totalSessions} '
-            '${log.totalSessions == 1 ? 'sesión' : 'sesiones'}',
+            l.usageSummary(day + 1, log.daysActive, log.totalSessions),
             style: AppTextStyles.bodySmall,
           ),
         ],
@@ -528,7 +540,7 @@ class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
             onPressed: _copy,
             icon: const Icon(Icons.copy_rounded,
                 size: 16, color: AppColors.inkSoft),
-            label: Text('Copiar datos para el equipo',
+            label: Text(l.usageCopy,
                 style: AppTextStyles.ui(12, color: AppColors.inkSoft)),
           ),
         ),
@@ -540,11 +552,77 @@ class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
                   ref.read(rewardedAdsServiceProvider).showPrivacyOptions(),
               icon: const Icon(Icons.privacy_tip_outlined,
                   size: 16, color: AppColors.inkSoft),
-              label: Text('Privacidad de los anuncios',
+              label: Text(l.usageAdsPrivacy,
                   style: AppTextStyles.ui(12, color: AppColors.inkSoft)),
             ),
           ),
       ]),
+    );
+  }
+}
+
+// ─── Idioma ───────────────────────────────────────────────────────────────────
+
+class _LanguageCard extends ConsumerStatefulWidget {
+  const _LanguageCard();
+
+  @override
+  ConsumerState<_LanguageCard> createState() => _LanguageCardState();
+}
+
+class _LanguageCardState extends ConsumerState<_LanguageCard> {
+  /// null = el del teléfono.
+  String? _chosen;
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(playerProgressProvider).language().then((l) {
+      if (!mounted) return;
+      setState(() {
+        _chosen = l;
+        _loaded = true;
+      });
+    });
+  }
+
+  Future<void> _pick(String? lang) async {
+    if (lang == _chosen) return;
+    setState(() => _chosen = lang);
+    await ref.read(playerProgressProvider).setLanguage(lang);
+    final effective =
+        resolveLanguage(lang, WidgetsBinding.instance.platformDispatcher.locale);
+    await applyLanguage(effective);
+    ref.read(languageProvider.notifier).state = effective;
+    // Lo que ya estaba cargado se vuelve a leer en el idioma nuevo.
+    reloadGameState(ref);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final options = <(String?, String)>[
+      (null, l.languageSystem),
+      ('es', l.languageSpanish),
+      ('en', l.languageEnglish),
+    ];
+    return GameCard(
+      child: RadioGroup<String?>(
+        groupValue: _chosen,
+        onChanged: (v) {
+          if (_loaded) _pick(v);
+        },
+        child: Column(children: [
+          for (final (code, label) in options)
+            RadioListTile<String?>(
+              contentPadding: EdgeInsets.zero,
+              value: code,
+              activeColor: AppColors.ochreDeep,
+              title: Text(label, style: AppTextStyles.ui(14)),
+            ),
+        ]),
+      ),
     );
   }
 }

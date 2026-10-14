@@ -7,6 +7,7 @@ import 'package:the_messenger/presentation/screens/login/login_screen.dart';
 import 'package:the_messenger/presentation/providers/providers.dart';
 import 'package:the_messenger/presentation/theme/app_theme.dart';
 import 'package:the_messenger/presentation/theme/sky.dart';
+import 'helpers/localized_app.dart';
 
 int _channelDelta(Color a, Color b) => [
       (a.r - b.r).abs(),
@@ -125,7 +126,10 @@ void main() {
       addTearDown(tester.view.reset);
       await tester.pumpWidget(ProviderScope(
         overrides: [debugSkyHourProvider.overrideWith((_) => hour)],
-        child: const MaterialApp(home: LoginScreen()),
+        child: const MaterialApp(locale: kTestLocale,
+      supportedLocales: kTestSupportedLocales,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      home: LoginScreen()),
       ));
       await tester.pump(const Duration(seconds: 2));
       expect(tester.takeException(), isNull);

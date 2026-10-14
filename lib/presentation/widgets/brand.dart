@@ -9,10 +9,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Nombre del juego tal como se muestra.
 const String kGameName = 'Cursus';
-const String kGameTagline = 'Cartas de Roma';
+
 
 /// El sello de la marca: cera cinabrio plana, contorno de tinta y una V
 /// romana grabada. Más sobrio que el sello del juego ([paintWaxSeal]): sin
@@ -152,8 +153,9 @@ class BrandMark extends StatelessWidget {
       softWrap: false,
       style: AppTextStyles.brandWordmark(size, color).copyWith(shadows: shadows),
     );
+    final taglineText = AppLocalizations.of(context).brandTagline;
     final sub = Text(
-      kGameTagline.toUpperCase(),
+      taglineText.toUpperCase(),
       style: AppTextStyles.brandTagline(size * 0.3, color),
     );
     final text = Column(
@@ -164,7 +166,7 @@ class BrandMark extends StatelessWidget {
       children: [word, if (tagline) ...[SizedBox(height: size * 0.25), sub]],
     );
     return Semantics(
-      label: '$kGameName, $kGameTagline',
+      label: '$kGameName, $taglineText',
       excludeSemantics: true,
       child: switch (layout) {
         BrandLayout.wordmark => text,

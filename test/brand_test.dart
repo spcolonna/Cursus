@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:the_messenger/presentation/widgets/brand.dart';
+import 'helpers/localized_app.dart';
 
 void main() {
   test('el nombre viejo no aparece en el código ni en la config visible', () {
@@ -40,7 +41,10 @@ void main() {
   testWidgets('BrandMark se dibuja en sus dos disposiciones', (tester) async {
     for (final layout in BrandLayout.values) {
       await tester.pumpWidget(MaterialApp(
-        home: Scaffold(
+        locale: kTestLocale,
+      supportedLocales: kTestSupportedLocales,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      home: Scaffold(
           body: Center(child: BrandMark(layout: layout, tagline: true)),
         ),
       ));

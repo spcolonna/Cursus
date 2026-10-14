@@ -12,6 +12,7 @@ import 'package:the_messenger/infrastructure/cloud/cloud_sync_service.dart';
 import 'package:the_messenger/infrastructure/cloud/local_save_store.dart';
 import 'package:the_messenger/presentation/providers/providers.dart';
 import 'package:the_messenger/presentation/widgets/cloud_widgets.dart';
+import 'helpers/localized_app.dart';
 
 class _FakeAccount implements CloudAccount {
   @override
@@ -170,7 +171,7 @@ void main() {
         'cosmetic_title_equipped_v1', 'ads_travel_day_v1',
         'ads_travel_count_v1', 'ads_double_pay_day_v1', 'sfx_enabled_v1',
         'music_enabled_v1', 'music_volume_v1', 'haptics_enabled_v1',
-        'reduce_motion_v1', 'analytics_enabled_v1',
+        'reduce_motion_v1', 'analytics_enabled_v1', 'language_v1',
       };
       final keyDecl = RegExp(r"static const _k\w*\s*=\s*'([a-z0-9_]+)'");
       final found = <String>{};
@@ -278,8 +279,8 @@ void main() {
     testWidgets('sin nube avisa que guarda en el teléfono y deja borrar',
         (tester) async {
       SharedPreferences.setMockInitialValues({'user_name': 'Varus'});
-      await tester.pumpWidget(const ProviderScope(
-        child: MaterialApp(home: Scaffold(body: AccountCard())),
+      await tester.pumpWidget(ProviderScope(
+        child: localizedApp(const Scaffold(body: AccountCard())),
       ));
       await tester.pump();
       expect(find.text('Tu partida se guarda en este teléfono.'),
@@ -295,11 +296,11 @@ void main() {
 
     test('hace cuánto', () {
       final now = DateTime(2026, 10, 13, 12);
-      expect(timeAgo(now.subtract(const Duration(seconds: 10)), now: now),
-          'recién');
-      expect(timeAgo(now.subtract(const Duration(minutes: 5)), now: now),
+      expect(timeAgo(esStrings, now.subtract(const Duration(seconds: 10)), now: now),
+          'hace un momento');
+      expect(timeAgo(esStrings, now.subtract(const Duration(minutes: 5)), now: now),
           'hace 5 min');
-      expect(timeAgo(now.subtract(const Duration(days: 3)), now: now),
+      expect(timeAgo(esStrings, now.subtract(const Duration(days: 3)), now: now),
           'hace 3 días');
       expect(cloudSyncProviderIsLocal(), isTrue);
     });

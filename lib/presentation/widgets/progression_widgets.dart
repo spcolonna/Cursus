@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../domain/entities/progression.dart';
 import '../feedback/feedback.dart';
 import '../theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Piezas de progresión: medallas de logro, laurel de rango y selector de
@@ -19,13 +20,14 @@ IconData achievementIcon(AchievementKind kind) => switch (kind) {
       AchievementKind.empire => Icons.savings,
     };
 
-String achievementKindLabel(AchievementKind kind) => switch (kind) {
-      AchievementKind.road => 'El camino',
-      AchievementKind.grade => 'Entregas perfectas',
-      AchievementKind.guild => 'El gremio',
-      AchievementKind.skill => 'Oficio',
-      AchievementKind.story => 'Historia',
-      AchievementKind.empire => 'Fortuna',
+String achievementKindLabel(AppLocalizations l, AchievementKind kind) =>
+    switch (kind) {
+      AchievementKind.road => l.achKindRoad,
+      AchievementKind.grade => l.achKindGrade,
+      AchievementKind.guild => l.achKindGuild,
+      AchievementKind.skill => l.achKindSkill,
+      AchievementKind.story => l.achKindStory,
+      AchievementKind.empire => l.achKindEmpire,
     };
 
 const _romanRanks = ['', 'I', 'II', 'III', 'IV', 'V'];
@@ -190,7 +192,9 @@ class TitlePicker extends StatelessWidget {
           Semantics(
             button: true,
             selected: t == equipped,
-            label: t == equipped ? '$t, equipado' : t,
+            label: t == equipped
+                ? AppLocalizations.of(context).titleEquippedSemantics(t)
+                : t,
             excludeSemantics: true,
             child: GestureDetector(
               onTap: () {

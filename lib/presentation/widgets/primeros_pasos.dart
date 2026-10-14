@@ -4,22 +4,25 @@ import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import 'widgets.dart';
 import '../../infrastructure/progress/player_progress.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Checklist post-tutorial (GDD §7): 5 tareas → 3 Aureos + 1 Sello.
 class PrimerosPasosCard extends ConsumerWidget {
   const PrimerosPasosCard({super.key});
 
-  static const _labels = {
-    PlayerProgress.taskFirstRealRoute: 'Completá tu primera ruta real',
-    PlayerProgress.taskBuyItem: 'Comprá un ítem en la tienda',
-    PlayerProgress.taskLevelSkill: 'Subí una habilidad',
-    PlayerProgress.taskViewGuild: 'Mirá el tablón del gremio',
-    PlayerProgress.taskEnableNotifs: 'Activá las notificaciones',
-  };
+  static Map<String, String> _labels(AppLocalizations l) => {
+        PlayerProgress.taskFirstRealRoute: l.firstStepsRoute,
+        PlayerProgress.taskBuyItem: l.firstStepsBuy,
+        PlayerProgress.taskLevelSkill: l.firstStepsSkill,
+        PlayerProgress.taskViewGuild: l.firstStepsGuild,
+        PlayerProgress.taskEnableNotifs: l.firstStepsNotifs,
+      };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(primerosPasosProvider);
+    final l = AppLocalizations.of(context);
+    final labels = _labels(l);
 
     return progress.when(
       loading: () => const SizedBox.shrink(),
@@ -44,7 +47,7 @@ class PrimerosPasosCard extends ConsumerWidget {
                 const Icon(Icons.flag, color: AppColors.ochreDeep, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('PRIMEROS PASOS',
+                  child: Text(l.firstStepsTitle,
                       style: AppTextStyles.ui(12,
                           color: AppColors.ochreDeep,
                           weight: FontWeight.bold,
@@ -67,7 +70,7 @@ class PrimerosPasosCard extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        _labels[id] ?? id,
+                        labels[id] ?? id,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: ok ? AppColors.inkSoft : AppColors.paperHigh,
                           decoration:
@@ -83,7 +86,7 @@ class PrimerosPasosCard extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   child: GameButton(
-                    label: 'RECLAMAR · 3 Aureos + 1 Sello',
+                    label: l.firstStepsClaim,
                     icon: Icons.card_giftcard,
                     variant: GameButtonVariant.success,
                     fontSize: 14,
@@ -95,7 +98,7 @@ class PrimerosPasosCard extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    'Completá las 5 tareas y ganás 3 Aureos + 1 Sello.',
+                    l.firstStepsHint,
                     style: AppTextStyles.bodyMedium
                         .copyWith(fontSize: 11, color: AppColors.inkMuted),
                   ),
@@ -126,7 +129,7 @@ Future<void> maybeShowSpotlight({
         SizedBox(
           width: double.infinity,
           child: GameButton(
-            label: 'ENTENDIDO',
+            label: AppLocalizations.of(ctx).gotIt,
             fontSize: 15,
             onTap: () => Navigator.pop(ctx),
           ),

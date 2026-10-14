@@ -1,3 +1,4 @@
+import 'domain_strings.dart';
 import 'entities.dart';
 import 'game_clock.dart';
 
@@ -23,7 +24,6 @@ class ContractReward {
 
 class ContractTemplate {
   final String id;
-  final String description;
   final ContractGoal goal;
   final int target;
   final SkillType? skill; // solo para useSkill
@@ -31,38 +31,40 @@ class ContractTemplate {
 
   const ContractTemplate({
     required this.id,
-    required this.description,
     required this.goal,
     required this.target,
     this.skill,
     required this.reward,
   });
+
+  /// Texto del tablón (kDomainStrings: ui.contract.<id>).
+  String get description => ds('ui.contract.$id');
 }
 
 // Pool fácil — recompensa chica en denarios
 const _easyPool = <ContractTemplate>[
   ContractTemplate(
-    id: 'c_deliver1', description: 'Entregá 1 paquete',
+    id: 'c_deliver1',
     goal: ContractGoal.deliver, target: 1,
     reward: ContractReward(denarios: 60),
   ),
   ContractTemplate(
-    id: 'c_events2', description: 'Resolvé 2 eventos en el camino',
+    id: 'c_events2',
     goal: ContractGoal.resolveEvents, target: 2,
     reward: ContractReward(denarios: 70),
   ),
   ContractTemplate(
-    id: 'c_stealth', description: 'Usá una opción de Sigilo',
+    id: 'c_stealth',
     goal: ContractGoal.useSkill, target: 1, skill: SkillType.stealth,
     reward: ContractReward(denarios: 50),
   ),
   ContractTemplate(
-    id: 'c_contacts', description: 'Usá una opción de Contactos',
+    id: 'c_contacts',
     goal: ContractGoal.useSkill, target: 1, skill: SkillType.contacts,
     reward: ContractReward(denarios: 50),
   ),
   ContractTemplate(
-    id: 'c_survival', description: 'Usá una opción de Supervivencia',
+    id: 'c_survival',
     goal: ContractGoal.useSkill, target: 1, skill: SkillType.survival,
     reward: ContractReward(denarios: 50),
   ),
@@ -71,17 +73,17 @@ const _easyPool = <ContractTemplate>[
 // Pool medio — recompensa mayor en denarios
 const _mediumPool = <ContractTemplate>[
   ContractTemplate(
-    id: 'c_deliver2', description: 'Entregá 2 paquetes',
+    id: 'c_deliver2',
     goal: ContractGoal.deliver, target: 2,
     reward: ContractReward(denarios: 90),
   ),
   ContractTemplate(
-    id: 'c_events3', description: 'Resolvé 3 eventos en el camino',
+    id: 'c_events3',
     goal: ContractGoal.resolveEvents, target: 3,
     reward: ContractReward(denarios: 80),
   ),
   ContractTemplate(
-    id: 'c_success2', description: 'Superá 2 eventos con éxito',
+    id: 'c_success2',
     goal: ContractGoal.eventSuccesses, target: 2,
     reward: ContractReward(denarios: 85),
   ),
@@ -90,17 +92,17 @@ const _mediumPool = <ContractTemplate>[
 // Pool de Sellos — el tercer contrato del día siempre paga 1 Sello del Gremio
 const _sealPool = <ContractTemplate>[
   ContractTemplate(
-    id: 'c_seal_gradeA', description: 'Entregá con nota A o mejor',
+    id: 'c_seal_gradeA',
     goal: ContractGoal.gradeA, target: 1,
     reward: ContractReward(seals: 1),
   ),
   ContractTemplate(
-    id: 'c_seal_success3', description: 'Superá 3 eventos con éxito',
+    id: 'c_seal_success3',
     goal: ContractGoal.eventSuccesses, target: 3,
     reward: ContractReward(seals: 1),
   ),
   ContractTemplate(
-    id: 'c_seal_deliver2', description: 'Entregá 2 paquetes en el día',
+    id: 'c_seal_deliver2',
     goal: ContractGoal.deliver, target: 2,
     reward: ContractReward(seals: 1),
   ),

@@ -1,3 +1,4 @@
+import 'domain_strings.dart';
 import 'entities.dart';
 import 'world.dart';
 
@@ -16,74 +17,24 @@ const Map<int, int> sealCostForLevel = {
 };
 
 class SkillNodeDef {
+  final SkillType skill;
   final int level;
-  final String name;
-  final String perk; // qué otorga este nivel (texto para el jugador)
-  const SkillNodeDef(this.level, this.name, this.perk);
+  const SkillNodeDef(this.skill, this.level);
+
+  /// Nombre propio del nodo (textos en kDomainStrings: ui.skill_node.*).
+  String get name => ds('ui.skill_node.${skill.name}.$level.name');
+
+  /// Qué otorga este nivel (texto para el jugador).
+  String get perk => ds('ui.skill_node.${skill.name}.$level.perk');
 }
 
 /// Definición completa de los 5 caminos, 10 nodos cada uno.
-const Map<SkillType, List<SkillNodeDef>> skillTree = {
-  SkillType.speed: [
-    SkillNodeDef(1, 'Paso firme', 'Desbloquea opciones de Velocidad Nv.1'),
-    SkillNodeDef(2, 'Trote sostenido', '+30 a tus tiradas · opciones de Velocidad Nv.2'),
-    SkillNodeDef(3, 'Zancada larga', '+45 a tus tiradas · opciones de Velocidad Nv.3'),
-    SkillNodeDef(4, 'Pies de viento', '+60 a tus tiradas · opciones de Velocidad Nv.4'),
-    SkillNodeDef(5, 'Corredor de postas', '+75 a tus tiradas · todas las opciones de Velocidad'),
-    SkillNodeDef(6, 'Atajos del Imperio', 'Misiones -3% de duración'),
-    SkillNodeDef(7, 'Ritmo de campaña', 'Misiones -5% de duración'),
-    SkillNodeDef(8, 'Viento del norte', 'Misiones -7% de duración'),
-    SkillNodeDef(9, 'Sombra en el camino', 'Misiones -9% de duración'),
-    SkillNodeDef(10, 'Correo del César', 'Misiones -12% y las notas S pagan +25 denarios'),
-  ],
-  SkillType.stealth: [
-    SkillNodeDef(1, 'Pisada suave', 'Desbloquea opciones de Sigilo Nv.1'),
-    SkillNodeDef(2, 'Entre las sombras', '+30 a tus tiradas · opciones de Sigilo Nv.2'),
-    SkillNodeDef(3, 'Rostro anónimo', '+45 a tus tiradas · opciones de Sigilo Nv.3'),
-    SkillNodeDef(4, 'Manto gris', '+60 a tus tiradas · opciones de Sigilo Nv.4'),
-    SkillNodeDef(5, 'Fantasma del foro', '+75 a tus tiradas · todas las opciones de Sigilo'),
-    SkillNodeDef(6, 'Callejones conocidos', 'Las opciones de Sigilo exigen 1 nivel menos'),
-    SkillNodeDef(7, 'Paso de gato', '+5 a tus tiradas de Sigilo'),
-    SkillNodeDef(8, 'Niebla romana', 'Las opciones de Sigilo tienen 1 punto menos de riesgo'),
-    SkillNodeDef(9, 'Nadie te vio', '+10 extra a tus tiradas de Sigilo'),
-    SkillNodeDef(10, 'Invisible', 'Riesgo -2 y +10 extra en opciones de Sigilo'),
-  ],
-  SkillType.combat: [
-    SkillNodeDef(1, 'Guardia alzada', 'Desbloquea opciones de Combate Nv.1'),
-    SkillNodeDef(2, 'Puño del camino', '+30 a tus tiradas · opciones de Combate Nv.2'),
-    SkillNodeDef(3, 'Reflejos de legión', '+45 a tus tiradas · opciones de Combate Nv.3'),
-    SkillNodeDef(4, 'Acero prestado', '+60 a tus tiradas · opciones de Combate Nv.4'),
-    SkillNodeDef(5, 'Veterano de riñas', '+75 a tus tiradas · todas las opciones de Combate'),
-    SkillNodeDef(6, 'Postura firme', '+5 a tus tiradas de Combate'),
-    SkillNodeDef(7, 'Contragolpe', '+10 a tus tiradas de Combate'),
-    SkillNodeDef(8, 'Escudo del correo', 'Los fallos en Combate no dañan el paquete'),
-    SkillNodeDef(9, 'Furia controlada', '+10 extra a tus tiradas de Combate'),
-    SkillNodeDef(10, 'Gladiador', 'Los fallos en Combate te cuestan la mitad de salud'),
-  ],
-  SkillType.survival: [
-    SkillNodeDef(1, 'Ojo del terreno', 'Desbloquea opciones de Supervivencia Nv.1'),
-    SkillNodeDef(2, 'Piel curtida', '+30 a tus tiradas · opciones de Supervivencia Nv.2'),
-    SkillNodeDef(3, 'Aguas y raíces', '+45 a tus tiradas · opciones de Supervivencia Nv.3'),
-    SkillNodeDef(4, 'Refugio rápido', '+60 a tus tiradas · opciones de Supervivencia Nv.4'),
-    SkillNodeDef(5, 'Hijo del camino', '+75 a tus tiradas · todas las opciones de Supervivencia'),
-    SkillNodeDef(6, 'Segundo aliento', 'Los eventos te fatigan menos (8 → 6)'),
-    SkillNodeDef(7, 'Sangre dura', 'Los resultados parciales te cuestan menos salud'),
-    SkillNodeDef(8, 'Temple de hierro', 'Los eventos te fatigan mucho menos (6 → 4)'),
-    SkillNodeDef(9, 'Marcha forzada', 'La fatiga alta te penaliza la mitad'),
-    SkillNodeDef(10, 'Incansable', 'La fatiga nunca penaliza tus tiradas'),
-  ],
-  SkillType.contacts: [
-    SkillNodeDef(1, 'Cara conocida', 'Desbloquea opciones de Contactos Nv.1'),
-    SkillNodeDef(2, 'Amigo del tabernero', '+30 a tus tiradas · opciones de Contactos Nv.2'),
-    SkillNodeDef(3, 'Deudas y favores', '+45 a tus tiradas · opciones de Contactos Nv.3'),
-    SkillNodeDef(4, 'Oído en el foro', '+60 a tus tiradas · opciones de Contactos Nv.4'),
-    SkillNodeDef(5, 'Red de porteros', '+75 a tus tiradas · todas las opciones de Contactos'),
-    SkillNodeDef(6, 'Comisión del gremio', 'Las entregas pagan +5% de denarios'),
-    SkillNodeDef(7, 'Cliente frecuente', 'Las entregas pagan +8% de denarios'),
-    SkillNodeDef(8, 'Palabra del Senado', 'Las entregas pagan +12% de denarios'),
-    SkillNodeDef(9, 'Mano derecha de Varus', 'Las entregas pagan +16% de denarios'),
-    SkillNodeDef(10, 'Red imperial', 'Las entregas pagan +20% de denarios'),
-  ],
+final Map<SkillType, List<SkillNodeDef>> skillTree = {
+  for (final skill in SkillType.values)
+    skill: [
+      for (var level = 1; level <= kMaxSkillLevelElite; level++)
+        SkillNodeDef(skill, level),
+    ],
 };
 
 SkillNodeDef skillNode(SkillType skill, int level) =>
@@ -219,60 +170,67 @@ List<SkillEffect> skillEffectsAt(SkillType skill, int level) {
   final m = _probe(skill, level);
   final effects = <SkillEffect>[
     // Base común a los cinco caminos: cada nivel suma 15 a la tirada.
-    SkillEffect('Suma a tus tiradas', '+${level * 15}'),
-    SkillEffect('Opciones que podés elegir', 'hasta Nv.$level'),
+    SkillEffect(ds('ui.effect.roll_bonus'), '+${level * 15}'),
+    SkillEffect(ds('ui.effect.options'),
+        ds('ui.effect.options_value', {'level': level})),
   ];
 
   switch (skill) {
     case SkillType.speed:
       final factor = SkillPerks.missionDurationFactor(m);
-      effects.add(SkillEffect('Duración de las misiones',
-          factor == 1.0 ? 'sin cambios' : '−${((1 - factor) * 100).round()}%'));
+      effects.add(SkillEffect(ds('ui.effect.duration'),
+          factor == 1.0 ? ds('ui.effect.unchanged') : '−${((1 - factor) * 100).round()}%'));
       if (SkillPerks.gradeSBonus(m) > 0) {
-        effects.add(SkillEffect(
-            'Bonus por nota S', '+${SkillPerks.gradeSBonus(m)} denarios'));
+        effects.add(SkillEffect(ds('ui.effect.grade_s'),
+            ds('ui.effect.denarios_value', {'n': SkillPerks.gradeSBonus(m)})));
       }
     case SkillType.stealth:
       final bonus = SkillPerks.scoreBonus(skill, m);
       if (bonus > 0) {
-        effects.add(SkillEffect('Bonus de sigilo', '+$bonus a la tirada'));
+        effects.add(SkillEffect(ds('ui.effect.stealth_bonus'),
+            ds('ui.effect.roll_value', {'n': bonus})));
       }
       final risk = SkillPerks.riskReduction(skill, m);
-      if (risk > 0) effects.add(SkillEffect('Riesgo efectivo', '−$risk'));
+      if (risk > 0) effects.add(SkillEffect(ds('ui.effect.risk'), '−$risk'));
       if (SkillPerks.gatingDiscount(skill, m) > 0) {
-        effects.add(const SkillEffect('Requisitos de sigilo', '1 nivel menos'));
+        effects.add(SkillEffect(
+            ds('ui.effect.stealth_req'), ds('ui.effect.one_level_less')));
       }
     case SkillType.combat:
       final bonus = SkillPerks.scoreBonus(skill, m);
       if (bonus > 0) {
-        effects.add(SkillEffect('Bonus de combate', '+$bonus a la tirada'));
+        effects.add(SkillEffect(ds('ui.effect.combat_bonus'),
+            ds('ui.effect.roll_value', {'n': bonus})));
       }
       if (SkillPerks.combatProtectsPackage(skill, m)) {
-        effects.add(const SkillEffect('Al fallar', 'el paquete no se daña'));
+        effects.add(SkillEffect(
+            ds('ui.effect.on_fail'), ds('ui.effect.package_safe')));
       }
       final fail = SkillPerks.failHealthDelta(skill, m, false);
       if (fail > -20) {
-        effects.add(SkillEffect('Salud al fallar', '$fail en vez de −20'));
+        effects.add(SkillEffect(ds('ui.effect.fail_health'),
+            ds('ui.effect.instead_of', {'value': fail, 'base': '−20'})));
       }
     case SkillType.survival:
-      effects.add(SkillEffect(
-          'Fatiga por evento', '+${SkillPerks.fatiguePerEvent(m)}'));
+      effects.add(SkillEffect(ds('ui.effect.fatigue_per_event'),
+          '+${SkillPerks.fatiguePerEvent(m)}'));
       final factor = SkillPerks.fatiguePenaltyFactor(m);
       if (factor < 1.0) {
         effects.add(SkillEffect(
-            'Castigo por fatiga alta',
+            ds('ui.effect.fatigue_penalty'),
             factor == 0.0
-                ? 'ninguno'
+                ? ds('ui.effect.none')
                 : '−${((1 - factor) * 100).round()}%'));
       }
       final partial = SkillPerks.partialHealthDelta(m);
       if (partial > -5) {
-        effects.add(SkillEffect('Salud en parciales', '$partial en vez de −5'));
+        effects.add(SkillEffect(ds('ui.effect.partial_health'),
+            ds('ui.effect.instead_of', {'value': partial, 'base': '−5'})));
       }
     case SkillType.contacts:
       final mult = SkillPerks.payMultiplier(m);
-      effects.add(SkillEffect('Paga de las entregas',
-          mult == 1.0 ? 'normal' : '+${((mult - 1) * 100).round()}%'));
+      effects.add(SkillEffect(ds('ui.effect.pay'),
+          mult == 1.0 ? ds('ui.effect.normal') : '+${((mult - 1) * 100).round()}%'));
   }
   return effects;
 }

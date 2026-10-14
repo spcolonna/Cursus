@@ -4,47 +4,33 @@ import 'package:go_router/go_router.dart';
 import '../../feedback/feedback.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 
 // Cinco láminas, una idea por lámina. Todas con la identidad del juego (navy,
 // oro, pergamino): antes cada una tenía su propio color y la primera era verde.
-const _slides = [
-  _Slide(
-    icon: Icons.account_balance,
-    title: 'Roma, 50 a.C.',
-    body: 'El Imperio controla el mundo conocido.\n'
-        'Millones de personas. Incontables rutas.\n'
-        'Y cada decisión que importa viaja en manos de alguien.',
-  ),
-  _Slide(
-    icon: Icons.mail,
-    title: 'Vos sos ese alguien.',
-    body: 'Un mensajero. El eslabón entre el poder y sus extremos.\n'
-        'Nadie sabe tu nombre. Nadie necesita saberlo.\n'
-        'Solo importa que el mensaje llegue.',
-  ),
-  _Slide(
-    icon: Icons.thunderstorm,
-    title: 'El camino no perdona.',
-    body: 'Legionarios. Tormentas. Bandidos. Traidores.\n'
-        'Cada viaje es una prueba.\n'
-        'Cada decisión tiene consecuencias.',
-  ),
-  _Slide(
-    icon: Icons.schedule,
-    title: 'El viaje es real.',
-    body: 'Las misiones duran minutos u horas de verdad.\n'
-        'Mandás a tu mensajero y seguís con tu día:\n'
-        'te avisamos cuando haya que decidir.',
-  ),
-  _Slide(
-    icon: Icons.flag,
-    title: '¿Estás listo?',
-    body: 'Varus, jefe del correo, quiere ponerte a prueba.\n'
-        'Cuatro encargos cortos.\n'
-        'No lo decepciones.',
-    isLast: true,
-  ),
-];
+List<_Slide> _buildSlides(AppLocalizations l) => [
+      _Slide(
+          icon: Icons.account_balance,
+          title: l.onboardingTitle1,
+          body: l.onboardingBody1),
+      _Slide(
+          icon: Icons.mail,
+          title: l.onboardingTitle2,
+          body: l.onboardingBody2),
+      _Slide(
+          icon: Icons.thunderstorm,
+          title: l.onboardingTitle3,
+          body: l.onboardingBody3),
+      _Slide(
+          icon: Icons.schedule,
+          title: l.onboardingTitle4,
+          body: l.onboardingBody4),
+      _Slide(
+          icon: Icons.flag,
+          title: l.onboardingTitle5,
+          body: l.onboardingBody5,
+          isLast: true),
+    ];
 
 class _Slide {
   final IconData icon;
@@ -70,6 +56,8 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pages = PageController();
   int _currentIndex = 0;
+
+  List<_Slide> get _slides => _buildSlides(AppLocalizations.of(context));
 
   @override
   void dispose() {
@@ -106,7 +94,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               padding: const EdgeInsets.fromLTRB(0, AppSpacing.sm, AppSpacing.lg, 0),
               child: IntrinsicWidth(
                 child: GameButton(
-                label: 'Saltar',
+                label: AppLocalizations.of(context).onboardingSkip,
                 fontSize: 13,
                 variant: GameButtonVariant.ghost,
                 onTap: _finish,
@@ -133,7 +121,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl),
             child: Column(children: [
               Semantics(
-                label: 'Lámina ${_currentIndex + 1} de ${_slides.length}',
+                label: AppLocalizations.of(context)
+                    .onboardingSlideSemantics(_currentIndex + 1, _slides.length),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
@@ -158,7 +147,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               SizedBox(
                 width: double.infinity,
                 child: GameButton(
-                  label: slide.isLast ? '¡COMENZAR!' : 'CONTINUAR',
+                  label: slide.isLast
+                      ? AppLocalizations.of(context).onboardingStart
+                      : AppLocalizations.of(context).onboardingNext,
                   icon: slide.isLast ? Icons.flag : Icons.arrow_forward,
                   fontSize: 18,
                   onTap: _next,

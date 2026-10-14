@@ -8,6 +8,7 @@ import 'package:the_messenger/domain/entities/progression.dart';
 import 'package:the_messenger/domain/usecases/progression_usecases.dart';
 import 'package:the_messenger/presentation/providers/providers.dart';
 import 'package:the_messenger/presentation/widgets/celebration_host.dart';
+import 'helpers/localized_app.dart';
 
 GoRouter _router() => GoRouter(routes: [
       GoRoute(path: '/', builder: (_, __) => const Text('inicio')),
@@ -21,6 +22,9 @@ Future<ProviderContainer> _pump(WidgetTester t, GoRouter router) async {
   await t.pumpWidget(UncontrolledProviderScope(
     container: container,
     child: MaterialApp.router(
+      locale: kTestLocale,
+      supportedLocales: kTestSupportedLocales,
+      localizationsDelegates: kTestLocalizationsDelegates,
       routerConfig: router,
       builder: (_, child) => CelebrationHost(router: router, child: child!),
     ),

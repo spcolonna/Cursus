@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/static_game_content.dart';
-import '../../data/story_content.dart';
+import '../../domain/entities/content.dart';
 import '../../domain/entities/analytics.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/entities/guild.dart';
@@ -114,6 +114,10 @@ final iapServiceProvider = Provider<IapService>((ref) => IapService(
     ));
 final rewardedAdsServiceProvider =
     Provider<RewardedAdsService>((_) => RewardedAdsService());
+
+/// Idioma activo ('es' o 'en'). Lo fija `main.dart` al arrancar y Ajustes
+/// al cambiarlo (con `applyLanguage`).
+final languageProvider = StateProvider<String>((_) => 'es');
 
 /// Ruta a abrir porque el jugador tocó un aviso. La escribe `main.dart` y la
 /// consume el Home cuando ya está montado (así no la pisa el Splash).

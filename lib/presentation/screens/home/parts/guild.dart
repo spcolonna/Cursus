@@ -32,14 +32,15 @@ class _GuildSummaryCard extends ConsumerWidget {
           ? AppColors.ochreDeep
           : AppColors.ochreDeep.withValues(alpha: 0.6),
       onTap: () => _openGuildBoard(context, ref),
-      semanticLabel: 'Tablón del gremio: $claimed de $total cobrados',
+      semanticLabel:
+          AppLocalizations.of(context).guildBoardSemantics(claimed, total),
       child: Row(children: [
         const Icon(Icons.push_pin, color: AppColors.ochreDeep, size: 22),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('TABLÓN DEL GREMIO',
+            Text(AppLocalizations.of(context).guildBoardHeader,
                 style: AppTextStyles.ui(13,
                     color: AppColors.sienna,
                     weight: FontWeight.bold,
@@ -69,8 +70,10 @@ class _GuildSummaryCard extends ConsumerWidget {
               Flexible(
                 child: Text(
                     weekly == null
-                        ? '$claimed/$total hoy'
-                        : '$claimed/$total hoy · semana $weeklyClaimed/${weekly.entries.length}',
+                        ? AppLocalizations.of(context)
+                            .guildToday(claimed, total)
+                        : AppLocalizations.of(context).guildTodayWeek(claimed,
+                            total, weeklyClaimed, weekly.entries.length),
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.bodySmall),
               ),
@@ -78,7 +81,8 @@ class _GuildSummaryCard extends ConsumerWidget {
           ]),
         ),
         if (ready > 0)
-          GameChip('COBRAR $ready', icon: Icons.savings, color: AppColors.ochreDeep)
+          GameChip(AppLocalizations.of(context).guildClaimCount(ready),
+                  icon: Icons.savings, color: AppColors.ochreDeep)
               .animate(
                   onPlay: (c) => AppMotion.reduced(context)
                       ? null
@@ -102,7 +106,7 @@ void _openGuildBoard(BuildContext context, WidgetRef ref) {
       .markTask(PlayerProgress.taskViewGuild);
   showGameSheet(
     context,
-    title: 'Tablón del gremio',
+    title: AppLocalizations.of(context).guildBoardTitle,
     builder: (_) => const _GuildBoard(),
   );
 }
@@ -117,7 +121,7 @@ class _ClaimButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Cobrar',
+      label: AppLocalizations.of(context).guildClaimSemantics,
       excludeSemantics: true,
       child: GestureDetector(
         onTap: busy ? null : onTap,
@@ -139,7 +143,7 @@ class _ClaimButton extends StatelessWidget {
                   height: 18,
                   child: CircularProgressIndicator(
                       strokeWidth: 2, color: AppColors.ink))
-              : Text('COBRAR',
+              : Text(AppLocalizations.of(context).guildClaim,
                   style: AppTextStyles.ui(13,
                       color: AppColors.ink, weight: FontWeight.bold)),
         ),
@@ -172,8 +176,8 @@ class _WeeklyCardState extends ConsumerState<_WeeklyCard> {
         d.npcFaction == null ? AppColors.ochreDeep : factionColor(d.npcFaction!);
 
     final Widget trailing = e.claimed
-        ? const GameChip('COBRADO',
-            key: ValueKey('claimed'), icon: Icons.check, color: AppColors.verdigris)
+        ? GameChip(AppLocalizations.of(context).guildClaimed,
+            key: const ValueKey('claimed'), icon: Icons.check, color: AppColors.verdigris)
         : done
             ? _ClaimButton(
                 key: const ValueKey('claim'), busy: _claiming, onTap: _claim)
@@ -208,7 +212,7 @@ class _WeeklyCardState extends ConsumerState<_WeeklyCard> {
         ]),
         if (!e.claimed) ...[
           const SizedBox(height: AppSpacing.sm),
-          Text('«${d.intro}»',
+          Text(AppLocalizations.of(context).quotedTitle(d.intro),
               style: AppTextStyles.proseItalic(size: 14)),
         ],
         const SizedBox(height: AppSpacing.sm),
@@ -239,7 +243,7 @@ class _WeeklyCardState extends ConsumerState<_WeeklyCard> {
             GameChip('+${d.denarios}',
                 icon: CurrencyType.denarios.icon, color: AppColors.egyptianBlue),
           if (d.seals > 0)
-            GameChip('+${d.seals} Sello',
+            GameChip(AppLocalizations.of(context).rewardSeals(d.seals),
                 icon: CurrencyType.seals.icon, color: AppColors.tyrian),
           for (final r in d.rep.entries)
             GameChip('+${r.value} ${r.key.label}',
@@ -262,7 +266,7 @@ class _WeeklyCardState extends ConsumerState<_WeeklyCard> {
             (type: CurrencyType.denarios, amount: def.denarios),
             (type: CurrencyType.seals, amount: def.seals),
           ],
-          note: 'Encargo de ${def.npcName} cumplido',
+          note: AppLocalizations.of(context).weeklyDone(def.npcName),
         );
       }
     } catch (e) {
@@ -288,8 +292,8 @@ class _GuildBoard extends ConsumerWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
         if (weekly != null) ...[
-          SectionHeader(title: 'Encargos de la semana'),
-          Text('Gente que confía en vos. Se renuevan el lunes.',
+          SectionHeader(title: AppLocalizations.of(context).weeklyHeader),
+          Text(AppLocalizations.of(context).weeklyHint,
               style: AppTextStyles.bodyMedium),
           const SizedBox(height: AppSpacing.md),
           for (final (i, e) in weekly.entries.indexed)
@@ -303,8 +307,9 @@ class _GuildBoard extends ConsumerWidget {
               ),
           const SizedBox(height: AppSpacing.md),
         ],
-        SectionHeader(title: 'Contratos del día'),
-        Text('Se renuevan a medianoche.', style: AppTextStyles.bodyMedium),
+        SectionHeader(title: AppLocalizations.of(context).contractsHeader),
+        Text(AppLocalizations.of(context).contractsHint,
+            style: AppTextStyles.bodyMedium),
         const SizedBox(height: AppSpacing.md),
         for (final (i, c) in guild.contracts.indexed)
           Padding(
@@ -339,8 +344,8 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
 
     final Widget trailing;
     if (c.claimed) {
-      trailing = const GameChip('COBRADO',
-          key: ValueKey('claimed'), icon: Icons.check, color: AppColors.verdigris);
+      trailing = GameChip(AppLocalizations.of(context).guildClaimed,
+          key: const ValueKey('claimed'), icon: Icons.check, color: AppColors.verdigris);
     } else if (c.completed) {
       final button = _ClaimButton(
           key: const ValueKey('claim'), busy: _claiming, onTap: _claim);
@@ -438,7 +443,7 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
         if (canReroll)
           GameIconButton(
             icon: Icons.autorenew,
-            semanticLabel: 'Cambiar este contrato por otro',
+            semanticLabel: AppLocalizations.of(context).contractReroll,
             color: AppColors.inkSoft,
             onTap: _reroll,
           ),
@@ -459,7 +464,7 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
     try {
       await ref.read(guildProvider.notifier).reroll(widget.contract.templateId);
       if (mounted) {
-        showGameSnack(context, 'Contrato cambiado. Mañana podés de nuevo.');
+        showGameSnack(context, AppLocalizations.of(context).contractRerolled);
       }
     } catch (e) {
       if (mounted) showErrorSnack(context, e);
@@ -480,7 +485,7 @@ class _ContractRowState extends ConsumerState<_ContractRow> {
             (type: CurrencyType.denarios, amount: reward.denarios),
             (type: CurrencyType.seals, amount: reward.seals),
           ],
-          note: 'Contrato cobrado',
+          note: AppLocalizations.of(context).contractClaimed,
         );
       }
     } catch (e) {
@@ -509,12 +514,12 @@ class _DailyPayDialogState extends ConsumerState<_DailyPayDialog> {
     final day = guild.nextPayDay;
 
     return GameDialog(
-      title: 'PAGA DEL GREMIO',
+      title: AppLocalizations.of(context).guildPayTitle,
       actions: [
         SizedBox(
           width: double.infinity,
           child: GameButton(
-            label: 'COBRAR PAGA — DÍA $day',
+            label: AppLocalizations.of(context).guildPayClaim(day),
             fontSize: 16,
             isLoading: _claiming,
             onTap: _claiming ? null : _claim,
@@ -551,7 +556,7 @@ class _DailyPayDialogState extends ConsumerState<_DailyPayDialog> {
               curve: Curves.elasticOut),
         ]),
         const SizedBox(height: AppSpacing.sm),
-        Text('Varus premia tu constancia.',
+        Text(AppLocalizations.of(context).guildPayHint,
             style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
         const SizedBox(height: 14),
         // Racha de 7 días: se llena día por día.
@@ -620,7 +625,7 @@ class _DailyPayDialogState extends ConsumerState<_DailyPayDialog> {
           (type: CurrencyType.aureos, amount: claimed.reward.aureos),
           (type: CurrencyType.seals, amount: claimed.reward.seals),
         ],
-        note: 'Paga del gremio · día ${claimed.day} de racha',
+        note: AppLocalizations.of(context).guildPayNote(claimed.day),
       );
     } catch (e) {
       if (!mounted) return;

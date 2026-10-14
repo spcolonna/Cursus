@@ -5,6 +5,7 @@ import '../theme/app_theme.dart';
 import 'art_image.dart';
 import 'components.dart';
 import 'insignia.dart';
+import '../../l10n/app_localizations.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Piezas de facción: insignia, color, retrato de NPC y la escalera de favores
@@ -121,7 +122,7 @@ class FactionUnlockList extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: AppSpacing.sm),
           child: Semantics(
             label: '${u.name}. ${u.description}. '
-                '${u.isOpen(world) ? 'Desbloqueado' : 'Pide ${u.tier.label}'}',
+                '${u.isOpen(world) ? AppLocalizations.of(context).unlocked : AppLocalizations.of(context).requiresTier(u.tier.label)}',
             excludeSemantics: true,
             child: GameCard(
               padding: const EdgeInsets.all(AppSpacing.md),
@@ -150,7 +151,7 @@ class FactionUnlockList extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 u.isOpen(world)
-                    ? const GameChip('Abierto',
+                    ? GameChip(AppLocalizations.of(context).open,
                         icon: Icons.check, color: AppColors.verdigris)
                     : GameChip(u.tier.label),
               ]),

@@ -6,6 +6,7 @@ import '../../../domain/entities/progression.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/widgets.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LOGROS Y TÍTULOS — qué conseguiste, qué te falta y cuánto. Arriba, el
@@ -57,7 +58,8 @@ class _Header extends StatelessWidget {
         GameBackButton(onTap: onBack),
         const SizedBox(width: AppSpacing.md),
         Expanded(
-            child: Text('Logros y títulos', style: AppTextStyles.titleLarge)),
+            child: Text(AppLocalizations.of(context).achTitle,
+                style: AppTextStyles.titleLarge)),
       ]),
     );
   }
@@ -84,17 +86,16 @@ class _Body extends ConsumerWidget {
             .fadeIn(duration: AppMotion.of(context, AppMotion.base))
             .slideY(begin: 0.06, end: 0),
         const SizedBox(height: AppSpacing.xl),
-        SectionHeader(title: 'Tu título'),
+        SectionHeader(title: AppLocalizations.of(context).achYourTitle),
         GameCard(
           child: state.titles.isEmpty
               ? Text(
-                  'Todavía no ganaste ninguno. Los títulos salen de los logros '
-                  'y de los finales de la historia.',
+                  AppLocalizations.of(context).achNoTitles,
                   style: AppTextStyles.bodyMedium)
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Tocá uno para llevarlo bajo tu nombre.',
+                    Text(AppLocalizations.of(context).achPickTitle,
                         style: AppTextStyles.bodySmall),
                     const SizedBox(height: AppSpacing.sm),
                     TitlePicker(
@@ -109,7 +110,7 @@ class _Body extends ConsumerWidget {
         ),
         for (final kind in kinds) ...[
           const SizedBox(height: AppSpacing.xl),
-          SectionHeader(title: achievementKindLabel(kind)),
+          SectionHeader(title: achievementKindLabel(AppLocalizations.of(context), kind)),
           for (final (i, d) in defs.where((d) => d.kind == kind).indexed)
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -174,11 +175,12 @@ class _AchievementRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final hidden = def.secret && !unlocked;
     final r = def.reward;
+    final l = AppLocalizations.of(context);
     return Semantics(
       label: hidden
-          ? 'Logro secreto'
+          ? l.achSecret
           : '${def.name}. ${def.goal} '
-              '${unlocked ? 'Conseguido' : 'Progreso $progress de ${def.target}'}',
+              '${unlocked ? l.achDone : l.achProgress(progress, def.target)}',
       excludeSemantics: true,
       child: GameCard(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -189,12 +191,12 @@ class _AchievementRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(hidden ? 'Logro secreto' : def.name,
+              Text(hidden ? l.achSecret : def.name,
                   style: AppTextStyles.ui(15,
                       color: unlocked ? AppColors.ochreDeep : AppColors.ink,
                       weight: FontWeight.bold)),
               const SizedBox(height: 2),
-              Text(hidden ? 'Seguí la historia para descubrirlo.' : def.goal,
+              Text(hidden ? l.achSecretHint : def.goal,
                   style: AppTextStyles.bodyMedium),
               if (!unlocked && !hidden && def.target > 1) ...[
                 const SizedBox(height: 6),
@@ -216,13 +218,13 @@ class _AchievementRow extends StatelessWidget {
                               ? AppColors.inkMuted
                               : AppColors.egyptianBlue),
                     if (r.seals > 0)
-                      GameChip('${r.seals} Sello',
+                      GameChip(l.sealsCount(r.seals),
                           icon: CurrencyType.seals.icon,
                           color: unlocked
                               ? AppColors.inkMuted
                               : AppColors.tyrian),
                     if (r.title != null)
-                      GameChip('«${r.title}»',
+                      GameChip(l.quotedTitle(r.title!),
                           icon: Icons.military_tech,
                           color: unlocked
                               ? AppColors.inkMuted

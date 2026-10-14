@@ -13,6 +13,8 @@ import '../../domain/repositories/repositories.dart';
 import '../../data/game_content.dart';
 import '../../data/game_content_expansion.dart';
 import '../../data/story_content.dart';
+import '../../data/localized_content.dart';
+import '../../domain/entities/content_l10n.dart';
 import '../../domain/entities/game_clock.dart';
 
 const _uuid = Uuid();
@@ -233,7 +235,7 @@ class LocalMessengerRepository implements MessengerRepository {
       skillXp: {for (final s in SkillType.values) s: 0},
       completedMissionIds: [],
       tutorialPhase: 1,
-      tutorialMissionIndex: tutorialMissions.length,   // ya pasó todas las pruebas
+      tutorialMissionIndex: lTutorialMissions.length,   // ya pasó todas las pruebas
       tutorialComplete: true,
       denarios: 0,
       aureos: 0,
@@ -416,7 +418,7 @@ class LocalMissionRepository implements MissionRepository {
   @override
   Future<List<GameRoute>> getAvailableRoutes(
       int messengerRank, WorldState world) async {
-    return allRealMissions
+    return lRealMissions
         .where((m) => m.isOfferedTo(messengerRank, world))
         .map((m) => GameRoute(
       id: m.id, origin: m.origin, destination: m.destination,
@@ -429,14 +431,14 @@ class LocalMissionRepository implements MissionRepository {
 
   @override
   Future<Mission> createTutorialMission(int index, String messengerId) async {
-    final cfg = tutorialMissions[index];
+    final cfg = lTutorialMissions[index];
     final now = GameClock.now();
     final deadline = now.add(Duration(minutes: cfg.durationMinutes));
     final totalSec = cfg.durationMinutes * 60;
 
     final events = <MissionEvent>[];
     for (int i = 0; i < cfg.eventIds.length; i++) {
-      final evtCfg = tutorialEvents.firstWhere((e) => e.id == cfg.eventIds[i]);
+      final evtCfg = lTutorialEvents.firstWhere((e) => e.id == cfg.eventIds[i]);
       final slotSec = totalSec / (cfg.eventIds.length + 1);
       final triggerAt = now.add(Duration(seconds: (slotSec * (i + 1)).round()));
       final deadlineAt = triggerAt.add(Duration(minutes: evtCfg.decisionWindowMinutes));
@@ -483,8 +485,8 @@ class LocalMissionRepository implements MissionRepository {
       List<String>? eventIds}) async {
     final now = GameClock.now();
     final deadline = now.add(Duration(minutes: route.durationMinutes));
-    final cfg = allRealMissions.firstWhere(
-            (m) => m.id == route.id, orElse: () => allRealMissions.first);
+    final cfg = lRealMissions.firstWhere(
+            (m) => m.id == route.id, orElse: () => lRealMissions.first);
     final events = _generateRealEvents(cfg, now, deadline, eventIds: eventIds);
 
     final mission = Mission(
@@ -566,12 +568,12 @@ class LocalMissionRepository implements MissionRepository {
       // Ya elegidos por el dominio (pickEventsForMission), en orden.
       picked = [
         for (final id in eventIds)
-          if (allRealEvents.where((e) => e.id == id).firstOrNull case final e?) e
+          if (lRealEvents.where((e) => e.id == id).firstOrNull case final e?) e
       ];
     } else {
       final count = cfg.minEvents +
           rng.nextInt((cfg.maxEvents - cfg.minEvents + 1).clamp(1, 10));
-      final pool = allRealEvents
+      final pool = lRealEvents
           .where((e) => cfg.eventPoolIds.contains(e.id))
           .toList()
         ..shuffle(rng);
@@ -708,21 +710,26 @@ class LocalMissionRepository implements MissionRepository {
     final configId = j['configId'] as String? ??
         _configIdByTitle[j['title'] as String];
     final art = configId == null ? null : _eventArtById[configId];
+    // Una misión guarda sus textos en el idioma en que se creó: los que
+    // tienen traducción se muestran en el idioma actual.
+    String tr(String field, String stored) =>
+        configId == null ? stored : ContentL10n.t('$configId.$field', stored);
     return MissionEvent(
-    id: j['id'] as String, title: j['title'] as String,
+    id: j['id'] as String, title: tr('title', j['title'] as String),
     configId: configId,
     category: j['category'] != null
         ? EventCategory.byName(j['category'] as String)
         : art?.$1 ?? EventCategory.road,
     npcId: j['npcId'] as String? ?? art?.$2,
-    description: j['description'] as String,
+    description: tr('description', j['description'] as String),
     triggersAt: DateTime.parse(j['triggersAt'] as String),
     deadlineAt: DateTime.parse(j['deadlineAt'] as String),
     status: _enumAt(EventStatus.values, j['status'], EventStatus.pending),
     options: (j['options'] as List).map((o) {
       final om = o as Map<String, dynamic>;
       return EventOption(
-        id: om['id'] as String, text: om['text'] as String,
+        id: om['id'] as String,
+        text: ContentL10n.t('${om['id']}.text', om['text'] as String),
         riskLevel: om['riskLevel'] as int,
         timeCostMinutes: om['timeCostMinutes'] as int? ?? 0,
         requiredSkills: {
@@ -730,9 +737,12 @@ class LocalMissionRepository implements MissionRepository {
             SkillType.values[int.parse(e.key)]: e.value as int
         },
         isCardOption: om['isCardOption'] as bool? ?? false,
-        outcomeSuccess: om['outcomeSuccess'] as String?,
-        outcomePartial: om['outcomePartial'] as String?,
-        outcomeFail: om['outcomeFail'] as String?,
+        outcomeSuccess:
+            ContentL10n.tn('${om['id']}.success', om['outcomeSuccess'] as String?),
+        outcomePartial:
+            ContentL10n.tn('${om['id']}.partial', om['outcomePartial'] as String?),
+        outcomeFail:
+            ContentL10n.tn('${om['id']}.fail', om['outcomeFail'] as String?),
         repDelta: om['repDelta'] == null
             ? null
             : {

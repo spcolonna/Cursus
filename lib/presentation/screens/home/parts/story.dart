@@ -47,7 +47,7 @@ class _StoryChapterCardState extends ConsumerState<_StoryChapterCard> {
         ),
         const SizedBox(height: AppSpacing.md),
         Row(children: [
-          const GameChip('HISTORIA',
+          GameChip(AppLocalizations.of(context).storyChip,
               icon: Icons.auto_stories, color: AppColors.tyrian),
           const Spacer(),
           GameChip(_durationLabel(c.durationMinutes),
@@ -61,7 +61,9 @@ class _StoryChapterCardState extends ConsumerState<_StoryChapterCard> {
         Text(c.chapterTitle,
             style: AppTextStyles.ui(17, weight: FontWeight.bold)),
         const SizedBox(height: AppSpacing.xs),
-        Text('${c.origin} → ${c.destination}',
+        Text(
+            '${ContentL10n.place(c.origin)} → '
+            '${ContentL10n.place(c.destination)}',
             style: AppTextStyles.ui(13, color: AppColors.inkSoft)),
         const SizedBox(height: 10),
         _LoreQuote(text: c.lore, accent: AppColors.tyrian),
@@ -69,7 +71,7 @@ class _StoryChapterCardState extends ConsumerState<_StoryChapterCard> {
         SizedBox(
           width: double.infinity,
           child: GameButton(
-            label: 'COMENZAR CAPÍTULO',
+            label: AppLocalizations.of(context).storyStart,
             icon: Icons.play_arrow_rounded,
             variant: GameButtonVariant.secret,
             fontSize: 16,
@@ -113,9 +115,10 @@ class _LockedStoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rank = step.requiredRank.clamp(1, kRankTitles.length - 1);
+    final l = AppLocalizations.of(context);
     return Semantics(
       label: '${step.arc.title}, ${step.chapter.chapterTitle}. '
-          'Se abre en rango $rank, ${kRankTitles[rank]}.',
+          '${l.storyLockedSemantics(rank, kRankTitles[rank])}',
       excludeSemantics: true,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -144,7 +147,7 @@ class _LockedStoryCard extends StatelessWidget {
               Text(step.chapter.chapterTitle,
                   style: AppTextStyles.ui(15, weight: FontWeight.bold)),
               const SizedBox(height: 2),
-              Text('Se abre en rango $rank · ${kRankTitles[rank]}',
+              Text(l.storyLocked(rank, kRankTitles[rank]),
                   style: AppTextStyles.bodySmall
                       .copyWith(color: AppColors.inkSoft)),
             ]),

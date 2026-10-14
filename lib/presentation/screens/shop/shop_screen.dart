@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -14,16 +15,17 @@ import '../../../domain/usecases/usecases.dart';
 import '../../../infrastructure/monetization/iap_service.dart';
 import '../../../infrastructure/progress/player_progress.dart';
 import '../../widgets/primeros_pasos.dart';
+import '../../../l10n/app_localizations.dart';
 
 // ─── Shop Item Model ──────────────────────────────────────────────────────────
 enum ShopCategory { boosters, skills, aureosPacks, bundles }
 
 extension ShopCategoryX on ShopCategory {
-  String get label => switch (this) {
-        ShopCategory.boosters => 'Potenciadores',
-        ShopCategory.skills => 'Habilidades',
-        ShopCategory.aureosPacks => 'Aureos',
-        ShopCategory.bundles => 'Paquetes',
+  String label(AppLocalizations l) => switch (this) {
+        ShopCategory.boosters => l.shopCatBoosters,
+        ShopCategory.skills => l.shopCatSkills,
+        ShopCategory.aureosPacks => l.shopCatAurei,
+        ShopCategory.bundles => l.shopCatBundles,
       };
   IconData get icon => switch (this) {
         ShopCategory.boosters => Icons.bolt,
@@ -38,8 +40,6 @@ enum PriceCurrency { denarios, aureos, realMoney }
 
 class ShopItem {
   final String id;
-  final String name;
-  final String description;
   final ShopCategory category;
   final int price;
   final PriceCurrency currency;
@@ -55,8 +55,6 @@ class ShopItem {
 
   const ShopItem({
     required this.id,
-    required this.name,
-    required this.description,
     required this.category,
     required this.price,
     required this.currency,
@@ -70,13 +68,61 @@ class ShopItem {
   });
 }
 
+
+// ─── Textos de cada item (por id) ──────────────────────────────────────────────
+extension ShopItemText on ShopItem {
+  String name(AppLocalizations l) => switch (id) {
+        'boost_health_small' => l.shopItemBoostHealthSmallName,
+        'boost_health_full' => l.shopItemBoostHealthFullName,
+        'boost_fatigue' => l.shopItemBoostFatigueName,
+        'boost_speed' => l.shopItemBoostSpeedName,
+        'boost_events' => l.shopItemBoostEventsName,
+        'boost_events_black' => l.shopItemBoostEventsBlackName,
+        'skill_speed_1' => l.shopItemSkillSpeed1Name,
+        'skill_stealth_1' => l.shopItemSkillStealth1Name,
+        'skill_combat_1' => l.shopItemSkillCombat1Name,
+        'skill_survival_1' => l.shopItemSkillSurvival1Name,
+        'skill_contacts_1' => l.shopItemSkillContacts1Name,
+        'aureos_small' => l.shopItemAureosSmallName,
+        'aureos_medium' => l.shopItemAureosMediumName,
+        'aureos_large' => l.shopItemAureosLargeName,
+        'aureos_mega' => l.shopItemAureosMegaName,
+        'bundle_starter' => l.shopItemBundleStarterName,
+        'bundle_warrior' => l.shopItemBundleWarriorName,
+        'seal_single' => l.shopItemSealSingleName,
+        'seal_pack_10' => l.shopItemSealPack10Name,
+        _ => id,
+      };
+
+  String description(AppLocalizations l) => switch (id) {
+        'boost_health_small' => l.shopItemBoostHealthSmallDesc,
+        'boost_health_full' => l.shopItemBoostHealthFullDesc,
+        'boost_fatigue' => l.shopItemBoostFatigueDesc,
+        'boost_speed' => l.shopItemBoostSpeedDesc,
+        'boost_events' => l.shopItemBoostEventsDesc,
+        'boost_events_black' => l.shopItemBoostEventsBlackDesc,
+        'skill_speed_1' => l.shopItemSkillSpeed1Desc,
+        'skill_stealth_1' => l.shopItemSkillStealth1Desc,
+        'skill_combat_1' => l.shopItemSkillCombat1Desc,
+        'skill_survival_1' => l.shopItemSkillSurvival1Desc,
+        'skill_contacts_1' => l.shopItemSkillContacts1Desc,
+        'aureos_small' => l.shopItemAureosSmallDesc,
+        'aureos_medium' => l.shopItemAureosMediumDesc,
+        'aureos_large' => l.shopItemAureosLargeDesc,
+        'aureos_mega' => l.shopItemAureosMegaDesc,
+        'bundle_starter' => l.shopItemBundleStarterDesc,
+        'bundle_warrior' => l.shopItemBundleWarriorDesc,
+        'seal_single' => l.shopItemSealSingleDesc,
+        'seal_pack_10' => l.shopItemSealPack10Desc,
+        _ => '',
+      };
+}
+
 // ─── Shop Catalogue ───────────────────────────────────────────────────────────
 final shopCatalogue = <ShopItem>[
   // ── Potenciadores (Denarios) ──────────────────────────────────────────────
   const ShopItem(
     id: 'boost_health_small',
-    name: 'Pocion de salud',
-    description: 'Restaura 30 puntos de salud al instante.',
     category: ShopCategory.boosters,
     price: 50,
     currency: PriceCurrency.denarios,
@@ -85,8 +131,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'boost_health_full',
-    name: 'Curacion completa',
-    description: 'Salud al 100%. Ideal antes de una mision larga.',
     category: ShopCategory.boosters,
     price: 120,
     currency: PriceCurrency.denarios,
@@ -96,8 +140,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'boost_fatigue',
-    name: 'Descanso rapido',
-    description: 'Elimina toda la fatiga acumulada.',
     category: ShopCategory.boosters,
     price: 80,
     currency: PriceCurrency.denarios,
@@ -106,8 +148,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'boost_speed',
-    name: 'Sandalias de Mercurio',
-    description: 'Reduce el tiempo de tu proxima mision un 20%.',
     category: ShopCategory.boosters,
     price: 3,
     currency: PriceCurrency.aureos,
@@ -117,8 +157,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'boost_events',
-    name: 'Mapa del explorador',
-    description: 'Revela el proximo evento de la mision antes de que ocurra.',
     category: ShopCategory.boosters,
     price: 5,
     currency: PriceCurrency.aureos,
@@ -130,8 +168,6 @@ final shopCatalogue = <ShopItem>[
   // Viuda vende el mismo mapa en Denarios. Solo información: no suma score.
   const ShopItem(
     id: 'boost_events_black',
-    name: 'Mapa del contrabandista',
-    description: 'El mapa de la Viuda: revela el próximo evento de tu próxima misión.',
     category: ShopCategory.boosters,
     price: 200,
     currency: PriceCurrency.denarios,
@@ -144,8 +180,6 @@ final shopCatalogue = <ShopItem>[
   // ── Habilidades (Denarios) ────────────────────────────────────────────────
   const ShopItem(
     id: 'skill_speed_1',
-    name: 'Manual de velocidad I',
-    description: 'Sube Velocidad un nivel (hasta 5). Más rápido en el camino.',
     category: ShopCategory.skills,
     price: 200,
     currency: PriceCurrency.denarios,
@@ -154,8 +188,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'skill_stealth_1',
-    name: 'Tratado de sigilo I',
-    description: 'Sube Sigilo un nivel (hasta 5). Evita controles y patrullas.',
     category: ShopCategory.skills,
     price: 200,
     currency: PriceCurrency.denarios,
@@ -164,8 +196,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'skill_combat_1',
-    name: 'Adiestramiento de combate I',
-    description: 'Sube Combate un nivel (hasta 5). Mejora en enfrentamientos.',
     category: ShopCategory.skills,
     price: 200,
     currency: PriceCurrency.denarios,
@@ -174,8 +204,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'skill_survival_1',
-    name: 'Conocimiento del campo I',
-    description: 'Sube Supervivencia un nivel (hasta 5). Aguanta más en ruta.',
     category: ShopCategory.skills,
     price: 200,
     currency: PriceCurrency.denarios,
@@ -184,9 +212,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'skill_contacts_1',
-    name: 'Red de contactos I',
-    description:
-        'Sube Contactos un nivel (hasta 5). Mejores opciones diplomáticas.',
     category: ShopCategory.skills,
     price: 200,
     currency: PriceCurrency.denarios,
@@ -197,8 +222,6 @@ final shopCatalogue = <ShopItem>[
   // ── Paquetes de Aureos (real money) ───────────────────────────────────────
   const ShopItem(
     id: 'aureos_small',
-    name: 'Bolsa de Aureos',
-    description: '50 Aureos para gastar en la tienda.',
     category: ShopCategory.aureosPacks,
     price: 199, currency: PriceCurrency.realMoney, // en centavos USD → $1.99
     icon: Icons.monetization_on, color: AppColors.ochreDeep,
@@ -206,8 +229,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'aureos_medium',
-    name: 'Cofre de Aureos',
-    description: '120 Aureos. El preferido del mensajero veterano.',
     category: ShopCategory.aureosPacks,
     price: 399, currency: PriceCurrency.realMoney, // $3.99
     icon: Icons.savings, color: AppColors.ochreDeep,
@@ -216,8 +237,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'aureos_large',
-    name: 'Tesoro del Imperio',
-    description: '300 Aureos. El mejor valor disponible.',
     category: ShopCategory.aureosPacks,
     price: 799, currency: PriceCurrency.realMoney, // $7.99
     icon: Icons.workspace_premium, color: AppColors.sienna,
@@ -226,8 +245,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'aureos_mega',
-    name: 'Boveda Imperial',
-    description: '800 Aureos + 500 Denarios de bonus.',
     category: ShopCategory.aureosPacks,
     price: 1999, currency: PriceCurrency.realMoney, // $19.99
     icon: Icons.account_balance, color: AppColors.sienna,
@@ -239,9 +256,6 @@ final shopCatalogue = <ShopItem>[
   // ── Paquetes bundle ───────────────────────────────────────────────────────
   const ShopItem(
     id: 'bundle_starter',
-    name: 'Pack del Correo',
-    description:
-        '30 Aureos + 2.º slot de mensajero + 2 Sellos. El momento "ajá" del juego paralelo.',
     category: ShopCategory.bundles,
     price: 299, currency: PriceCurrency.realMoney, // $2.99
     icon: Icons.card_giftcard, color: AppColors.verdigris,
@@ -251,8 +265,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'bundle_warrior',
-    name: 'Pack del Guerrero',
-    description: 'Sube 2 niveles de habilidad a tu elección + 50 Aureos.',
     category: ShopCategory.bundles,
     price: 699,
     currency: PriceCurrency.realMoney,
@@ -265,8 +277,6 @@ final shopCatalogue = <ShopItem>[
   // ── Sellos (sink de Aureos, GDD §5.3) ─────────────────────────────────────
   const ShopItem(
     id: 'seal_single',
-    name: 'Sello del Gremio',
-    description: '1 Sello para subir nodos élite del árbol (niveles 6-10).',
     category: ShopCategory.boosters,
     price: 15,
     currency: PriceCurrency.aureos,
@@ -276,8 +286,6 @@ final shopCatalogue = <ShopItem>[
   ),
   const ShopItem(
     id: 'seal_pack_10',
-    name: 'Paquete de 10 Sellos',
-    description: '10 Sellos del Gremio. Ahorrás 30 Aureos vs comprar de a uno.',
     category: ShopCategory.boosters,
     price: 120,
     currency: PriceCurrency.aureos,
@@ -326,17 +334,13 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         if (item == null) return;
         AppFeedback.reward();
         setState(() => _purchasedId = item.id);
-        _showPurchaseToast(item, item.name);
+        _showPurchaseToast(item, item.name(AppLocalizations.of(context)));
       case IapUpdateKind.pending:
-        showGameSnack(context,
-            'La compra quedó pendiente. Se acredita sola cuando la tienda la confirme.');
+        showGameSnack(context, AppLocalizations.of(context).shopPending);
       case IapUpdateKind.canceled:
-        showGameSnack(context, 'Compra cancelada.');
+        showGameSnack(context, AppLocalizations.of(context).shopCanceled);
       case IapUpdateKind.failed:
-        showGameSnack(
-            context,
-            'No se pudo completar la compra. Si se cobró, se acredita sola '
-            'la próxima vez que abras el juego.',
+        showGameSnack(context, AppLocalizations.of(context).shopFailed,
             isError: true);
     }
   }
@@ -364,10 +368,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       context: context,
       alreadySeen: false,
       onSeen: () => progress.markShopTooltipSeen(),
-      title: 'La tienda del gremio',
-      body:
-          'Denarios para el día a día. Aureos para acelerar. Sellos para el árbol élite. '
-          'Nada es pay-to-win destructivo: pagar acelera, no reemplaza jugar.',
+      title: AppLocalizations.of(context).shopSpotlightTitle,
+      body: AppLocalizations.of(context).shopSpotlightBody,
     );
   }
 
@@ -501,7 +503,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
             amount: -price,
           ),
         ],
-        note: item.name,
+        note: item.name(AppLocalizations.of(context)),
       );
       _showEffectApplied(item);
     }
@@ -512,20 +514,20 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   }
 
   void _showEffectApplied(ShopItem item) {
+    final l = AppLocalizations.of(context);
     final msg = switch (item.id) {
-      'boost_health_small' => '+30 de salud',
-      'boost_health_full' => 'Salud restaurada al 100%',
-      'boost_fatigue' => 'Fatiga eliminada',
-      'boost_speed' => 'Sandalias listas: tu próxima misión durará 20% menos',
-      'boost_events' || 'boost_events_black' =>
-        'Mapa listo: tu próxima misión revelará el evento por venir',
+      'boost_health_small' => l.shopEffectHealthSmall,
+      'boost_health_full' => l.shopEffectHealthFull,
+      'boost_fatigue' => l.shopEffectFatigue,
+      'boost_speed' => l.shopEffectSpeed,
+      'boost_events' || 'boost_events_black' => l.shopEffectMap,
       'skill_speed_1' ||
       'skill_stealth_1' ||
       'skill_combat_1' ||
       'skill_survival_1' ||
       'skill_contacts_1' =>
-        '¡Habilidad mejorada!',
-      _ => 'Compra aplicada',
+        l.shopEffectSkill,
+      _ => l.shopEffectApplied,
     };
     showGameSnack(context, msg);
   }
@@ -546,7 +548,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     final productId = IapProducts.productIdForShopItem(item.id);
     if (productId == null) {
       if (!mounted) return;
-      showGameSnack(context, 'Este producto todavía no está disponible.',
+      showGameSnack(context, AppLocalizations.of(context).shopUnavailable,
           isError: true);
       return;
     }
@@ -555,7 +557,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     if (!mounted) return;
 
     if (!result.success) {
-      showGameSnack(context, result.error ?? 'Compra cancelada', isError: true);
+      showGameSnack(
+          context, result.error ?? AppLocalizations.of(context).shopCanceled,
+          isError: true);
       return;
     }
 
@@ -581,12 +585,20 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         .markTask(PlayerProgress.taskBuyItem);
 
     if (!mounted) return;
-    _showPurchaseToast(item, '${item.name} (sandbox de prueba)');
+    _showPurchaseToast(
+        item,
+        AppLocalizations.of(context)
+            .shopSandbox(item.name(AppLocalizations.of(context))));
   }
 
   void _showInsufficientFunds(PriceCurrency type) {
-    final name = type == PriceCurrency.denarios ? 'Denarios' : 'Aureos';
-    showGameSnack(context, 'No te alcanzan los $name.', isError: true);
+    final l = AppLocalizations.of(context);
+    showGameSnack(
+        context,
+        type == PriceCurrency.denarios
+            ? l.shopNoDenarii
+            : l.shopNoAurei,
+        isError: true);
   }
 }
 
@@ -615,7 +627,7 @@ class _TopBar extends StatelessWidget {
         GameBackButton(onTap: () => Navigator.of(context).pop()),
         const SizedBox(width: 10),
         Expanded(
-          child: Text('TIENDA',
+          child: Text(AppLocalizations.of(context).shopTitle,
               style: AppTextStyles.heading(18,
                   color: AppColors.ochreDeep,
                   letterSpacing: 1)),
@@ -681,7 +693,7 @@ class _TabRow extends StatelessWidget {
                     color:
                         selected ? AppColors.ink : AppColors.inkSoft),
                 const SizedBox(width: 6),
-                Text(cat.label,
+                Text(cat.label(AppLocalizations.of(context)),
                     style: AppTextStyles.ui(13,
                         color: selected
                             ? AppColors.ink
@@ -714,7 +726,7 @@ class _TargetSelector extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 0),
       child: Row(children: [
-        Text('Para:',
+        Text(AppLocalizations.of(context).shopFor,
             style: AppTextStyles.ui(13, color: AppColors.inkSoft)),
         const SizedBox(width: 8),
         for (final m in messengers) ...[
@@ -785,17 +797,18 @@ class _ShopCard extends StatelessWidget {
     return bal >= price!;
   }
 
-  String get priceLabel {
-    if (price == null) return 'MÁX';
+  String priceLabel(AppLocalizations l) {
+    if (price == null) return l.shopMax;
     if (item.currency == PriceCurrency.realMoney) {
       return realMoneyLabel(item, storePrice);
     }
-    return '$price';
+    return NumberFormat.decimalPattern().format(price);
   }
 
   @override
   Widget build(BuildContext context) {
     final isRealMoney = item.currency == PriceCurrency.realMoney;
+    final l = AppLocalizations.of(context);
 
     return GameCard(
       borderColor: justBought
@@ -829,13 +842,13 @@ class _ShopCard extends StatelessWidget {
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
               Expanded(
-                child: Text(item.name,
+                child: Text(item.name(l),
                     style: AppTextStyles.ui(15, weight: FontWeight.bold)),
               ),
               if (item.tag != null) _Tag(label: item.tag!, item: item),
             ]),
             const SizedBox(height: 3),
-            Text(item.description,
+            Text(item.description(l),
                 style: AppTextStyles.bodyMedium,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis),
@@ -847,14 +860,14 @@ class _ShopCard extends StatelessWidget {
                   const Icon(Icons.monetization_on,
                       size: 12, color: AppColors.ochreDeep),
                   const SizedBox(width: 3),
-                  Text('+${item.aureosReward} Aureos',
+                  Text(l.shopPlusAurei(item.aureosReward!),
                       style: AppTextStyles.ui(12, color: AppColors.ochreDeep)),
                   const SizedBox(width: 8),
                 ],
                 if (item.dinariosReward != null) ...[
                   const Icon(Icons.toll, size: 12, color: AppColors.egyptianBlue),
                   const SizedBox(width: 3),
-                  Text('+${item.dinariosReward} Denarios',
+                  Text(l.rewardDenarii(item.dinariosReward!),
                       style: AppTextStyles.ui(12, color: AppColors.egyptianBlue)),
                 ],
               ]),
@@ -864,7 +877,7 @@ class _ShopCard extends StatelessWidget {
               Row(children: [
                 const Icon(Icons.timer, size: 14, color: AppColors.cinnabar),
                 const SizedBox(width: 4),
-                Text('TIEMPO LIMITADO',
+                Text(l.shopLimited,
                     style: AppTextStyles.ui(12,
                         color: AppColors.ink, letterSpacing: 0.5)),
               ]),
@@ -874,7 +887,7 @@ class _ShopCard extends StatelessWidget {
         const SizedBox(width: 10),
         // Buy button
         _BuyButton(
-          priceLabel: priceLabel,
+          priceLabel: priceLabel(l),
           currency: item.currency,
           canAfford: canAfford,
           justBought: justBought,
@@ -900,9 +913,21 @@ class _Tag extends StatelessWidget {
       'OFERTA' => AppColors.cinnabar,
       _ => AppColors.ochreDeep,
     };
+    final l = AppLocalizations.of(context);
+    final text = switch (label) {
+      'POPULAR' => l.shopTagPopular,
+      'MEJOR VALOR' => l.shopTagBestValue,
+      'VIP' => l.shopTagVip,
+      'OFERTA' => l.shopTagOffer,
+      'PREMIUM' => l.shopTagPremium,
+      'MERCADO NEGRO' => l.shopTagBlackMarket,
+      'ÉLITE' => l.shopTagElite,
+      'PACK' => l.shopTagPack,
+      _ => label,
+    };
     return Padding(
       padding: const EdgeInsets.only(left: 6),
-      child: GameChip(label, color: color),
+      child: GameChip(text, color: color),
     );
   }
 }
@@ -933,7 +958,7 @@ class _BuyButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: AppColors.verdigris, width: 2),
         ),
-        child: Text('COMPRADO',
+        child: Text(AppLocalizations.of(context).shopBought,
             style: AppTextStyles.ui(12,
                 color: AppColors.verdigris, weight: FontWeight.bold)),
       );
@@ -962,7 +987,7 @@ class _BuyButton extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: 'Comprar por $priceLabel',
+      label: AppLocalizations.of(context).shopBuyFor(priceLabel),
       child: GestureDetector(
         onTap: () {
           canAfford ? AppFeedback.tap() : AppFeedback.denied();
@@ -1023,13 +1048,14 @@ class _PaywallDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return GameDialog(
-      title: item.name,
+      title: item.name(l),
       actions: [
         SizedBox(
           width: double.infinity,
           child: GameButton(
-            label: 'COMPRAR · $priceLabel',
+            label: l.shopBuyButton(priceLabel),
             icon: Icons.shopping_cart,
             fontSize: 16,
             onTap: () {
@@ -1039,7 +1065,7 @@ class _PaywallDialog extends StatelessWidget {
           ),
         ),
         GameButton(
-          label: 'Cancelar',
+          label: l.cancel,
           fontSize: 14,
           variant: GameButtonVariant.secondary,
           onTap: () => Navigator.pop(context),
@@ -1057,7 +1083,7 @@ class _PaywallDialog extends StatelessWidget {
           child: Icon(item.icon, color: item.color, size: 32),
         ),
         const SizedBox(height: AppSpacing.md),
-        Text(item.description,
+        Text(item.description(l),
             style: AppTextStyles.bodyMedium, textAlign: TextAlign.center),
         const SizedBox(height: AppSpacing.lg),
         Container(
@@ -1070,17 +1096,18 @@ class _PaywallDialog extends StatelessWidget {
           child: Column(children: [
             if (item.aureosReward != null)
               _rewardRow(Icons.monetization_on, AppColors.ochreDeep,
-                  '+${item.aureosReward} Aureos'),
+                  l.shopPlusAurei(item.aureosReward!)),
             if (item.dinariosReward != null)
               _rewardRow(Icons.toll, AppColors.egyptianBlue,
-                  '+${item.dinariosReward} Denarios'),
+                  l.rewardDenarii(item.dinariosReward!)),
             if (item.id == 'bundle_starter') ...[
-              _rewardRow(Icons.person_add, AppColors.verdigris, '+2.º mensajero'),
-              _rewardRow(Icons.verified, AppColors.sienna, '+2 Sellos'),
+              _rewardRow(Icons.person_add, AppColors.verdigris,
+                  l.shopRewardSecondMessenger),
+              _rewardRow(Icons.verified, AppColors.sienna, l.rewardSeals(2)),
             ],
             if (item.id == 'bundle_warrior')
               _rewardRow(Icons.trending_up, AppColors.verdigris,
-                  '+2 niveles de habilidad a elección (en Caminos)'),
+                  l.shopRewardSkillLevels),
           ]),
         ),
       ]),

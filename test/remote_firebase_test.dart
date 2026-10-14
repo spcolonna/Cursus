@@ -11,6 +11,7 @@ import 'package:the_messenger/infrastructure/firebase/firebase_remote_flags.dart
 import 'package:the_messenger/infrastructure/firebase/firebase_setup.dart';
 import 'package:the_messenger/presentation/providers/providers.dart';
 import 'package:the_messenger/presentation/widgets/force_update_gate.dart';
+import 'helpers/localized_app.dart';
 
 class _ControlledSink implements AnalyticsSink, AnalyticsCollectionControl {
   final List<String> logged = [];
@@ -110,7 +111,10 @@ void main() {
             appVersionProvider.overrideWith((_) async => version),
           ],
           child: const MaterialApp(
-              home: ForceUpdateGate(child: Text('juego'))),
+              locale: kTestLocale,
+      supportedLocales: kTestSupportedLocales,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      home: ForceUpdateGate(child: Text('juego'))),
         ));
 
     testWidgets('versión al día: se juega', (tester) async {

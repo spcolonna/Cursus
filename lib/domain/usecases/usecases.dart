@@ -1,4 +1,5 @@
 import 'dart:math';
+import '../entities/domain_strings.dart';
 import '../entities/entities.dart';
 import '../entities/guild.dart';
 import '../entities/skill_tree.dart';
@@ -246,8 +247,7 @@ class RepairArcStateUseCase {
 
       world = world.applyChoiceEffects(
         setFlags: [missing],
-        journalNote: 'Las cosas se acomodaron solas mientras no mirabas. '
-            'El camino siguió por donde siguió.',
+        journalNote: ds('ui.journal.arc_repaired'),
       );
       repaired = true;
     }
@@ -311,13 +311,12 @@ class AutoResolveExpiredEventsUseCase {
 
       final outcome = EventOutcome(
         type: OutcomeType.partial,
-        narrative:
-            'No estabas ahí para decidir. Tu mensajero actuó por instinto: '
-            '${option.text.toLowerCase()}. Salió del paso, pero perdió tiempo.',
+        narrative: ds('ui.instinct.narrative',
+            {'option': option.text.toLowerCase()}),
         healthDelta: -5,
         timeDeltaMinutes: option.timeCostMinutes,
         packageState: current.packageState,
-        chosenOptionText: '${option.text} (por instinto)',
+        chosenOptionText: ds('ui.instinct.option', {'option': option.text}),
       );
 
       final updatedEvents = current.events.map((e) {
@@ -332,7 +331,7 @@ class AutoResolveExpiredEventsUseCase {
           .delayedBy(outcome.timeDeltaMinutes);
       changed = true;
       report?.add(AutoResolvedEvent(
-        messengerName: messenger?.name ?? 'Tu mensajero',
+        messengerName: messenger?.name ?? ds('ui.messenger.yours'),
         eventTitle: expired.title,
         chosenOptionText: option.text,
       ));
@@ -345,8 +344,7 @@ class AutoResolveExpiredEventsUseCase {
           setFlags: option.setFlags,
           journalNote: option.journalNote == null
               ? null
-              : 'No estabas: tu mensajero decidió por vos. '
-                  '${option.journalNote}',
+              : ds('ui.instinct.journal', {'note': option.journalNote!}),
         );
         await _world.saveState(world);
       }
@@ -378,7 +376,7 @@ class AcceptTutorialUseCase {
         ? messengers.firstWhere((m) => m.id == messengerId)
         : messengers.first;
     if (messenger.status == MessengerStatus.injured || messenger.health <= 0) {
-      throw Exception('Tu mensajero está herido. Curate en la tienda antes de salir.');
+      throw Exception(ds('ui.error.injured'));
     }
     final mission = await _mission.createTutorialMission(tutorialIndex, messenger.id);
     await _messenger.saveMessenger(messenger.copyWith(status: MessengerStatus.onMission));
@@ -407,7 +405,7 @@ class AcceptMissionUseCase {
         ? messengers.firstWhere((m) => m.id == messengerId)
         : messengers.first;
     if (messenger.status == MessengerStatus.injured || messenger.health <= 0) {
-      throw Exception('Tu mensajero está herido. Curate en la tienda antes de salir.');
+      throw Exception(ds('ui.error.injured'));
     }
 
     // Consumir boosts comprados en la tienda para esta misión.
@@ -474,13 +472,13 @@ class AcceptStoryMissionUseCase {
     final arc = _content.arcs.where((a) => a.id == config.arcId).firstOrNull;
     final rank = max(arc?.minRank ?? 0, config.minRank);
     if (messenger.rank < rank) {
-      throw Exception('Este capítulo pide rango $rank.');
+      throw Exception(ds('ui.error.chapter_rank', {'rank': rank}));
     }
     if (messenger.status == MessengerStatus.injured || messenger.health <= 0) {
-      throw Exception('Tu mensajero está herido. Curate en la tienda antes de salir.');
+      throw Exception(ds('ui.error.injured'));
     }
     if (messenger.status != MessengerStatus.idle) {
-      throw Exception('Tu mensajero principal está ocupado.');
+      throw Exception(ds('ui.error.primary_busy'));
     }
     final events = [
       for (final id in config.fixedEventIds)
@@ -535,18 +533,21 @@ class ApplyShopItemUseCase {
     if (manualSkill != null) {
       final price = manualPriceFor(target.skillLevel(manualSkill));
       if (price == null) {
-        throw Exception('${target.name} ya tiene ${manualSkill.label} '
-            'en nivel $kMaxSkillLevel. Un manual no le enseña nada nuevo.');
+        throw Exception(ds('ui.error.manual_maxed', {
+          'name': target.name,
+          'skill': manualSkill.label,
+          'level': kMaxSkillLevel,
+        }));
       }
       denariosCost = price;
     }
     if (payer.denarios < denariosCost) {
-      throw Exception('Denarios insuficientes (necesitás $denariosCost, '
-          'tenés ${payer.denarios})');
+      throw Exception(ds('ui.error.no_denarios',
+          {'cost': denariosCost, 'have': payer.denarios}));
     }
     if (payer.aureos < aureosCost) {
-      throw Exception('Aureos insuficientes (necesitás $aureosCost, '
-          'tenés ${payer.aureos})');
+      throw Exception(ds('ui.error.no_aureos',
+          {'cost': aureosCost, 'have': payer.aureos}));
     }
     payer = payer.copyWith(
       denarios: payer.denarios - denariosCost,
@@ -667,7 +668,7 @@ class CreditPurchaseUseCase {
       final funded = primary.copyWith(aureos: primary.aureos + cost);
       await _messenger.unlockSlot(
         payer: funded,
-        newName: 'Mensajero II',
+        newName: ds('ui.messenger.second_name'),
         gender: primary.gender,
         slotIndex: 1,
       );
@@ -689,7 +690,7 @@ class UseSkillPickUseCase {
     // Los niveles los compra (y guarda) el principal; se aplican a cualquiera.
     var owner = all.first;
     if (skillPicksOf(owner) <= 0) {
-      throw Exception('No te quedan niveles para elegir.');
+      throw Exception(ds('ui.error.no_skill_picks'));
     }
     final boosts = Set<String>.from(owner.activeBoosts);
     final pick = boosts.firstWhere((b) => b.startsWith(kSkillPickPrefix));
@@ -701,7 +702,7 @@ class UseSkillPickUseCase {
         owner.id == messengerId ? owner : all.firstWhere((m) => m.id == messengerId);
     if (target.skillLevel(skill) >= kMaxSkillLevel) {
       throw Exception(
-          'Esa habilidad ya está en nivel $kMaxSkillLevel. Elegí otra.');
+          ds('ui.error.skill_pick_maxed', {'level': kMaxSkillLevel}));
     }
     target = target.raiseSkill(skill);
     if (target.id == owner.id) {
@@ -762,7 +763,8 @@ class SkipToNextEventUseCase {
     final payer = messengers.first;
 
     if (payer.denarios < cost) {
-      throw Exception('Denarios insuficientes (necesitás $cost, tenés ${payer.denarios})');
+      throw Exception(ds('ui.error.no_denarios',
+          {'cost': cost, 'have': payer.denarios}));
     }
 
     final updatedMission = mission.fastForward(GameClock.now());
@@ -808,7 +810,7 @@ class UnlockMessengerSlotUseCase {
 
     final requiredTutorials = messengerSlotRequiredTutorials[nextSlot] ?? 999;
     if (!payer.tutorialComplete || payer.tutorialMissionIndex < requiredTutorials) {
-      throw Exception('Necesitás completar las pruebas de Varus primero');
+      throw Exception(ds('ui.error.slot_needs_trials'));
     }
 
     return _messenger.unlockSlot(
@@ -1109,7 +1111,7 @@ class ResolveEventUseCase {
     final world = await _world.getState();
     if (!optionVisible(option, world) ||
         !meetsOptionRequirements(option, messenger, world: world)) {
-      throw Exception('Tu mensajero no puede tomar esa opción todavía.');
+      throw Exception(ds('ui.error.option_locked'));
     }
 
     final roll = _calculateOutcome(option, messenger, mission.isTutorial);
@@ -1238,7 +1240,7 @@ class ResolveEventUseCase {
     // Cada sumando queda registrado: el jugador tiene derecho a saber
     // por qué le fue bien o mal (se muestra en la pantalla de resultado).
     final factors = <ScoreFactor>[
-      const ScoreFactor(label: 'Oficio de mensajero', value: 40),
+      ScoreFactor(label: ds('ui.factor.craft'), value: 40),
     ];
 
     int score = 40;
@@ -1246,7 +1248,9 @@ class ResolveEventUseCase {
       final level = messenger?.skillLevel(entry.key) ?? 1;
       score += level * 15;
       factors.add(ScoreFactor(
-          label: '${entry.key.label} Nv.$level', value: level * 15));
+          label: ds('ui.factor.skill',
+              {'skill': entry.key.label, 'level': level}),
+          value: level * 15));
     }
     // Perks de Sigilo/Combate: bonus plano y reducción de riesgo.
     if (messenger != null) {
@@ -1254,7 +1258,9 @@ class ResolveEventUseCase {
       score += perkBonus;
       if (perkBonus != 0) {
         factors.add(ScoreFactor(
-            label: 'Perks de ${usedSkill?.label ?? 'tu camino'}',
+            label: usedSkill == null
+                ? ds('ui.factor.perks_generic')
+                : ds('ui.factor.perks', {'skill': usedSkill.label}),
             value: perkBonus));
       }
     }
@@ -1264,7 +1270,7 @@ class ResolveEventUseCase {
             .clamp(0, 5);
     score -= effectiveRisk * 8;
     factors.add(ScoreFactor(
-        label: 'Riesgo ${_riskLabel(effectiveRisk)}',
+        label: ds('ui.factor.risk', {'level': _riskLabel(effectiveRisk)}),
         value: -effectiveRisk * 8));
     // La fatiga alta deteriora el desempeño (Supervivencia 9/10 la atenúa).
     final fatigue = messenger?.fatigue ?? 0;
@@ -1279,11 +1285,12 @@ class ResolveEventUseCase {
     if (fatiguePenalty != 0) {
       score -= fatiguePenalty;
       factors.add(
-          ScoreFactor(label: 'Fatiga $fatigue', value: -fatiguePenalty));
+          ScoreFactor(label: ds('ui.factor.fatigue', {'value': fatigue}),
+              value: -fatiguePenalty));
     }
     final luck = _rng.nextInt(30) - 10;
     score += luck;
-    factors.add(ScoreFactor(label: 'El camino', value: luck));
+    factors.add(ScoreFactor(label: ds('ui.factor.road'), value: luck));
 
     var type = score >= 55 ? OutcomeType.success
         : score >= 30 ? OutcomeType.partial
@@ -1293,12 +1300,12 @@ class ResolveEventUseCase {
     // que la suma de factores siga cerrando con el score.
     final crit = _rng.nextInt(100);
     if (type != OutcomeType.fail && crit < mishapPercent(option.riskLevel)) {
-      factors.add(ScoreFactor(label: 'Imprevisto', value: 29 - score));
+      factors.add(ScoreFactor(label: ds('ui.factor.mishap'), value: 29 - score));
       score = 29;
       type = OutcomeType.fail;
     } else if (type != OutcomeType.success &&
         crit >= 100 - kLuckyBreakPercent) {
-      factors.add(ScoreFactor(label: 'Golpe de suerte', value: 55 - score));
+      factors.add(ScoreFactor(label: ds('ui.factor.lucky'), value: 55 - score));
       score = 55;
       type = OutcomeType.success;
     }
@@ -1349,24 +1356,18 @@ class ResolveEventUseCase {
   }
 
   String _riskLabel(int risk) => switch (risk) {
-        0 || 1 => 'mínimo',
-        2 => 'bajo',
-        3 => 'medio',
-        4 => 'alto',
-        _ => 'extremo',
+        0 || 1 => ds('ui.risk.minimal'),
+        2 => ds('ui.risk.low'),
+        3 => ds('ui.risk.medium'),
+        4 => ds('ui.risk.high'),
+        _ => ds('ui.risk.extreme'),
       };
 
-  String _genericSuccess() => ['Tu instinto no te falló. Salís del paso sin contratiempos.',
-    'Una decisión precisa en el momento exacto. El camino queda libre.',
-    'Lo lograste. Cada obstáculo superado te hace más fuerte.'][_rng.nextInt(3)];
+  String _genericSuccess() => ds('ui.outcome.success.${_rng.nextInt(3)}');
 
-  String _genericPartial() => ['No salió perfecto, pero sobreviviste. El mensaje sigue en camino.',
-    'Fue más difícil de lo esperado. Llegaste al otro lado, pero no sin costo.',
-    'Una victoria amarga. El paquete está bien, pero perdiste tiempo.'][_rng.nextInt(3)];
+  String _genericPartial() => ds('ui.outcome.partial.${_rng.nextInt(3)}');
 
-  String _genericFail() => ['Las cosas no salieron como planeabas. Perdiste tiempo valioso.',
-    'Una decisión equivocada. Ahora vas más lento y el tiempo corre.',
-    'El camino te venció esta vez. Pero seguís en pie.'][_rng.nextInt(3)];
+  String _genericFail() => ds('ui.outcome.fail.${_rng.nextInt(3)}');
 }
 
 // ─── Ascend Skill (Caminos del Mensajero) ─────────────────────────────────────
@@ -1383,19 +1384,21 @@ class AscendSkillUseCase {
   }) async {
     final messengers = await _messenger.getAllMessengers();
     final target = messengers.where((m) => m.id == messengerId).firstOrNull;
-    if (target == null) throw Exception('Ese mensajero ya no está disponible');
+    if (target == null) throw Exception(ds('ui.error.messenger_gone'));
     final payer = messengers.first;
 
     final current = target.skillLevel(skill);
     if (current < kMaxSkillLevel) {
-      throw Exception('Primero alcanzá el nivel $kMaxSkillLevel con experiencia');
+      throw Exception(
+          ds('ui.error.ascend_needs_xp', {'level': kMaxSkillLevel}));
     }
     if (current >= kMaxSkillLevelElite) {
-      throw Exception('${skill.label} ya está en el nivel máximo');
+      throw Exception(ds('ui.error.ascend_maxed', {'skill': skill.label}));
     }
     final cost = sealCostForLevel[current + 1] ?? 999;
     if (payer.seals < cost) {
-      throw Exception('Sellos insuficientes (necesitás $cost, tenés ${payer.seals})');
+      throw Exception(
+          ds('ui.error.no_seals', {'cost': cost, 'have': payer.seals}));
     }
 
     if (payer.id == target.id) {
@@ -1427,7 +1430,7 @@ class ClaimDailyPayUseCase {
   Future<({DailyPayReward reward, int day})> execute() async {
     final state = await _guild.getState();
     if (!state.canClaimDailyPay) {
-      throw Exception('Ya cobraste la paga de hoy');
+      throw Exception(ds('ui.error.pay_claimed'));
     }
     final day = state.nextPayDay;
     final reward = dailyPaySchedule[day - 1];
@@ -1489,10 +1492,10 @@ class ClaimContractUseCase {
       String templateId) async {
     final state = await _guild.getState();
     final idx = state.contracts.indexWhere((c) => c.templateId == templateId);
-    if (idx < 0) throw Exception('Contrato inexistente');
+    if (idx < 0) throw Exception(ds('ui.error.contract_missing'));
     final contract = state.contracts[idx];
-    if (!contract.completed) throw Exception('Contrato incompleto');
-    if (contract.claimed) throw Exception('Contrato ya cobrado');
+    if (!contract.completed) throw Exception(ds('ui.error.contract_incomplete'));
+    if (contract.claimed) throw Exception(ds('ui.error.contract_claimed'));
 
     final reward = contract.template.reward;
     final primary = await _messenger.getMessenger();
@@ -1532,9 +1535,9 @@ class RerollContractUseCase {
     final state = await _guild.getState();
     final world = await _world.getState();
     final idx = state.contracts.indexWhere((c) => c.templateId == templateId);
-    if (idx < 0) throw Exception('Contrato inexistente');
+    if (idx < 0) throw Exception(ds('ui.error.contract_missing'));
     if (!canReroll(state, world, _content.factionUnlocks, state.contracts[idx])) {
-      throw Exception('Hoy no podés cambiar este contrato');
+      throw Exception(ds('ui.error.contract_no_reroll'));
     }
     final next = rerollContractId(
         templateId, state.contracts.map((c) => c.templateId))!;

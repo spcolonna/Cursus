@@ -50,4 +50,5 @@ La narrativa es el diferencial del juego. Un evento sin prosa propia es contenid
 - [ ] Si toca reputación, el delta es ±1 o ±2 (±3 solo en momentos de arco).
 - [ ] IDs únicos y con prefijo (`evt_`, `opt_`).
 - [ ] El evento está referenciado desde `eventPoolIds` de alguna ruta (si no, es contenido muerto).
+- [ ] Inglés agregado en `assets/l10n/content_en.json` para cada clave nueva (`flutter test test/content_l10n_test.dart` las lista; voz y glosario en `docs/LOCALIZACION.md`).
 - [ ] `flutter analyze` limpio.

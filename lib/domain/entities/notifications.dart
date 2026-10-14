@@ -3,6 +3,8 @@
 // El pilar 2 del GDD: "el juego te busca a vos, no al revés".
 // Acá viven las reglas de QUÉ se avisa y CUÁNDO — sin nada de Flutter.
 
+import 'domain_strings.dart';
+
 /// Tipos de aviso, en orden de valor para el jugador (GDD §4.1).
 enum NotificationKind {
   /// Llegó un evento en el camino. El disparador n.º 1 de sesión.
@@ -19,23 +21,9 @@ enum NotificationKind {
 }
 
 extension NotificationKindX on NotificationKind {
-  String get label => switch (this) {
-        NotificationKind.event => 'Algo pasa en el camino',
-        NotificationKind.delivery => 'Entrega lista',
-        NotificationKind.idle => 'Mensajero ocioso',
-        NotificationKind.contracts => 'Contratos del día',
-      };
+  String get label => ds('ui.notification.$name.label');
 
-  String get description => switch (this) {
-        NotificationKind.event =>
-          'Te avisamos cuando tu mensajero necesita una decisión.',
-        NotificationKind.delivery =>
-          'Cuando la misión llega a destino y falta entregar.',
-        NotificationKind.idle =>
-          'Si tu mensajero pasa horas sin salir a la ruta.',
-        NotificationKind.contracts =>
-          'Un recordatorio antes de que venzan los contratos del día.',
-      };
+  String get description => ds('ui.notification.$name.description');
 
   /// Los eventos de una misión ya aceptada pueden sonar de noche: el jugador
   /// eligió salir a esa hora. El resto respeta el silencio nocturno.

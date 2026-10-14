@@ -9,6 +9,7 @@
 // reprogramamos cada vez que el reloj de la misión se mueve.
 
 import 'dart:convert';
+import 'dart:ui' show Locale;
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -20,6 +21,8 @@ import '../../domain/entities/entities.dart';
 import '../../domain/entities/notifications.dart';
 import '../../domain/repositories/repositories.dart';
 import '../../domain/entities/game_clock.dart';
+import '../../domain/entities/content_l10n.dart';
+import '../../l10n/app_localizations.dart';
 
 const _prefsKey = 'notification_prefs_v1';
 const _registryKey = 'notification_registry_v1';
@@ -36,8 +39,8 @@ const _legacyChannelIds = ['the_messenger_road'];
 /// res/raw/cursus_motif.wav; en iOS, cursus_motif.caf en el bundle.
 const notificationSoundAndroid = 'cursus_motif';
 const notificationSoundIos = 'cursus_motif.caf';
-const _channelName = 'El camino';
-const _channelDescription = 'Avisos de eventos en la ruta y entregas listas.';
+/// Los textos de los avisos, en el idioma activo (no hay BuildContext).
+AppLocalizations get _l => lookupAppLocalizations(Locale(ContentL10n.lang));
 
 class LocalNotificationService implements NotificationScheduler {
   final FlutterLocalNotificationsPlugin _plugin =
@@ -89,13 +92,13 @@ class LocalNotificationService implements NotificationScheduler {
       for (final id in _legacyChannelIds) {
         await android.deleteNotificationChannel(channelId: id);
       }
-      await android.createNotificationChannel(const AndroidNotificationChannel(
+      await android.createNotificationChannel(AndroidNotificationChannel(
         _channelId,
-        _channelName,
-        description: _channelDescription,
+        _l.notifChannelName,
+        description: _l.notifChannelDescription,
         importance: Importance.high,
         playSound: true,
-        sound: RawResourceAndroidNotificationSound(notificationSoundAndroid),
+        sound: const RawResourceAndroidNotificationSound(notificationSoundAndroid),
       ));
     }
 
@@ -209,8 +212,8 @@ class LocalNotificationService implements NotificationScheduler {
         final id = await _schedule(
           kind: NotificationKind.event,
           when: event.triggersAt,
-          title: 'Algo pasó en el camino',
-          body: '$messengerName necesita una decisión: ${event.title}.',
+          title: _l.notifEventTitle,
+          body: _l.notifEventBody(messengerName, event.title),
           payload: 'event:${mission.id}:${mission.messengerId}',
         );
         if (id != null) ids.add(id);
@@ -223,9 +226,9 @@ class LocalNotificationService implements NotificationScheduler {
       final id = await _schedule(
         kind: NotificationKind.delivery,
         when: mission.deadlineAt,
-        title: 'Tu entrega está lista',
-        body:
-            '$messengerName llegó a ${mission.destination}. Entregá el mensaje.',
+        title: _l.notifDeliveryTitle,
+        body: _l.notifDeliveryBody(
+            messengerName, ContentL10n.place(mission.destination)),
         payload: 'delivery:${mission.id}:${mission.messengerId}',
       );
       if (id != null) ids.add(id);
@@ -264,8 +267,8 @@ class LocalNotificationService implements NotificationScheduler {
       await _schedule(
         kind: NotificationKind.idle,
         when: idleReminderAt(now),
-        title: 'El camino espera',
-        body: '$idleMessengerName está sin misión. Hay rutas en el tablón.',
+        title: _l.notifIdleTitle,
+        body: _l.notifIdleBody(idleMessengerName),
         payload: 'idle',
         fixedId: _idleId,
       );
@@ -274,8 +277,8 @@ class LocalNotificationService implements NotificationScheduler {
       await _schedule(
         kind: NotificationKind.contracts,
         when: contractsReminderAt(now, pendingToday: contractsPending),
-        title: 'Contratos del gremio',
-        body: 'Quedan contratos sin cobrar. Vencen a medianoche.',
+        title: _l.notifContractsTitle,
+        body: _l.notifContractsBody,
         payload: 'contracts',
         fixedId: _contractsId,
       );
@@ -321,8 +324,8 @@ class LocalNotificationService implements NotificationScheduler {
     await init();
     await _plugin.zonedSchedule(
       id: _testId,
-      title: 'Prueba del correo',
-      body: 'Si estás leyendo esto, los avisos llegan bien.',
+      title: _l.notifTestTitle,
+      body: _l.notifTestBody,
       scheduledDate: tz.TZDateTime.now(tz.local).add(delay),
       notificationDetails: _details(NotificationKind.event),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -370,14 +373,14 @@ class LocalNotificationService implements NotificationScheduler {
   }
 
   NotificationDetails _details(NotificationKind kind) => NotificationDetails(
-        android: const AndroidNotificationDetails(
+        android: AndroidNotificationDetails(
           _channelId,
-          _channelName,
-          channelDescription: _channelDescription,
+          _l.notifChannelName,
+          channelDescription: _l.notifChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
           category: AndroidNotificationCategory.reminder,
-          sound: RawResourceAndroidNotificationSound(notificationSoundAndroid),
+          sound: const RawResourceAndroidNotificationSound(notificationSoundAndroid),
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,

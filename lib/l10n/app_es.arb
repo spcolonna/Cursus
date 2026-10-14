@@ -1,0 +1,1332 @@
+{
+  "@@locale": "es",
+  "settingsLanguage": "Idioma",
+  "@settingsLanguage": {
+    "description": "Título del selector de idioma en Ajustes"
+  },
+  "languageSystem": "El del teléfono",
+  "languageSpanish": "Español",
+  "languageEnglish": "English",
+  "notifChannelName": "El camino",
+  "notifChannelDescription": "Avisos de eventos en la ruta y entregas listas.",
+  "notifEventTitle": "Algo pasó en el camino",
+  "notifEventBody": "{messenger} necesita una decisión: {event}.",
+  "@notifEventBody": {
+    "placeholders": {
+      "messenger": {
+        "type": "String"
+      },
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "notifDeliveryTitle": "Tu entrega está lista",
+  "notifDeliveryBody": "{messenger} llegó a {place}. Entrega el mensaje.",
+  "@notifDeliveryBody": {
+    "placeholders": {
+      "messenger": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "notifIdleTitle": "El camino espera",
+  "notifIdleBody": "{messenger} está sin misión. Hay rutas en el tablón.",
+  "@notifIdleBody": {
+    "placeholders": {
+      "messenger": {
+        "type": "String"
+      }
+    }
+  },
+  "notifContractsTitle": "Contratos del Gremio",
+  "notifContractsBody": "Quedan contratos sin cobrar. Vencen a medianoche.",
+  "notifTestTitle": "Prueba del correo",
+  "notifTestBody": "Si estás leyendo esto, los avisos llegan bien.",
+  "riskEasy": "FÁCIL",
+  "riskLow": "BAJO",
+  "riskMedium": "MEDIO",
+  "riskHigh": "ALTO",
+  "riskExtreme": "EXTREMO",
+  "skillLevelShort": "Nv.{level}",
+  "@skillLevelShort": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "currencyDenarii": "{count, plural, =1{denario} other{denarios}}",
+  "@currencyDenarii": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "currencyAurei": "{count, plural, =1{aureo} other{aureos}}",
+  "@currencyAurei": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "currencySeals": "{count, plural, =1{Sello del Gremio} other{Sellos}}",
+  "@currencySeals": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gradeSemantics": "Nota {grade}",
+  "updateTitle": "Hay una versión nueva",
+  "updateBody": "Para seguir con tus entregas tienes que actualizar Cursus. Tu partida queda guardada.",
+  "updateButton": "Actualizar",
+  "achKindRoad": "El camino",
+  "achKindGrade": "Entregas perfectas",
+  "achKindGuild": "El Gremio",
+  "achKindSkill": "Oficio",
+  "achKindStory": "Historia",
+  "achKindEmpire": "Fortuna",
+  "titleEquippedSemantics": "{title}, equipado",
+  "@titleEquippedSemantics": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "skillNodeSemantics": "{skill}, nivel {level} de {max}",
+  "@skillNodeSemantics": {
+    "placeholders": {
+      "skill": {
+        "type": "String"
+      },
+      "level": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "celebAchievementHeader": "LOGRO CONSEGUIDO",
+  "celebAchievementSemantics": "Logro conseguido: {name}. Toca para ver tus logros.",
+  "@celebAchievementSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardDenarii": "+{count} Denarios",
+  "@rewardDenarii": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardSeals": "{count, plural, =1{+1 Sello} other{+{count} Sellos}}",
+  "@rewardSeals": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "quotedTitle": "«{title}»",
+  "@quotedTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "celebTierHeader": "NUEVO ESCALÓN",
+  "celebTierSemantics": "{faction} ahora te tiene por {tier}. Toca para ver tu reputación.",
+  "@celebTierSemantics": {
+    "placeholders": {
+      "faction": {
+        "type": "String"
+      },
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
+  "celebRankHeader": "¡NUEVO RANGO!",
+  "celebContinue": "SEGUIR",
+  "rankBlurb2": "En el correo ya saben tu nombre.\nSe abren rutas que antes no te daban.",
+  "rankBlurb3": "Te confían lo que no se puede perder.\nYa nadie te manda a llevar recados.",
+  "rankBlurb4": "Los otros mensajeros te piden consejo.\nRoma empieza a notarte.",
+  "rankBlurb5": "Tu nombre se dice en las postas de todo el Imperio.",
+  "firstStepsRoute": "Completa tu primera ruta real",
+  "firstStepsBuy": "Compra un objeto en la tienda",
+  "firstStepsSkill": "Sube una habilidad",
+  "firstStepsGuild": "Mira el tablón del Gremio",
+  "firstStepsNotifs": "Activa las notificaciones",
+  "firstStepsTitle": "PRIMEROS PASOS",
+  "firstStepsClaim": "RECLAMAR · 3 Aureos + 1 Sello",
+  "firstStepsHint": "Completa las 5 tareas y ganas 3 Aureos + 1 Sello.",
+  "gotIt": "ENTENDIDO",
+  "cloudConflictTitle": "Tienes dos partidas",
+  "cloudUseRemote": "USAR LA DE LA NUBE",
+  "cloudUseLocal": "Usar la de este teléfono",
+  "cloudConflictBody": "La que no elijas se pierde.",
+  "cloudLabel": "Nube",
+  "cloudThisPhone": "Este teléfono",
+  "cloudDeliveries": "{count, plural, =1{1 entrega} other{{count} entregas}}",
+  "@cloudDeliveries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "agoNow": "hace un momento",
+  "agoMinutes": "hace {count} min",
+  "agoHours": "hace {count} h",
+  "agoYesterday": "ayer",
+  "agoDays": "hace {count} días",
+  "continueWithApple": "Continuar con Apple",
+  "continueWithGoogle": "Continuar con Google",
+  "cloudLinked": "Cuenta vinculada. Tu partida queda a salvo.",
+  "cloudLinkFailed": "No se pudo vincular. Inténtalo de nuevo.",
+  "cloudDeleteFailed": "No se pudo borrar la cuenta. Revisa la conexión e inténtalo de nuevo.",
+  "cloudLinkedWith": "Vinculada con {providers}. Puedes recuperar tu partida en otro teléfono.",
+  "listAnd": " y ",
+  "cloudLinkPrompt": "Vincula una cuenta para no perder la partida si cambias de teléfono.",
+  "cloudDeleteAccount": "Borrar cuenta y datos",
+  "cloudStatusLocal": "Tu partida se guarda en este teléfono.",
+  "cloudStatusSyncing": "Guardando en la nube…",
+  "cloudStatusSynced": "Partida guardada en la nube.",
+  "cloudStatusSyncedAgo": "Partida guardada en la nube {ago}.",
+  "cloudStatusOffline": "Sin conexión: se guarda en el teléfono y se sube cuando vuelva.",
+  "cloudDeleteTitle": "¿Borrar todo?",
+  "cloudDeleteConfirm": "BORRAR PARA SIEMPRE",
+  "cancel": "Cancelar",
+  "cloudDeleteBody": "Se borran tu cuenta, tus mensajeros, tu progreso y las monedas, en este teléfono y en la nube. No se puede deshacer.",
+  "back": "Volver",
+  "close": "Cerrar",
+  "errorGeneric": "Algo se trabó en el camino. Inténtalo de nuevo en un momento.",
+  "errorLoadTitle": "No pudimos cargar esto",
+  "retry": "REINTENTAR",
+  "unlocked": "Desbloqueado",
+  "requiresTier": "Pide {tier}",
+  "open": "Abierto",
+  "brandTagline": "Cartas de Roma",
+  "routeMapSemantics": "Mapa de la ruta de {origin} a {destination}",
+  "settingsTitle": "Ajustes",
+  "settingsAlertsHeader": "AVISOS DEL CAMINO",
+  "settingsSoundHeader": "SONIDO Y MOVIMIENTO",
+  "settingsUsageHeader": "DATOS DE USO",
+  "settingsAccountHeader": "CUENTA",
+  "settingsSkyHeader": "CIELO (SOLO DEBUG)",
+  "settingsDiagnosticsHeader": "DIAGNÓSTICO",
+  "settingsAlertsToggle": "Recibir avisos",
+  "settingsAlertsToggleHint": "Nunca entre las 22 y las 8, salvo un evento de una misión que ya está en marcha. Máximo 4 por día.",
+  "permGranted": "Concedido",
+  "permDenied": "Denegado",
+  "permNotRequested": "Todavía no se pidió",
+  "permSystemLabel": "Permiso del sistema: ",
+  "diagScheduled": "{count, plural, =1{1 aviso programado} other{{count} avisos programados}}",
+  "@diagScheduled": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diagIosLimit": "iOS descarta lo que pase de 64 pendientes: por eso se programan solo los dos próximos eventos de cada misión.",
+  "diagQueueEmpty": "Nada en la cola. Acepta una misión para que se programen.",
+  "diagTest": "PROBAR EN 10s",
+  "diagTestNote": "Cierra la app: el aviso llega en 10 segundos.",
+  "diagReload": "RECARGAR",
+  "diagCancelAll": "Cancelar todos los avisos",
+  "skyDawn": "Alba",
+  "skyDay": "Día",
+  "skyDusk": "Atardecer",
+  "skyNight": "Noche",
+  "skyRealClock": "Reloj real: {time} · {phase}",
+  "@skyRealClock": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "phase": {
+        "type": "String"
+      }
+    }
+  },
+  "skyFixedHour": "Hora fija: {time} · {phase}",
+  "@skyFixedHour": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "phase": {
+        "type": "String"
+      }
+    }
+  },
+  "skyClock": "Reloj",
+  "settingsMusic": "Música",
+  "settingsMusicHint": "Lira y aulos: cambia con la hora y en el camino",
+  "settingsMusicVolume": "Volumen de la música {percent}%",
+  "settingsSfx": "Efectos de sonido",
+  "settingsSfxHint": "Botones, resultados, entregas y cobros",
+  "settingsHaptics": "Vibración",
+  "settingsHapticsHint": "Un golpe suave al tocar y al cobrar",
+  "settingsReduceMotion": "Animaciones reducidas",
+  "settingsReduceMotionHint": "Menos movimiento: transiciones cortas y sin sacudidas",
+  "usageCopied": "Datos copiados. Pégalos en un mensaje.",
+  "usageShare": "Compartir estadísticas",
+  "usageShareHint": "Qué rutas juegas y cuándo vuelves. Anónimo: sin tu nombre ni nada que te identifique.",
+  "usageSummary": "Día {day} desde que empezaste · {days, plural, =1{1 día jugado} other{{days} días jugados}} · {sessions, plural, =1{1 sesión} other{{sessions} sesiones}}",
+  "@usageSummary": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      },
+      "sessions": {
+        "type": "int"
+      }
+    }
+  },
+  "usageCopy": "Copiar datos para el equipo",
+  "usageAdsPrivacy": "Privacidad de los anuncios",
+  "achTitle": "Logros y títulos",
+  "achYourTitle": "Tu título",
+  "achNoTitles": "Todavía no ganaste ninguno. Los títulos salen de los logros y de los finales de la historia.",
+  "achPickTitle": "Toca uno para llevarlo bajo tu nombre.",
+  "achSecret": "Logro secreto",
+  "achDone": "Conseguido",
+  "achProgress": "Progreso {progress} de {target}",
+  "achSecretHint": "Sigue la historia para descubrirlo.",
+  "sealsCount": "{count, plural, =1{1 Sello} other{{count} Sellos}}",
+  "@sealsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "charErrorEmpty": "Ponle un nombre a tu mensajero.",
+  "charErrorShort": "El nombre necesita al menos 2 letras.",
+  "charKicker": "TU MENSAJERO",
+  "charTitle": "Elige quién lleva el mensaje",
+  "charBody": "Será tu mensajero principal. Más adelante podrás contratar otros.",
+  "charTypeLabel": "Tipo de mensajero",
+  "charNameLabel": "Nombre del mensajero",
+  "charNameHintMale": "Ej: Marcus, Lucius...",
+  "charNameHintFemale": "Ej: Julia, Livia...",
+  "charStarting": "Comenzando...",
+  "charStart": "COMENZAR LA AVENTURA",
+  "charMale": "HOMBRE",
+  "charFemale": "MUJER",
+  "charPreviewLine": "{gender} · Correo · Rango 1",
+  "@charPreviewLine": {
+    "placeholders": {
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "statHealth": "Salud",
+  "statFatigue": "Fatiga",
+  "homeSpotlightTitle": "Tu puesto de correo",
+  "homeSpotlightBody": "Aquí ves a tus mensajeros, el progreso de cada misión y el tablón del Gremio. Las rutas cortas caben en una tarde; las largas siguen mientras duermes.",
+  "homeRosterEvent": "Evento",
+  "homeRosterOnRoad": "En camino",
+  "homeRosterInjured": "Herido",
+  "homeRosterFree": "Libre",
+  "homeAwayHeader": "PASÓ MIENTRAS NO ESTABAS",
+  "homeAwayLine": "{messenger} no podía esperar en «{event}»: actuó por instinto y {choice}.",
+  "@homeAwayLine": {
+    "placeholders": {
+      "messenger": {
+        "type": "String"
+      },
+      "event": {
+        "type": "String"
+      },
+      "choice": {
+        "type": "String"
+      }
+    }
+  },
+  "homeAwayHint": "Responder a tiempo siempre sale mejor.",
+  "splashSubtitle": "Imperio Romano, 50 a.C.",
+  "storyChip": "HISTORIA",
+  "storyStart": "COMENZAR CAPÍTULO",
+  "storyLockedSemantics": "Se abre en rango {rank}, {title}.",
+  "@storyLockedSemantics": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "storyLocked": "Se abre en rango {rank} · {title}",
+  "@storyLocked": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "hireSemantics": "Contratar nuevo mensajero por {cost} aureos",
+  "hireNeedAurei": "Necesitas {cost} aureos (tienes {have}).",
+  "hireTitle": "Contratar nuevo mensajero",
+  "hireSkipsTutorial": "Salta el tutorial: ya conoce el oficio",
+  "hireJoined": "{name} se suma al correo.",
+  "@hireJoined": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "hireDialogTitle": "Nuevo mensajero",
+  "hireConfirm": "CONTRATAR",
+  "hireDialogBody": "Ya conoce el oficio. Varus confía en este nuevo correo.",
+  "hireNameError": "Ponle un nombre",
+  "genderMan": "Hombre",
+  "genderWoman": "Mujer",
+  "navShop": "Tienda",
+  "navProfile": "Perfil",
+  "navMission": "Misión",
+  "navNoneOnRoad": "Ningún mensajero está en camino.",
+  "navPaths": "Caminos",
+  "navEventWaiting": "{label}, hay un evento esperando",
+  "@navEventWaiting": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "navHomeCurrent": "Inicio, pantalla actual",
+  "navHome": "Inicio",
+  "guildBoardSemantics": "Tablón del Gremio: {claimed} de {total} cobrados",
+  "@guildBoardSemantics": {
+    "placeholders": {
+      "claimed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "guildBoardHeader": "TABLÓN DEL GREMIO",
+  "guildToday": "{claimed}/{total} hoy",
+  "@guildToday": {
+    "placeholders": {
+      "claimed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "guildTodayWeek": "{claimed}/{total} hoy · semana {weekClaimed}/{weekTotal}",
+  "@guildTodayWeek": {
+    "placeholders": {
+      "claimed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "weekClaimed": {
+        "type": "int"
+      },
+      "weekTotal": {
+        "type": "int"
+      }
+    }
+  },
+  "guildClaimCount": "COBRAR {count}",
+  "guildBoardTitle": "Tablón del Gremio",
+  "guildClaimSemantics": "Cobrar",
+  "guildClaim": "COBRAR",
+  "guildClaimed": "COBRADO",
+  "weeklyDone": "Encargo de {npc} cumplido",
+  "weeklyHeader": "Encargos de la semana",
+  "weeklyHint": "Gente que confía en ti. Se renuevan el lunes.",
+  "contractsHeader": "Contratos del día",
+  "contractsHint": "Se renuevan a medianoche.",
+  "contractReroll": "Cambiar este contrato por otro",
+  "contractRerolled": "Contrato cambiado. Mañana puedes volver a hacerlo.",
+  "contractClaimed": "Contrato cobrado",
+  "guildPayTitle": "PAGA DEL GREMIO",
+  "guildPayClaim": "COBRAR PAGA — DÍA {day}",
+  "guildPayHint": "Varus premia tu constancia.",
+  "guildPayNote": "Paga del Gremio · día {day} de racha",
+  "slotNoMissionsTitle": "Sin misiones disponibles",
+  "slotNoMissionsBody": "Completa misiones para desbloquear nuevas rutas.",
+  "slotViewProfile": "Ver perfil de {name}",
+  "slotRank": "{title} · Rango {rank}",
+  "@slotRank": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "slotTrial": "Prueba {n}/{total} de Varus",
+  "@slotTrial": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "slotEventSemantics": "Evento pendiente: {event}. Decidir.",
+  "@slotEventSemantics": {
+    "placeholders": {
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "slotEventPending": "¡EVENTO PENDIENTE!",
+  "slotDecidesAlone": "Tu mensajero decidirá solo",
+  "slotDecidesIn": "Decide solo en {minutes} min",
+  "slotDecide": "DECIDIR",
+  "slotMissionSemantics": "Misión de {origin} a {destination}. Ver viaje.",
+  "slotArrived": "¡Llegó a {place}! Toca para entregar",
+  "slotProgress": "{pct}% del camino",
+  "@slotProgress": {
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
+  },
+  "slotTrialChip": "PRUEBA {n}/{total}",
+  "@slotTrialChip": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "slotAcceptTrial": "¡ACEPTAR PRUEBA!",
+  "slotRoutesHeader": "RUTAS DISPONIBLES",
+  "slotSeeAllRoutes": "VER LAS {count} RUTAS",
+  "slotRoutesFor": "Rutas para {name}",
+  "slotInjuredHeal": "Herido: cúrate en la tienda",
+  "slotBusy": "Mensajero ocupado",
+  "slotPay": "Paga ~{amount}",
+  "@slotPay": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      }
+    }
+  },
+  "slotAcceptMission": "¡ACEPTAR MISIÓN!",
+  "slotConfirmTitle": "Confirmar misión",
+  "slotSetOut": "SALIR AL CAMINO",
+  "slotDuration": "Duración: {duration} en tiempo real.",
+  "@slotDuration": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "slotNotifTitle": "Varus te alcanza en la puerta",
+  "slotNotifYes": "AVÍSAME",
+  "slotNotifNo": "Prefiero mirar yo",
+  "slotNotifQuote": "«El camino toma lo que toma. Cerrá los ojos si querés — yo te aviso si pasa algo.»",
+  "slotNotifBody": "Te avisamos cuando tu mensajero necesite una decisión o llegue a destino. Nada entre las 22 y las 8.",
+  "@gradeSemantics": {
+    "placeholders": {
+      "grade": {
+        "type": "String"
+      }
+    }
+  },
+  "@agoMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@agoHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@agoDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@cloudLinkedWith": {
+    "placeholders": {
+      "providers": {
+        "type": "String"
+      }
+    }
+  },
+  "@cloudStatusSyncedAgo": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "@requiresTier": {
+    "placeholders": {
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
+  "@routeMapSemantics": {
+    "placeholders": {
+      "origin": {
+        "type": "String"
+      },
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "@settingsMusicVolume": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "@achProgress": {
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "@hireSemantics": {
+    "placeholders": {
+      "cost": {
+        "type": "int"
+      }
+    }
+  },
+  "@hireNeedAurei": {
+    "placeholders": {
+      "cost": {
+        "type": "int"
+      },
+      "have": {
+        "type": "int"
+      }
+    }
+  },
+  "@guildClaimCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@weeklyDone": {
+    "placeholders": {
+      "npc": {
+        "type": "String"
+      }
+    }
+  },
+  "@guildPayClaim": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "@guildPayNote": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "@slotViewProfile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "@slotDecidesIn": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "@slotMissionSemantics": {
+    "placeholders": {
+      "origin": {
+        "type": "String"
+      },
+      "destination": {
+        "type": "String"
+      }
+    }
+  },
+  "@slotArrived": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "@slotSeeAllRoutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@slotRoutesFor": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "onboardingTitle1": "Roma, 50 a.C.",
+  "onboardingBody1": "El Imperio controla el mundo conocido.\nMillones de personas. Incontables rutas.\nY cada decisión que importa viaja en manos de alguien.",
+  "onboardingTitle2": "Tú eres ese alguien.",
+  "onboardingBody2": "Un mensajero. El eslabón entre el poder y sus extremos.\nNadie sabe tu nombre. Nadie necesita saberlo.\nSolo importa que el mensaje llegue.",
+  "onboardingTitle3": "El camino no perdona.",
+  "onboardingBody3": "Legionarios. Tormentas. Bandidos. Traidores.\nCada viaje es una prueba.\nCada decisión tiene consecuencias.",
+  "onboardingTitle4": "El viaje es real.",
+  "onboardingBody4": "Las misiones duran minutos u horas de verdad.\nEnvías a tu mensajero y sigues con tu día:\nte avisamos cuando haya que decidir.",
+  "onboardingTitle5": "¿Estás listo?",
+  "onboardingBody5": "Varus, jefe del correo, quiere ponerte a prueba.\nCuatro encargos cortos.\nNo lo decepciones.",
+  "onboardingSkip": "Saltar",
+  "onboardingSlideSemantics": "Lámina {n} de {total}",
+  "@onboardingSlideSemantics": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingStart": "¡COMENZAR!",
+  "onboardingNext": "CONTINUAR",
+  "loginError": "No se pudo entrar. Inténtalo de nuevo.",
+  "loginRestoreError": "No se pudo recuperar la partida. Inténtalo de nuevo.",
+  "loginTagline": "Roma, 50 a.C. El correo te espera.",
+  "loginStart": "EMPEZAR",
+  "loginHaveSave": "Ya tengo partida",
+  "loginHaveSaveWith": "Ya tengo partida: {provider}",
+  "@loginHaveSaveWith": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "loginNoSignup": "Sin registrarte. Tu partida se guarda sola.",
+  "loginNoSignupLink": "Sin registrarte. Tu partida se guarda sola; en Ajustes puedes vincular una cuenta.",
+  "missionTrialOf": "Prueba de Varus · {name}",
+  "@missionTrialOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "missionOnRoadOf": "En camino · {name}",
+  "@missionOnRoadOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "missionArrived": "¡Llegaste!",
+  "missionResolvedHeader": "EVENTOS RESUELTOS",
+  "missionEtaIn": "en {time}",
+  "@missionEtaIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "missionEtaImminent": "inminente",
+  "missionNextRevealed": "PRÓXIMO EVENTO REVELADO",
+  "missionArrivedAt": "Llegaste a {place}",
+  "@missionArrivedAt": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "missionDeliverHint": "Entrega el mensaje para cobrar.",
+  "missionDeliver": "ENTREGAR MENSAJE",
+  "missionSkipToEvent": "Adelantar al próximo evento",
+  "missionSkipToEnd": "Adelantar al final de la misión",
+  "missionSkipSemantics": "{label} por {cost} denarios",
+  "@missionSkipSemantics": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "cost": {
+        "type": "int"
+      }
+    }
+  },
+  "missionSkipNoFunds": "Te faltan denarios para adelantar.",
+  "missionSkipNoFundsLabel": "Sin denarios suficientes para adelantar",
+  "missionSkipped": "Adelantaste el tiempo (−{cost} denarios)",
+  "@missionSkipped": {
+    "placeholders": {
+      "cost": {
+        "type": "int"
+      }
+    }
+  },
+  "missionAdsUsed": "Ya usaste los {count} adelantos de hoy",
+  "@missionAdsUsed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "loading": "Cargando…",
+  "missionWatchAd": "Ver anuncio · −30 min ({count} hoy)",
+  "@missionWatchAd": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adsUnavailable": "No hay anuncios disponibles ahora. Inténtalo en un rato.",
+  "missionAdSkipped": "Adelantaste 30 minutos de camino",
+  "missionYouChose": "Decidiste: {choice}",
+  "@missionYouChose": {
+    "placeholders": {
+      "choice": {
+        "type": "String"
+      }
+    }
+  },
+  "eventChip": "EVENTO",
+  "missionPaused": "Progreso pausado",
+  "gradeS": "¡LEGENDARIO!",
+  "gradeA": "¡EXCELENTE!",
+  "gradeB": "BIEN HECHO",
+  "gradeC": "PASABLE",
+  "gradeF": "FALLIDO",
+  "resultTrialChip": "PRUEBA DE VARUS",
+  "resultEfficacySuffix": "% de eficacia",
+  "resultBackToBase": "VOLVER AL CUARTEL",
+  "resultStoryContinues": "LA HISTORIA CONTINÚA",
+  "resultBreakdown": "DESGLOSE",
+  "resultPunctuality": "Puntualidad",
+  "resultOnTime": "A tiempo",
+  "resultLate": "Con retraso",
+  "resultPackage": "Estado del paquete",
+  "resultDecisions": "Decisiones",
+  "packageIntact": "Intacto",
+  "packageDamp": "Humedad leve",
+  "packageDamaged": "Dañado",
+  "packageCompromised": "Comprometido",
+  "packageLost": "Perdido",
+  "decisionsPerfect": "Decisiones perfectas",
+  "decisionsGood": "Buenas decisiones",
+  "decisionsFair": "Decisiones regulares",
+  "decisionsBad": "Malas decisiones",
+  "resultWhatChanged": "LO QUE CAMBIÓ",
+  "resultTitleEarned": "Ganaste el título «{title}»",
+  "@resultTitleEarned": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "resultFatigueOnArrival": "{value} de fatiga al llegar",
+  "@resultFatigueOnArrival": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "resultFatigueRest": "{value} de fatiga: {stop}",
+  "@resultFatigueRest": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      },
+      "stop": {
+        "type": "String"
+      }
+    }
+  },
+  "resultInjured": "Llegaste herido: descansa antes de salir",
+  "resultRepUp": "{faction} te tiene más en cuenta (+{value})",
+  "@resultRepUp": {
+    "placeholders": {
+      "faction": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "resultRepDown": "{faction} desconfía más de ti ({value})",
+  "@resultRepDown": {
+    "placeholders": {
+      "faction": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "resultReward": "RECOMPENSA",
+  "resultPayFormula": "Nota {grade}: {base} × ruta {factor}",
+  "@resultPayFormula": {
+    "placeholders": {
+      "grade": {
+        "type": "String"
+      },
+      "base": {
+        "type": "int"
+      },
+      "factor": {
+        "type": "String"
+      }
+    }
+  },
+  "resultSuccesses": "{successes}/{total} exitosos",
+  "@resultSuccesses": {
+    "placeholders": {
+      "successes": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "profileNoMessenger": "Sin mensajero",
+  "profileTitle": "Mi mensajero",
+  "profileTabMessenger": "Mensajero",
+  "profileTabWorld": "Mundo",
+  "profileTabHistory": "Historial",
+  "profileSkills": "Habilidades",
+  "profileSeePaths": "VER CAMINOS DEL MENSAJERO",
+  "profileSignOut": "Cerrar sesión",
+  "profileCompleted": "{count, plural, =1{1 misión completada} other{{count} misiones completadas}}",
+  "@profileCompleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profilePathDone": "Camino completado",
+  "profileAscendHint": "Asciende en los Caminos con Sellos",
+  "profileXpToNext": "{xp}/{max} XP para Nv.{level}",
+  "@profileXpToNext": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "profileAchSemantics": "Logros: {done} de {total}. Toca para verlos y elegir tu título.",
+  "@profileAchSemantics": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "profileAchCount": "{done} de {total} logros",
+  "@profileAchCount": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "profileAchNext": "Próximo: {goal}",
+  "@profileAchNext": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "profileReputation": "Reputación",
+  "profileJournal": "Diario del mensajero",
+  "profileJournalEmptyTitle": "El diario está en blanco",
+  "profileJournalEmptyBody": "Lo que decidas en el camino quedará escrito aquí.",
+  "repAllOpen": "Te abrieron todas las puertas.",
+  "repToNextUnlock": "Faltan {left} para {tier}: {unlock}",
+  "@repToNextUnlock": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      },
+      "tier": {
+        "type": "String"
+      },
+      "unlock": {
+        "type": "String"
+      }
+    }
+  },
+  "repToNext": "Faltan {left} para {tier}",
+  "@repToNext": {
+    "placeholders": {
+      "left": {
+        "type": "int"
+      },
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
+  "repHowToEarn": "Se gana entregando bien en sus rutas (una vez por día: +1, o +2 con nota S), cumpliendo encargos y con lo que eliges en el camino.",
+  "historyEmptyTitle": "Sin misiones completadas aún",
+  "historyEmptyBody": "Acepta tu primera misión desde el Inicio.",
+  "signOutTitle": "¿Cerrar sesión?",
+  "signOutConfirm": "SALIR",
+  "signOutBody": "Tu progreso está guardado en el dispositivo.",
+  "skillsTitle": "Caminos del mensajero",
+  "skillsPicks": "{count, plural, =1{Tienes 1 nivel para elegir} other{Tienes {count} niveles para elegir}}",
+  "@skillsPicks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "skillsAppliesTo": "Se aplica a {name}. Hasta nivel {max}.",
+  "@skillsAppliesTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "skillsIntro": "Los niveles 1-5 se ganan jugando. Los niveles 6-10 se ascienden con Sellos del Gremio: contratos del día, rachas y notas S. Los Sellos son de la cuenta: los comparten todos tus mensajeros.",
+  "skillLevelOf": "Nv.{level}/{max}",
+  "@skillLevelOf": {
+    "placeholders": {
+      "level": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "skillsPathComplete": "CAMINO COMPLETADO",
+  "skillsNext": "Siguiente: «{name}» — {perk}",
+  "@skillsNext": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "perk": {
+        "type": "String"
+      }
+    }
+  },
+  "skillsAscent": "Ascenso: «{name}»",
+  "@skillsAscent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "skillsXpCapped": "La experiencia ya no sube este camino: de aquí en adelante van Sellos.",
+  "skillsAscend": "ASCENDER — {cost} SELLOS",
+  "@skillsAscend": {
+    "placeholders": {
+      "cost": {
+        "type": "int"
+      }
+    }
+  },
+  "skillsNeedSeals": "NECESITAS {cost} SELLOS (tienes {have})",
+  "@skillsNeedSeals": {
+    "placeholders": {
+      "cost": {
+        "type": "int"
+      },
+      "have": {
+        "type": "int"
+      }
+    }
+  },
+  "skillsWhatYouGain": "QUÉ GANAS",
+  "skillsLevelUp": "¡SUBISTE DE NIVEL!",
+  "skillsLevelUpLine": "{skill} Nv.{level} — «{name}»",
+  "@skillsLevelUpLine": {
+    "placeholders": {
+      "skill": {
+        "type": "String"
+      },
+      "level": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "eventSpotlightTitle": "Una decisión en el camino",
+  "eventSpotlightBody": "Cada opción tiene riesgo, costo de tiempo y a veces pide una habilidad. El pronóstico te muestra las probabilidades antes de confirmar.",
+  "eventNoneTitle": "No hay eventos pendientes",
+  "eventNoneBody": "El camino está tranquilo por ahora.",
+  "eventBack": "VOLVER",
+  "eventWhatDoYouDo": "¿QUÉ HACES?",
+  "eventCritical": "EVENTO CRÍTICO",
+  "eventResolving": "Resolviendo...",
+  "eventPickOption": "ELIGE UNA OPCIÓN",
+  "eventConfirm": "CONFIRMAR DECISIÓN",
+  "eventTimeUp": "SE TE PASÓ",
+  "eventTimeToDecide": "Tiempo para decidir: {time}",
+  "@eventTimeToDecide": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "eventLockedHint": "Te falta habilidad para esto.",
+  "eventStoryOpened": "Tu historia abrió este camino",
+  "outcomeSuccess": "¡ÉXITO!",
+  "outcomePartial": "ÉXITO PARCIAL",
+  "outcomeFail": "FALLASTE",
+  "outcomeTrialDone": "¡Varus está satisfecho! Siguiente prueba desbloqueada.",
+  "outcomeMissionDone": "¡Misión completada! Resultado disponible en tu perfil.",
+  "outcomeHealth": "{delta} salud",
+  "@outcomeHealth": {
+    "placeholders": {
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
+  "outcomeTravelTime": "+{minutes}m de viaje",
+  "@outcomeTravelTime": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "outcomeXp": "+{xp} XP de {skill}",
+  "@outcomeXp": {
+    "placeholders": {
+      "xp": {
+        "type": "int"
+      },
+      "skill": {
+        "type": "String"
+      }
+    }
+  },
+  "outcomeJournaled": "Quedó anotado en tu diario",
+  "outcomeRomeRemembers": "Roma no se olvida de esto",
+  "outcomeGoHome": "IR AL INICIO",
+  "whyHeader": "POR QUÉ PASÓ",
+  "whyRoll": "Tu tirada",
+  "whySuccess": "Con 55 alcanzaba para salir bien parado.",
+  "whyPartial": "Con 55 salía redondo: te faltaron {count}.",
+  "@whyPartial": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "whyFail": "Desde 30 era un éxito parcial: te faltaron {count}.",
+  "@whyFail": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shopCatBoosters": "Potenciadores",
+  "shopCatSkills": "Habilidades",
+  "shopCatAurei": "Aureos",
+  "shopCatBundles": "Paquetes",
+  "shopItemBoostHealthSmallName": "Poción de salud",
+  "shopItemBoostHealthSmallDesc": "Restaura 30 puntos de salud al instante.",
+  "shopItemBoostHealthFullName": "Curación completa",
+  "shopItemBoostHealthFullDesc": "Salud al 100%. Ideal antes de una misión larga.",
+  "shopItemBoostFatigueName": "Descanso rápido",
+  "shopItemBoostFatigueDesc": "Elimina toda la fatiga acumulada.",
+  "shopItemBoostSpeedName": "Sandalias de Mercurio",
+  "shopItemBoostSpeedDesc": "Reduce el tiempo de tu próxima misión un 20%.",
+  "shopItemBoostEventsName": "Mapa del explorador",
+  "shopItemBoostEventsDesc": "Revela el próximo evento de la misión antes de que ocurra.",
+  "shopItemBoostEventsBlackName": "Mapa del contrabandista",
+  "shopItemBoostEventsBlackDesc": "El mapa de la Viuda: revela el próximo evento de tu próxima misión.",
+  "shopItemSkillSpeed1Name": "Manual de velocidad I",
+  "shopItemSkillSpeed1Desc": "Sube Velocidad un nivel (hasta 5). Más rápido en el camino.",
+  "shopItemSkillStealth1Name": "Tratado de sigilo I",
+  "shopItemSkillStealth1Desc": "Sube Sigilo un nivel (hasta 5). Evita controles y patrullas.",
+  "shopItemSkillCombat1Name": "Adiestramiento de combate I",
+  "shopItemSkillCombat1Desc": "Sube Combate un nivel (hasta 5). Mejora en enfrentamientos.",
+  "shopItemSkillSurvival1Name": "Conocimiento del campo I",
+  "shopItemSkillSurvival1Desc": "Sube Supervivencia un nivel (hasta 5). Aguanta más en ruta.",
+  "shopItemSkillContacts1Name": "Red de contactos I",
+  "shopItemSkillContacts1Desc": "Sube Contactos un nivel (hasta 5). Mejores opciones diplomáticas.",
+  "shopItemAureosSmallName": "Bolsa de Aureos",
+  "shopItemAureosSmallDesc": "50 Aureos para gastar en la tienda.",
+  "shopItemAureosMediumName": "Cofre de Aureos",
+  "shopItemAureosMediumDesc": "120 Aureos. El preferido del mensajero veterano.",
+  "shopItemAureosLargeName": "Tesoro del Imperio",
+  "shopItemAureosLargeDesc": "300 Aureos. El mejor valor disponible.",
+  "shopItemAureosMegaName": "Bóveda Imperial",
+  "shopItemAureosMegaDesc": "800 Aureos + 500 Denarios de bonus.",
+  "shopItemBundleStarterName": "Pack del Correo",
+  "shopItemBundleStarterDesc": "30 Aureos + 2.º espacio de mensajero + 2 Sellos. Para empezar con ventaja.",
+  "shopItemBundleWarriorName": "Pack del Guerrero",
+  "shopItemBundleWarriorDesc": "Sube 2 niveles de habilidad a tu elección + 50 Aureos.",
+  "shopItemSealSingleName": "Sello del Gremio",
+  "shopItemSealSingleDesc": "1 Sello para subir nodos élite del árbol (niveles 6-10).",
+  "shopItemSealPack10Name": "Paquete de 10 Sellos",
+  "shopItemSealPack10Desc": "10 Sellos del Gremio. Ahorras 30 Aureos frente a comprarlos de uno en uno.",
+  "shopPending": "La compra quedó pendiente. Se acredita sola cuando la tienda la confirme.",
+  "shopCanceled": "Compra cancelada.",
+  "shopFailed": "No se pudo completar la compra. Si se cobró, se acredita sola la próxima vez que abras el juego.",
+  "shopSpotlightTitle": "La tienda del Gremio",
+  "shopSpotlightBody": "Denarios para el día a día. Aureos para acelerar. Sellos para el árbol élite. Nada es pay-to-win destructivo: pagar acelera, no reemplaza jugar.",
+  "shopEffectHealthSmall": "+30 de salud",
+  "shopEffectHealthFull": "Salud restaurada al 100%",
+  "shopEffectFatigue": "Fatiga eliminada",
+  "shopEffectSpeed": "Sandalias listas: tu próxima misión durará 20% menos",
+  "shopEffectMap": "Mapa listo: tu próxima misión revelará el evento por venir",
+  "shopEffectSkill": "¡Habilidad mejorada!",
+  "shopEffectApplied": "Compra aplicada",
+  "shopUnavailable": "Este producto todavía no está disponible.",
+  "shopSandbox": "{name} (sandbox de prueba)",
+  "@shopSandbox": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shopNoDenarii": "No te alcanzan los Denarios.",
+  "shopNoAurei": "No te alcanzan los Aureos.",
+  "shopTitle": "TIENDA",
+  "shopFor": "Para:",
+  "shopMax": "MÁX",
+  "shopPlusAurei": "+{count} Aureos",
+  "@shopPlusAurei": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shopLimited": "TIEMPO LIMITADO",
+  "shopTagPopular": "POPULAR",
+  "shopTagBestValue": "MEJOR VALOR",
+  "shopTagVip": "VIP",
+  "shopTagOffer": "OFERTA",
+  "shopTagPremium": "PREMIUM",
+  "shopTagBlackMarket": "MERCADO NEGRO",
+  "shopTagElite": "ÉLITE",
+  "shopTagPack": "PACK",
+  "shopBought": "COMPRADO",
+  "shopBuyFor": "Comprar por {price}",
+  "@shopBuyFor": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "shopBuyButton": "COMPRAR · {price}",
+  "@shopBuyButton": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "shopRewardSecondMessenger": "+2.º mensajero",
+  "shopRewardSkillLevels": "+2 niveles de habilidad a elección (en Caminos)"
+}

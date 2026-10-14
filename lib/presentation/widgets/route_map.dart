@@ -19,6 +19,8 @@ import '../theme/app_theme.dart';
 import '../theme/art_palette.dart';
 import '../theme/sky.dart';
 import '../../domain/entities/game_clock.dart';
+import '../../l10n/app_localizations.dart';
+import '../../domain/entities/content_l10n.dart';
 
 /// Posición (0..1) de cada evento sobre el camino.
 List<double> eventMarks(Mission mission) {
@@ -76,7 +78,8 @@ class _RouteMapViewState extends ConsumerState<RouteMapView>
     final geometry = atlas.routeFor(m.routeId, m.origin, m.destination) ??
         _fallbackGeometry;
     return Semantics(
-      label: 'Mapa de la ruta de ${m.origin} a ${m.destination}',
+      label: AppLocalizations.of(context).routeMapSemantics(
+          ContentL10n.place(m.origin), ContentL10n.place(m.destination)),
       image: true,
       child: _MapFrame(
         height: widget.height,

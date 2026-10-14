@@ -1,3 +1,4 @@
+import 'domain_strings.dart';
 import 'world.dart';
 import 'game_clock.dart';
 
@@ -8,8 +9,9 @@ const int kXpPerSkillLevel = 100;
 /// con Sellos del Gremio en los Caminos del Mensajero (ver skill_tree.dart).
 const int kMaxSkillLevel = 5;
 
-/// Nombre de cada rango (índice 1-5).
-const kRankTitles = ['', 'Correo', 'Mensajero', 'Courier', 'Maestro', 'Leyenda'];
+/// Nombre de cada rango (índice 1-5), en el idioma actual.
+List<String> get kRankTitles =>
+    ['', for (var r = 1; r <= 5; r++) ds('ui.rank.$r')];
 
 // ─── User ─────────────────────────────────────────────────────────────────────
 class User {
@@ -152,28 +154,17 @@ class Messenger {
 
 enum MessengerGender { male, female }
 extension MessengerGenderX on MessengerGender {
-  String get label => this == MessengerGender.male ? 'Hombre' : 'Mujer';
+  String get label => ds('ui.gender.$name');
 }
 
 enum MessengerStatus { idle, onMission, resting, injured }
 extension MessengerStatusX on MessengerStatus {
-  String get label => switch (this) {
-    MessengerStatus.idle      => 'Disponible',
-    MessengerStatus.onMission => 'En misión',
-    MessengerStatus.resting   => 'Descansando',
-    MessengerStatus.injured   => 'Herido',
-  };
+  String get label => ds('ui.status.$name');
 }
 
 enum SkillType { speed, stealth, combat, survival, contacts }
 extension SkillTypeX on SkillType {
-  String get label => switch (this) {
-    SkillType.speed    => 'Velocidad',
-    SkillType.stealth  => 'Sigilo',
-    SkillType.combat   => 'Combate',
-    SkillType.survival => 'Supervivencia',
-    SkillType.contacts => 'Contactos',
-  };
+  String get label => ds('ui.skill.$name');
   String get icon => switch (this) {
     SkillType.speed    => 'V',
     SkillType.stealth  => 'S',
@@ -300,7 +291,7 @@ class Mission {
   String get timeRemainingLabel {
     final r = timeRemaining;
     // Tardar en entregar no baja la nota (ver timeScoreFor): no es "atraso".
-    if (r.isNegative) return 'LLEGÓ';
+    if (r.isNegative) return ds('ui.mission.arrived');
     if (r.inDays > 0) return '${r.inDays}d ${r.inHours % 24}h';
     if (r.inHours > 0) return '${r.inHours}h ${r.inMinutes % 60}m';
     if (r.inMinutes > 0) return '${r.inMinutes}m ${r.inSeconds % 60}s';
@@ -423,13 +414,7 @@ enum MissionStatus { active, completed, failed }
 enum PackageState { intact, wetMinor, damaged, compromised, lost }
 
 extension PackageStateX on PackageState {
-  String get label => switch (this) {
-    PackageState.intact      => 'Intacto',
-    PackageState.wetMinor    => 'Humedad leve',
-    PackageState.damaged     => 'Dañado',
-    PackageState.compromised => 'Comprometido',
-    PackageState.lost        => 'Perdido',
-  };
+  String get label => ds('ui.package.$name');
   String get icon => switch (this) {
     PackageState.intact      => '[OK]',
     PackageState.wetMinor    => '[~]',

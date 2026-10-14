@@ -19,6 +19,7 @@ class PlayerProgress {
   static const _kHapticsEnabled = 'haptics_enabled_v1';
   static const _kReduceMotion = 'reduce_motion_v1';
   static const _kAnalytics = 'analytics_enabled_v1';
+  static const _kLanguage = 'language_v1';
 
   // Checklist task ids (GDD §7)
   static const taskFirstRealRoute = 'first_real_route';
@@ -143,6 +144,21 @@ class PlayerProgress {
   Future<void> setHapticsEnabled(bool enabled) async {
     final p = await SharedPreferences.getInstance();
     await p.setBool(_kHapticsEnabled, enabled);
+  }
+
+  /// Idioma elegido en Ajustes ('es' o 'en'); null = el del teléfono.
+  Future<String?> language() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getString(_kLanguage);
+  }
+
+  Future<void> setLanguage(String? lang) async {
+    final p = await SharedPreferences.getInstance();
+    if (lang == null) {
+      await p.remove(_kLanguage);
+    } else {
+      await p.setString(_kLanguage, lang);
+    }
   }
 
   Future<bool> isReduceMotion() async {

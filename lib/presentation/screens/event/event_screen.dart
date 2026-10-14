@@ -14,6 +14,7 @@ import '../../../domain/usecases/usecases.dart';
 import '../../widgets/event_scene.dart';
 import '../../widgets/primeros_pasos.dart';
 import '../../../domain/entities/game_clock.dart';
+import '../../../l10n/app_localizations.dart';
 
 class EventScreen extends ConsumerStatefulWidget {
   /// Mensajero cuyo evento se decide; null = el principal.
@@ -53,10 +54,8 @@ class _EventScreenState extends ConsumerState<EventScreen> {
       context: context,
       alreadySeen: false,
       onSeen: () => progress.markEventTooltipSeen(),
-      title: 'Una decisión en el camino',
-      body:
-          'Cada opción tiene riesgo, costo de tiempo y a veces pide una habilidad. '
-          'El forecast te muestra las chances antes de confirmar.',
+      title: AppLocalizations.of(context).eventSpotlightTitle,
+      body: AppLocalizations.of(context).eventSpotlightBody,
     );
   }
 
@@ -100,10 +99,11 @@ class _EventScreenState extends ConsumerState<EventScreen> {
             child: Center(
               child: EmptyState(
                 icon: Icons.check_circle_outline,
-                title: 'No hay eventos pendientes',
-                body: 'El camino está tranquilo por ahora.',
+                title: AppLocalizations.of(context).eventNoneTitle,
+                body: AppLocalizations.of(context).eventNoneBody,
                 action: GameButton(
-                    label: 'VOLVER', onTap: () => _leaveEventScreen(context)),
+                    label: AppLocalizations.of(context).eventBack,
+                    onTap: () => _leaveEventScreen(context)),
               ),
             ),
           );
@@ -237,7 +237,7 @@ class _DecisionView extends StatelessWidget {
               const SizedBox(height: kEventStageGap),
               _buildHeader(context),
               const SizedBox(height: AppSpacing.lg),
-              Text('¿QUÉ HACÉS?',
+              Text(AppLocalizations.of(context).eventWhatDoYouDo,
                   style: AppTextStyles.ui(13,
                       color: AppColors.inkSoft,
                       weight: FontWeight.bold,
@@ -264,7 +264,7 @@ class _DecisionView extends StatelessWidget {
             ],
           ),
         ),
-        _buildConfirmArea(),
+        _buildConfirmArea(context),
       ]),
     );
   }
@@ -279,7 +279,9 @@ class _DecisionView extends StatelessWidget {
             child: Align(
               alignment: Alignment.centerLeft,
               child: GameChip(
-                mission.isTutorial ? 'PRUEBA DE VARUS' : 'EVENTO CRÍTICO',
+                mission.isTutorial
+                    ? AppLocalizations.of(context).resultTrialChip
+                    : AppLocalizations.of(context).eventCritical,
                 icon: Icons.warning_amber_rounded,
                 color: AppColors.sienna,
               ),
@@ -323,7 +325,7 @@ class _DecisionView extends StatelessWidget {
     );
   }
 
-  Widget _buildConfirmArea() {
+  Widget _buildConfirmArea(BuildContext context) {
     final canConfirm = selected != null && !resolving;
     return Container(
       padding: const EdgeInsets.fromLTRB(
@@ -336,10 +338,10 @@ class _DecisionView extends StatelessWidget {
         width: double.infinity,
         child: GameButton(
           label: resolving
-              ? 'Resolviendo...'
+              ? AppLocalizations.of(context).eventResolving
               : selected == null
-                  ? 'ELEGÍ UNA OPCIÓN'
-                  : 'CONFIRMAR DECISIÓN',
+                  ? AppLocalizations.of(context).eventPickOption
+                  : AppLocalizations.of(context).eventConfirm,
           fontSize: 18,
           isLoading: resolving,
           onTap: canConfirm ? onConfirm : null,
@@ -359,7 +361,7 @@ class _DecisionCountdown extends StatelessWidget {
   Widget build(BuildContext context) {
     final left = deadline.difference(GameClock.now());
     final label = left.isNegative
-        ? 'SE TE PASÓ'
+        ? AppLocalizations.of(context).eventTimeUp
         : left.inHours > 0
             ? '${left.inHours}h ${left.inMinutes % 60}m'
             : left.inMinutes > 0
@@ -367,7 +369,7 @@ class _DecisionCountdown extends StatelessWidget {
                 : '${left.inSeconds}s';
     final urgent = left.inMinutes < 10;
     return Semantics(
-      label: 'Tiempo para decidir: $label',
+      label: AppLocalizations.of(context).eventTimeToDecide(label),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
@@ -442,7 +444,7 @@ class _OptionCard extends StatelessWidget {
         onTap: () {
           if (!meetsReqs) {
             showGameSnack(
-                context, option.lockedHint ?? 'Te falta habilidad para esto.',
+                context, option.lockedHint ?? AppLocalizations.of(context).eventLockedHint,
                 isError: true);
             return;
           }
@@ -529,7 +531,9 @@ class _OptionCard extends StatelessWidget {
                       messenger!.skillLevel(e.key) >=
                           e.value -
                               SkillPerks.gatingDiscount(e.key, messenger!);
-                  return GameChip('${e.key.label} Nv.${e.value}',
+                  return GameChip(
+                      '${e.key.label} '
+                      '${AppLocalizations.of(context).skillLevelShort(e.value)}',
                       icon: skillIconData(e.key),
                       trailingIcon: met ? Icons.check : null,
                       color: met ? AppColors.verdigris : AppColors.tyrian);
@@ -556,7 +560,7 @@ class _OptionCard extends StatelessWidget {
                   const Icon(Icons.auto_awesome,
                       color: AppColors.tyrian, size: 14),
                   const SizedBox(width: 6),
-                  Text('Tu historia abrió este camino',
+                  Text(AppLocalizations.of(context).eventStoryOpened,
                       style: AppTextStyles.bodyMedium
                           .copyWith(color: AppColors.ink)),
                 ]),
@@ -565,7 +569,7 @@ class _OptionCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                     // Candado narrativo si es por reputación.
-                    option.lockedHint ?? 'Te falta habilidad para esto.',
+                    option.lockedHint ?? AppLocalizations.of(context).eventLockedHint,
                     style: AppTextStyles.bodyMedium
                         .copyWith(color: AppColors.inkSoft)),
               ],
@@ -608,19 +612,19 @@ class _OutcomeView extends StatelessWidget {
     final (icon, title, grad, color) = switch (outcome.type) {
       OutcomeType.success => (
           Icons.emoji_events,
-          '¡ÉXITO!',
+          AppLocalizations.of(context).outcomeSuccess,
           AppGradients.verdigris,
           AppColors.verdigris
         ),
       OutcomeType.partial => (
           Icons.bolt,
-          'ÉXITO PARCIAL',
+          AppLocalizations.of(context).outcomePartial,
           AppGradients.ochre,
           AppColors.ochreDeep
         ),
       OutcomeType.fail => (
           Icons.close_rounded,
-          'FALLASTE',
+          AppLocalizations.of(context).outcomeFail,
           AppGradients.cinnabar,
           AppColors.cinnabar
         ),
@@ -750,8 +754,8 @@ class _OutcomeView extends StatelessWidget {
                   Expanded(
                       child: Text(
                     isTutorial
-                        ? '¡Varus está satisfecho! Siguiente prueba desbloqueada.'
-                        : '¡Misión completada! Resultado disponible en tu perfil.',
+                        ? AppLocalizations.of(context).outcomeTrialDone
+                        : AppLocalizations.of(context).outcomeMissionDone,
                     style: AppTextStyles.ui(13,
                         color: isTutorial ? AppColors.sienna : AppColors.ochreDeep),
                   )),
@@ -776,7 +780,8 @@ class _OutcomeView extends StatelessWidget {
                 children: [
                   if (outcome.healthDelta != 0)
                     GameChip(
-                      '${outcome.healthDelta > 0 ? '+' : ''}${outcome.healthDelta} salud',
+                      AppLocalizations.of(context).outcomeHealth(
+                          '${outcome.healthDelta > 0 ? '+' : ''}${outcome.healthDelta}'),
                       icon: Icons.favorite,
                       size: GameChipSize.medium,
                       color: outcome.healthDelta > 0
@@ -785,7 +790,8 @@ class _OutcomeView extends StatelessWidget {
                     ),
                   if (outcome.timeDeltaMinutes != 0)
                     GameChip(
-                      '+${outcome.timeDeltaMinutes}m de viaje',
+                      AppLocalizations.of(context)
+                          .outcomeTravelTime(outcome.timeDeltaMinutes),
                       icon: Icons.timer_outlined,
                       size: GameChipSize.medium,
                       color: AppColors.sienna,
@@ -802,7 +808,8 @@ class _OutcomeView extends StatelessWidget {
                   // XP ganado (antes solo se veía si justo subías de nivel)
                   if (outcome.xpGained > 0 && outcome.usedSkill != null)
                     GameChip(
-                      '+${outcome.xpGained} XP de ${outcome.usedSkill!.label}',
+                      AppLocalizations.of(context).outcomeXp(
+                          outcome.xpGained, outcome.usedSkill!.label),
                       icon: Icons.school_outlined,
                       size: GameChipSize.medium,
                       color: AppColors.egyptianBlue,
@@ -812,8 +819,8 @@ class _OutcomeView extends StatelessWidget {
                       resolution.flagsSet.isNotEmpty)
                     GameChip(
                       resolution.journalNote != null
-                          ? 'Quedó anotado en tu diario'
-                          : 'Roma no se olvida de esto',
+                          ? AppLocalizations.of(context).outcomeJournaled
+                          : AppLocalizations.of(context).outcomeRomeRemembers,
                       icon: Icons.menu_book_outlined,
                       size: GameChipSize.medium,
                       color: AppColors.tyrian,
@@ -840,7 +847,9 @@ class _OutcomeView extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: GameButton(
-                label: missionComplete ? 'IR AL HOME' : 'CONTINUAR',
+                label: missionComplete
+                    ? AppLocalizations.of(context).outcomeGoHome
+                    : AppLocalizations.of(context).onboardingNext,
                 fontSize: 20,
                 onTap: onContinue,
               ),
@@ -882,7 +891,7 @@ class _LevelUpBanner extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('¡SUBISTE DE NIVEL!',
+            Text(AppLocalizations.of(context).skillsLevelUp,
                 style: AppTextStyles.ui(12,
                     color: AppColors.ink,
                     weight: FontWeight.bold,
@@ -916,7 +925,7 @@ class _WhyItHappened extends StatelessWidget {
         Row(children: [
           const Icon(Icons.balance, size: 15, color: AppColors.inkSoft),
           const SizedBox(width: 7),
-          Text('POR QUÉ PASÓ',
+          Text(AppLocalizations.of(context).whyHeader,
               style: AppTextStyles.ui(12,
                   color: AppColors.inkSoft, letterSpacing: 1.2)),
         ]),
@@ -939,7 +948,7 @@ class _WhyItHappened extends StatelessWidget {
         const Divider(color: AppColors.paperLine, height: 16),
         Row(children: [
           Expanded(
-            child: Text('Tu tirada',
+            child: Text(AppLocalizations.of(context).whyRoll,
                 style: AppTextStyles.ui(12,
                     color: AppColors.ink, weight: FontWeight.bold)),
           ),
@@ -949,7 +958,7 @@ class _WhyItHappened extends StatelessWidget {
         ]),
         const SizedBox(height: 4),
         Text(
-          _threshold(resolution.score),
+          _threshold(AppLocalizations.of(context), resolution.score),
           style: AppTextStyles.bodySmall.copyWith(height: 1.35),
         ),
       ]),
@@ -957,12 +966,10 @@ class _WhyItHappened extends StatelessWidget {
   }
 
   /// Qué habría hecho falta: la lección concreta que se lleva el jugador.
-  String _threshold(int score) {
-    if (score >= 55) return 'Con 55 alcanzaba para salir bien parado.';
-    if (score >= 30) {
-      return 'Con 55 salía redondo: te faltaron ${55 - score}.';
-    }
-    return 'Desde 30 era un éxito parcial: te faltaron ${30 - score}.';
+  String _threshold(AppLocalizations l, int score) {
+    if (score >= 55) return l.whySuccess;
+    if (score >= 30) return l.whyPartial(55 - score);
+    return l.whyFail(30 - score);
   }
 }
 

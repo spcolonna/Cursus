@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # State management
   flutter_riverpod: ^2.4.10
@@ -25,7 +27,7 @@ dependencies:
   # Fonts
 
   # Utils
-  intl: ^0.19.0
+  intl: ^0.20.2
   uuid: ^4.3.3
   flutter_local_notifications: ^22.2.0
   timezone: ^0.11.1
@@ -57,7 +59,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
+    - assets/l10n/
     - assets/audio/
     - assets/art/events/
     - assets/art/story/

@@ -77,8 +77,8 @@ void main() {
     expect(userMessageFor(Exception('Aureos insuficientes')),
         'Aureos insuficientes');
     expect(userMessageFor(Exception('Null check operator used on a null value')),
-        contains('Probá de nuevo'));
-    expect(userMessageFor(TypeError()), contains('Probá de nuevo'));
+        contains('Inténtalo de nuevo'));
+    expect(userMessageFor(TypeError()), contains('Inténtalo de nuevo'));
   });
 
   testWidgets('con movimiento reducido las duraciones colapsan',

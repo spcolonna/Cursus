@@ -6,6 +6,7 @@ import '../../domain/entities/entities.dart';
 import '../feedback/feedback.dart';
 import '../providers/providers.dart';
 import 'motion.dart';
+import '../../l10n/app_localizations.dart';
 
 export 'motion.dart';
 
@@ -755,12 +756,13 @@ class RiskChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final (label, color) = switch (level) {
-      1 => ('FÁCIL',   AppColors.verdigris),
-      2 => ('BAJO',    AppColors.verdigris),
-      3 => ('MEDIO',   AppColors.sienna),
-      4 => ('ALTO',    AppColors.cinnabar),
-      _ => ('EXTREMO', AppColors.cinnabar),
+      1 => (l.riskEasy,    AppColors.verdigris),
+      2 => (l.riskLow,     AppColors.verdigris),
+      3 => (l.riskMedium,  AppColors.sienna),
+      4 => (l.riskHigh,    AppColors.cinnabar),
+      _ => (l.riskExtreme, AppColors.cinnabar),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
@@ -869,7 +871,7 @@ class SkillIcon extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 4),
-      Text('Nv.$level',
+      Text(AppLocalizations.of(context).skillLevelShort(level),
           style: AppTextStyles.ui(large ? 12 : 10,
               color: level >= 3 ? color : AppColors.inkMuted,
               weight: FontWeight.bold)),

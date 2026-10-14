@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +11,8 @@ import '../../widgets/messenger_avatar.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/entities/world.dart';
 import '../../../domain/entities/progression.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../domain/entities/content_l10n.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PERFIL — tres pestañas cortas en vez de un scroll de seis secciones:
@@ -33,8 +36,9 @@ class ProfileScreen extends ConsumerWidget {
         data: (state) {
           final messenger = state.messenger;
           if (messenger == null) {
-            return const EmptyState(
-                icon: Icons.person_off_outlined, title: 'Sin mensajero');
+            return EmptyState(
+                icon: Icons.person_off_outlined,
+                title: AppLocalizations.of(context).profileNoMessenger);
           }
           return _ProfileBody(messenger: messenger, initialTab: initialTab);
         },
@@ -85,10 +89,12 @@ class _Header extends ConsumerWidget {
           onTap: () => context.canPop() ? context.pop() : context.go('/home'),
         ),
         const SizedBox(width: AppSpacing.md),
-        Expanded(child: Text('Mi Mensajero', style: AppTextStyles.titleLarge)),
+        Expanded(
+            child: Text(AppLocalizations.of(context).profileTitle,
+                style: AppTextStyles.titleLarge)),
         GameIconButton(
           icon: Icons.settings_outlined,
-          semanticLabel: 'Ajustes',
+          semanticLabel: AppLocalizations.of(context).settingsTitle,
           color: AppColors.inkSoft,
           onTap: () => context.push('/settings'),
         ),
@@ -125,10 +131,10 @@ class _Tabs extends StatelessWidget {
           unselectedLabelColor: AppColors.inkSoft,
           labelStyle: AppTextStyles.ui(13, weight: FontWeight.bold),
           unselectedLabelStyle: AppTextStyles.ui(13),
-          tabs: const [
-            Tab(text: 'Mensajero'),
-            Tab(text: 'Mundo'),
-            Tab(text: 'Historial'),
+          tabs: [
+            Tab(text: AppLocalizations.of(context).profileTabMessenger),
+            Tab(text: AppLocalizations.of(context).profileTabWorld),
+            Tab(text: AppLocalizations.of(context).profileTabHistory),
           ],
         ),
       ),
@@ -156,7 +162,7 @@ class _MessengerTab extends ConsumerWidget {
             .fadeIn(duration: AppMotion.of(context, AppMotion.base))
             .slideY(begin: 0.06, end: 0),
         const SizedBox(height: 20),
-        SectionHeader(title: 'Habilidades'),
+        SectionHeader(title: AppLocalizations.of(context).profileSkills),
         _SkillsGrid(messenger: messenger)
             .animate(delay: AppMotion.stagger)
             .fadeIn(duration: AppMotion.of(context, AppMotion.base)),
@@ -164,7 +170,7 @@ class _MessengerTab extends ConsumerWidget {
         SizedBox(
           width: double.infinity,
           child: GameButton(
-            label: 'VER CAMINOS DEL MENSAJERO',
+            label: AppLocalizations.of(context).profileSeePaths,
             icon: Icons.account_tree_outlined,
             variant: GameButtonVariant.secret,
             fontSize: 14,
@@ -172,7 +178,7 @@ class _MessengerTab extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 20),
-        SectionHeader(title: 'Logros y títulos'),
+        SectionHeader(title: AppLocalizations.of(context).achTitle),
         const _AchievementsCard(),
         const SizedBox(height: AppSpacing.xl),
         Center(
@@ -187,7 +193,7 @@ class _MessengerTab extends ConsumerWidget {
                 if (context.mounted) context.go('/login');
               }
             },
-            child: Text('Cerrar sesión',
+            child: Text(AppLocalizations.of(context).profileSignOut,
                 style: AppTextStyles.ui(13, color: AppColors.inkMuted)),
           ),
         ),
@@ -219,15 +225,18 @@ class _HeroCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.heading(20)),
               if (title != null)
-                Text('«$title»',
+                Text(AppLocalizations.of(context).quotedTitle(title!),
                     style: AppTextStyles.ui(13,
                         color: AppColors.ochreDeep, weight: FontWeight.bold)),
               const SizedBox(height: 6),
-              GameChip('${messenger.rankTitle} · Rango ${messenger.rank}',
+              GameChip(
+                  AppLocalizations.of(context)
+                      .slotRank(messenger.rankTitle, messenger.rank),
                   icon: Icons.military_tech, color: AppColors.ochreDeep),
               const SizedBox(height: 6),
               Text(
-                '${messenger.completedMissionIds.length} misiones completadas',
+                AppLocalizations.of(context)
+                    .profileCompleted(messenger.completedMissionIds.length),
                 style: AppTextStyles.bodyMedium,
               ),
             ]),
@@ -237,7 +246,7 @@ class _HeroCard extends StatelessWidget {
         Row(children: [
           Expanded(
               child: StatBar(
-            label: 'Salud',
+            label: AppLocalizations.of(context).statHealth,
             value: messenger.health,
             maxValue: 100,
             color: messenger.health > 60
@@ -249,7 +258,7 @@ class _HeroCard extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(
               child: StatBar(
-            label: 'Fatiga',
+            label: AppLocalizations.of(context).statFatigue,
             value: messenger.fatigue,
             maxValue: 100,
             color: messenger.fatigue < 40
@@ -302,7 +311,9 @@ class _SkillsGrid extends StatelessWidget {
                       Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('${skill.label} · Nv.$level',
+                            Text(
+                                '${skill.label} · '
+                                '${AppLocalizations.of(context).skillLevelShort(level)}',
                                 style: AppTextStyles.ui(13,
                                     weight: FontWeight.bold)),
                             // 10 niveles: 1-5 dorados, 6-10 sellos de élite.
@@ -359,10 +370,11 @@ class _SkillsGrid extends StatelessWidget {
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         level >= 10
-                            ? 'Camino completado'
+                            ? AppLocalizations.of(context).profilePathDone
                             : level >= 5
-                                ? 'Ascendé en los Caminos con Sellos'
-                                : '${xp % xpPerLevel}/$xpPerLevel XP para Nv.${level + 1}',
+                                ? AppLocalizations.of(context).profileAscendHint
+                                : AppLocalizations.of(context).profileXpToNext(
+                                    xp % xpPerLevel, xpPerLevel, level + 1),
                         style: AppTextStyles.bodySmall,
                       ),
                     ]),
@@ -394,8 +406,8 @@ class _AchievementsCard extends ConsumerWidget {
 
     return GameCard(
       borderColor: AppColors.ochreDeep.withValues(alpha: 0.5),
-      semanticLabel: 'Logros: ${unlocked.length} de ${defs.length}. '
-          'Tocá para verlos y elegir tu título.',
+      semanticLabel: AppLocalizations.of(context)
+          .profileAchSemantics(unlocked.length, defs.length),
       onTap: () => context.push('/achievements'),
       child: Row(children: [
         SizedBox(
@@ -416,10 +428,12 @@ class _AchievementsCard extends ConsumerWidget {
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('${unlocked.length} de ${defs.length} logros',
+            Text(
+                AppLocalizations.of(context)
+                    .profileAchCount(unlocked.length, defs.length),
                 style: AppTextStyles.ui(16, weight: FontWeight.bold)),
             if (next != null)
-              Text('Próximo: ${next.goal}',
+              Text(AppLocalizations.of(context).profileAchNext(next.goal),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodyMedium),
@@ -446,20 +460,20 @@ class _WorldTab extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.xxl),
       children: [
-        SectionHeader(title: 'Reputación'),
+        SectionHeader(title: AppLocalizations.of(context).profileReputation),
         _ReputationCard(
                 world: world,
                 unlocks: ref.read(gameContentProvider).factionUnlocks)
             .animate()
             .fadeIn(duration: AppMotion.of(context, AppMotion.base)),
         const SizedBox(height: 20),
-        SectionHeader(title: 'Diario del mensajero'),
+        SectionHeader(title: AppLocalizations.of(context).profileJournal),
         if (world.journal.isEmpty)
-          const GameCard(
+          GameCard(
             child: EmptyState(
               icon: Icons.menu_book_outlined,
-              title: 'El diario está en blanco',
-              body: 'Lo que decidas en el camino va a quedar escrito acá.',
+              title: AppLocalizations.of(context).profileJournalEmptyTitle,
+              body: AppLocalizations.of(context).profileJournalEmptyBody,
             ),
           )
         else
@@ -513,13 +527,14 @@ class _FactionRow extends StatelessWidget {
             .firstOrNull;
     final open = unlocks.where((u) => u.faction == faction && u.isOpen(world));
 
+    final l = AppLocalizations.of(context);
     final String hint;
     if (next == null) {
-      hint = 'Te abrieron todas las puertas.';
+      hint = l.repAllOpen;
     } else if (nextUnlock != null) {
-      hint = 'Faltan ${hi - v} para ${next.label}: ${nextUnlock.name}';
+      hint = l.repToNextUnlock(hi - v, next.label, nextUnlock.name);
     } else {
-      hint = 'Faltan ${hi - v} para ${next.label}';
+      hint = l.repToNext(hi - v, next.label);
     }
 
     return GameCard(
@@ -578,9 +593,7 @@ class _FactionRow extends StatelessWidget {
           ]),
           const SizedBox(height: AppSpacing.md),
           Text(
-              'Se gana entregando bien en sus rutas (una vez por día: +1, '
-              'o +2 con nota S), cumpliendo encargos y con lo que elegís '
-              'en el camino.',
+              AppLocalizations.of(context).repHowToEarn,
               style: AppTextStyles.bodySmall),
           const SizedBox(height: AppSpacing.lg),
           FactionUnlockList(faction: faction, world: world, unlocks: unlocks),
@@ -621,7 +634,7 @@ class _JournalCard extends StatelessWidget {
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('${j.date.day}/${j.date.month}',
+                            Text(DateFormat.Md().format(j.date),
                                 style: AppTextStyles.ui(12,
                                     color: AppColors.inkSoft,
                                     letterSpacing: 0.5)),
@@ -652,11 +665,11 @@ class _HistoryTab extends ConsumerWidget {
       error: (e, _) => ErrorState(error: e),
       data: (missions) {
         if (missions.isEmpty) {
-          return const Center(
+          return Center(
             child: EmptyState(
               icon: Icons.inbox_outlined,
-              title: 'Sin misiones completadas aún',
-              body: 'Aceptá tu primera misión desde el Inicio.',
+              title: AppLocalizations.of(context).historyEmptyTitle,
+              body: AppLocalizations.of(context).historyEmptyBody,
             ),
           );
         }
@@ -707,7 +720,8 @@ class _MissionHistoryCard extends StatelessWidget {
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(
-              '${mission.origin} → ${mission.destination}',
+              '${ContentL10n.place(mission.origin)} → '
+              '${ContentL10n.place(mission.destination)}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.ui(13,
@@ -741,7 +755,7 @@ class _MissionHistoryCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime d) => '${d.day}/${d.month}/${d.year}';
+  String _formatDate(DateTime d) => DateFormat.yMd().format(d);
 }
 
 class _SignOutDialog extends StatelessWidget {
@@ -750,26 +764,26 @@ class _SignOutDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) => GameDialog(
         icon: Icons.logout_rounded,
-        title: '¿Cerrar sesión?',
+        title: AppLocalizations.of(context).signOutTitle,
         actions: [
           SizedBox(
             width: double.infinity,
             child: GameButton(
-              label: 'SALIR',
+              label: AppLocalizations.of(context).signOutConfirm,
               variant: GameButtonVariant.danger,
               fontSize: 16,
               onTap: () => Navigator.pop(context, true),
             ),
           ),
           GameButton(
-            label: 'Cancelar',
+            label: AppLocalizations.of(context).cancel,
             fontSize: 14,
             variant: GameButtonVariant.secondary,
             onTap: () => Navigator.pop(context, false),
           ),
         ],
         child: Text(
-          'Tu progreso está guardado en el dispositivo.',
+          AppLocalizations.of(context).signOutBody,
           style: AppTextStyles.bodyMedium,
           textAlign: TextAlign.center,
         ),

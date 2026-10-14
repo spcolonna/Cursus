@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/app_theme.dart';
 import 'insignia.dart';
+import '../../l10n/app_localizations.dart';
 
 export 'components.dart';
 export 'faction_widgets.dart';
@@ -38,10 +39,10 @@ extension CurrencyTypeX on CurrencyType {
   Color get textColor =>
       this == CurrencyType.seals ? AppColors.ink : color;
 
-  String label(int amount) => switch (this) {
-        CurrencyType.denarios => amount == 1 ? 'denario' : 'denarios',
-        CurrencyType.aureos => amount == 1 ? 'aureo' : 'aureos',
-        CurrencyType.seals => amount == 1 ? 'Sello del Gremio' : 'Sellos',
+  String label(AppLocalizations l, int amount) => switch (this) {
+        CurrencyType.denarios => l.currencyDenarii(amount),
+        CurrencyType.aureos => l.currencyAurei(amount),
+        CurrencyType.seals => l.currencySeals(amount),
       };
 }
 
@@ -311,7 +312,7 @@ class RewardAmount extends StatelessWidget {
       const SizedBox(width: 5),
       Text(
         withLabel
-            ? '$sign${amount.abs()} ${type.label(amount.abs())}'
+            ? '$sign${amount.abs()} ${type.label(AppLocalizations.of(context), amount.abs())}'
             : '$sign${amount.abs()}',
         style: AppTextStyles.ui(fontSize,
             color: type.textColor, weight: FontWeight.bold),
@@ -436,7 +437,7 @@ class GradeBadge extends StatelessWidget {
         ? AppColors.ink
         : AppColors.paper;
     return Semantics(
-      label: 'Nota $grade',
+      label: AppLocalizations.of(context).gradeSemantics(grade),
       excludeSemantics: true,
       child: WaxSeal(
         size: size,

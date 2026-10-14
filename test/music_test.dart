@@ -12,6 +12,7 @@ import 'package:the_messenger/infrastructure/audio/sfx_service.dart';
 import 'package:the_messenger/infrastructure/notifications/notification_service.dart';
 import 'package:the_messenger/presentation/theme/sky.dart';
 import 'package:the_messenger/presentation/widgets/music_director.dart';
+import 'helpers/localized_app.dart';
 
 /// Un player de mentira: recuerda qué suena, a qué volumen y si está en pausa.
 class _FakeChannel implements MusicChannel {
@@ -184,7 +185,10 @@ void main() {
           GoRoute(path: p, builder: (_, __) => const SizedBox()),
       ]);
       addTearDown(router.dispose);
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpWidget(MaterialApp.router(locale: kTestLocale,
+      supportedLocales: kTestSupportedLocales,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      routerConfig: router));
       router.push('/event?m=abc');
       await tester.pumpAndSettle();
       expect(visibleRouteUri(router).path, '/event');

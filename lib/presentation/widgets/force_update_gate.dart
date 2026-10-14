@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../domain/entities/remote_flags.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
 
 /// La versión instalada (pubspec `version`, sin el número de build).
 final appVersionProvider = FutureProvider<String>(
@@ -56,20 +57,19 @@ class ForceUpdateScreen extends StatelessWidget {
                   const Icon(Icons.system_update_alt,
                       size: 28, color: AppColors.ink),
                   const SizedBox(height: 12),
-                  Text('Hay una versión nueva',
+                  Text(AppLocalizations.of(context).updateTitle,
                       style: AppTextStyles.titleLarge,
                       textAlign: TextAlign.center),
                   const SizedBox(height: 8),
                   Text(
-                    'Para seguir con tus entregas necesitás actualizar '
-                    'Cursus. Tu partida queda guardada.',
+                    AppLocalizations.of(context).updateBody,
                     style: AppTextStyles.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
                   if (storeUrl.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     GameButton(
-                      label: 'Actualizar',
+                      label: AppLocalizations.of(context).updateButton,
                       icon: Icons.open_in_new,
                       onTap: () => launchUrl(Uri.parse(storeUrl),
                           mode: LaunchMode.externalApplication),

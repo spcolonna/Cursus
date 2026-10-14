@@ -4,29 +4,27 @@ import '../domain/entities/progression.dart';
 import '../domain/entities/weekly.dart';
 import '../domain/entities/world.dart';
 import '../domain/repositories/content_catalog.dart';
-import 'faction_content.dart' as faction;
-import 'game_content.dart' as base;
-import 'game_content_expansion.dart';
 import 'geo_content.dart';
-import 'npc_content.dart';
-import 'consequence_content.dart' as consequences;
-import 'progression_content.dart';
 import 'story_content.dart' as story;
-import 'story_rewards.dart' as rewards;
+import 'consequence_content.dart' as consequences;
+import 'localized_content.dart';
+
+final _consequenceIds = {
+  for (final e in consequences.consequenceEvents) e.id,
+};
 
 /// Catálogo con el contenido estático de `lib/data/`.
 class StaticGameContent implements GameContentCatalog {
   const StaticGameContent();
 
   @override
-  List<TutorialMission> get tutorialMissions =>
-      base.tutorialMissions;
+  List<TutorialMission> get tutorialMissions => lTutorialMissions;
 
   @override
   String get mainArcId => story.kArcClaudius;
 
   @override
-  List<StoryArcDef> get arcs => story.storyArcs;
+  List<StoryArcDef> get arcs => lArcs;
 
   @override
   int arcStageCount(String arcId) => story.arcStageCount(arcId);
@@ -34,39 +32,39 @@ class StaticGameContent implements GameContentCatalog {
   @override
   StoryMissionConfig? storyMissionFor(
           String arcId, int stage, Set<String> flags) =>
-      story.storyMissionFor(arcId, stage, flags);
+      lStoryMissionFor(arcId, stage, flags);
 
   @override
   StoryMissionConfig? storyMissionById(String id) =>
-      story.allStoryChapters.where((c) => c.id == id).firstOrNull;
+      lStoryChapters.where((c) => c.id == id).firstOrNull;
 
   @override
   RealEventConfig? eventById(String id) =>
-      story.storyEventById(id) ??
-      allRealEvents.where((e) => e.id == id).firstOrNull;
+      lStoryEvents.where((e) => e.id == id).firstOrNull ??
+      lRealEvents.where((e) => e.id == id).firstOrNull;
 
   @override
-  List<AchievementDef> get achievements => allAchievements;
+  List<AchievementDef> get achievements => lAchievements;
 
   @override
-  List<RealEventConfig> get consequenceEvents => consequences.consequenceEvents;
+  List<RealEventConfig> get consequenceEvents =>
+      lRealEvents.where((e) => _consequenceIds.contains(e.id)).toList();
 
   @override
-  List<RestStop> get restStops => rewards.restStops;
+  List<RestStop> get restStops => lRestStops;
 
   @override
   RealMissionConfig? routeById(String id) =>
-      allRealMissions.where((m) => m.id == id).firstOrNull;
+      lRealMissions.where((m) => m.id == id).firstOrNull;
 
   @override
-  List<FactionUnlock> get factionUnlocks => faction.factionUnlocks;
+  List<FactionUnlock> get factionUnlocks => lFactionUnlocks;
 
   @override
-  List<WeeklyCommissionDef> get weeklyCommissions =>
-      faction.weeklyCommissionPool;
+  List<WeeklyCommissionDef> get weeklyCommissions => lWeeklyCommissions;
 
   @override
-  List<NpcDef> get npcs => allNpcs;
+  List<NpcDef> get npcs => lNpcs;
 
   @override
   GeoAtlas get atlas => geoAtlas;

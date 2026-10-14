@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:the_messenger/domain/entities/entities.dart';
 import 'package:the_messenger/presentation/widgets/messenger_avatar.dart';
 import 'package:the_messenger/presentation/widgets/widgets.dart';
+import 'helpers/localized_app.dart';
 
 Messenger _messenger({
   int slotIndex = 0,
@@ -34,7 +35,10 @@ Messenger _messenger({
     );
 
 Widget _host(Widget child) =>
-    MaterialApp(home: Scaffold(body: Center(child: child)));
+    MaterialApp(locale: kTestLocale,
+      supportedLocales: kTestSupportedLocales,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      home: Scaffold(body: Center(child: child)));
 
 void main() {
   group('MessengerAvatar', () {
@@ -117,7 +121,10 @@ void main() {
     testWidgets('muestra las recompensas y se va solo', (tester) async {
       late BuildContext ctx;
       await tester.pumpWidget(MaterialApp(
-        home: Scaffold(body: Builder(builder: (c) {
+        locale: kTestLocale,
+      supportedLocales: kTestSupportedLocales,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      home: Scaffold(body: Builder(builder: (c) {
           ctx = c;
           return const SizedBox();
         })),
@@ -143,7 +150,10 @@ void main() {
     testWidgets('sin recompensas ni nota no hace nada', (tester) async {
       late BuildContext ctx;
       await tester.pumpWidget(MaterialApp(
-        home: Scaffold(body: Builder(builder: (c) {
+        locale: kTestLocale,
+      supportedLocales: kTestSupportedLocales,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      home: Scaffold(body: Builder(builder: (c) {
           ctx = c;
           return const SizedBox();
         })),

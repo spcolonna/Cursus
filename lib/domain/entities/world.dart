@@ -4,22 +4,14 @@
 // Regla de diseño: las consecuencias son duras en lo narrativo pero suaves
 // en lo mecánico — nunca quitan skills, monedas ni mensajeros.
 
+import 'domain_strings.dart';
+
 enum Faction { guild, legions, underworld, patricians }
 
 extension FactionX on Faction {
-  String get label => switch (this) {
-        Faction.guild => 'El Gremio',
-        Faction.legions => 'Las Legiones',
-        Faction.underworld => 'Bajos Fondos',
-        Faction.patricians => 'Patricios',
-      };
+  String get label => ds('ui.faction.$name.label');
 
-  String get lore => switch (this) {
-        Faction.guild => 'La red de mensajeros de Varus. Tu casa.',
-        Faction.legions => 'Centuriones y patrullas. Respetan el protocolo.',
-        Faction.underworld => 'Bandidos, contrabandistas y oídos del foro.',
-        Faction.patricians => 'Senadores y villas. Pagan bien, olvidan rápido.',
-      };
+  String get lore => ds('ui.faction.$name.lore');
 }
 
 // ─── Rangos de facción ───────────────────────────────────────────────────────
@@ -27,14 +19,7 @@ extension FactionX on Faction {
 enum FactionTier { enemy, suspect, unknown, known, respected, legend }
 
 extension FactionTierX on FactionTier {
-  String get label => switch (this) {
-        FactionTier.enemy => 'Enemigo',
-        FactionTier.suspect => 'Sospechoso',
-        FactionTier.unknown => 'Desconocido',
-        FactionTier.known => 'Conocido',
-        FactionTier.respected => 'Respetado',
-        FactionTier.legend => 'Leyenda',
-      };
+  String get label => ds('ui.tier.$name');
 
   /// Reputación mínima para estar en este escalón (los negativos, el techo).
   int get threshold => switch (this) {
@@ -229,8 +214,8 @@ class WorldState {
     for (final f in deltas.keys) {
       final before = tierOf(f), after = result.tierOf(f);
       if (after.index > before.index && after.atLeast(FactionTier.known)) {
-        result = result.addJournal(
-            '${f.label} ahora te tiene por ${after.label.toLowerCase()}.');
+        result = result.addJournal(ds('ui.journal.faction_tier',
+            {'faction': f.label, 'tier': after.label.toLowerCase()}));
       }
     }
     return result;

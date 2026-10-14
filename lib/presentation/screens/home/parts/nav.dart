@@ -38,23 +38,23 @@ class _BottomNav extends StatelessWidget {
         children: [
           _NavTab(
             icon: Icons.storefront,
-            label: 'Tienda',
+            label: AppLocalizations.of(context).navShop,
             onTap: () => context.push('/shop'),
           ),
           _NavTab(
             icon: Icons.person,
-            label: 'Perfil',
+            label: AppLocalizations.of(context).navProfile,
             onTap: () => context.push('/profile'),
           ),
           const _NavTabHome(),
           _NavTab(
             icon: Icons.map_outlined,
-            label: 'Misión',
+            label: AppLocalizations.of(context).navMission,
             accent: hasEvent ? AppColors.cinnabar : null,
             badge: hasEvent,
             onTap: target == null
                 ? () => showGameSnack(
-                    context, 'Ningún mensajero está en camino.',
+                    context, AppLocalizations.of(context).navNoneOnRoad,
                     isError: true)
                 : () => context.push(
                     hasEvent
@@ -64,7 +64,7 @@ class _BottomNav extends StatelessWidget {
           ),
           _NavTab(
             icon: Icons.account_tree_outlined,
-            label: 'Caminos',
+            label: AppLocalizations.of(context).navPaths,
             onTap: () => context.push('/skills'),
           ),
         ],
@@ -95,7 +95,9 @@ class _NavTab extends StatelessWidget {
     return Expanded(
       child: Semantics(
         button: true,
-        label: badge ? '$label, hay un evento esperando' : label,
+        label: badge
+            ? AppLocalizations.of(context).navEventWaiting(label)
+            : label,
         excludeSemantics: true,
         child: InkResponse(
           onTap: () {
@@ -156,7 +158,7 @@ class _NavTabHome extends StatelessWidget {
     const size = 50.0;
     return Expanded(
       child: Semantics(
-        label: 'Inicio, pantalla actual',
+        label: AppLocalizations.of(context).navHomeCurrent,
         selected: true,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Container(
@@ -177,7 +179,7 @@ class _NavTabHome extends StatelessWidget {
                 size: 26, color: AppColors.ink),
           ),
           const SizedBox(height: 3),
-          Text('Inicio',
+          Text(AppLocalizations.of(context).navHome,
               style: AppTextStyles.ui(12,
                   color: AppColors.ochreDeep, weight: FontWeight.bold)),
         ]),

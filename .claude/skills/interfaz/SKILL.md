@@ -49,4 +49,5 @@ Patrones de pantalla, jerarquía y animación: `references/patrones.md`.
 - [ ] Estados cubiertos: cargando, vacío, error, y el caso de "ya lo hiciste hoy".
 - [ ] Sin emojis; íconos Material coherentes con los de la tienda.
 - [ ] Probado mentalmente en pantalla chica (360 dp): sin overflow, textos que envuelven.
+- [ ] Cero texto literal: todo en `lib/l10n/app_es.arb` (español neutro) y `app_en.arb`, leído con `AppLocalizations.of(context)` (lo controla `test/ui_literals_test.dart`). El inglés no desborda en 360 dp.
 - [ ] `flutter analyze` limpio.

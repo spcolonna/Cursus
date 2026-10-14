@@ -15,6 +15,9 @@ import 'presentation/widgets/force_update_gate.dart';
 import 'infrastructure/firebase/firebase_setup.dart';
 import 'infrastructure/firebase/firebase_remote_flags.dart';
 import 'infrastructure/time/trusted_time_service.dart';
+import 'infrastructure/l10n/language_service.dart';
+import 'l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 /// Reloj del juego: anclado al servidor, inmune a cambiar la hora del teléfono.
 final _clock = TrustedTimeService();
@@ -49,6 +52,12 @@ void main() async {
   ));
 
   final container = ProviderContainer();
+  // Idioma antes de leer contenido: el de Ajustes o el del teléfono.
+  final lang = resolveLanguage(
+      await container.read(playerProgressProvider).language(),
+      PlatformDispatcher.instance.locale);
+  await applyLanguage(lang);
+  container.read(languageProvider.notifier).state = lang;
   final flags = container.read(remoteFlagsSourceProvider);
   if (flags is FirebaseRemoteFlags) await flags.init();
   unawaited(flags.refresh());
@@ -142,6 +151,14 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       routerConfig: appRouter,
+      locale: Locale(ref.watch(languageProvider)),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       // Logros y rangos nuevos se festejan sobre cualquier pantalla, y la
       // música sigue a la pantalla y a la hora.
       // La barra de estado va en tinta sobre el papel; las pantallas con

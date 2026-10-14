@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../feedback/feedback.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
@@ -13,7 +14,9 @@ import '../../../domain/entities/entities.dart';
 import '../../../domain/entities/progression.dart';
 import '../../../domain/entities/world.dart';
 import '../../../domain/usecases/usecases.dart';
-import '../../../data/story_content.dart';
+import '../../../data/localized_content.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../domain/entities/content_l10n.dart';
 
 class MissionResultScreen extends ConsumerStatefulWidget {
   final Mission mission;
@@ -57,13 +60,13 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
     });
   }
 
-  static const _gradeLabels = {
-    'S': '¡LEGENDARIO!',
-    'A': '¡EXCELENTE!',
-    'B': 'BIEN HECHO',
-    'C': 'PASABLE',
-    'F': 'FALLIDO',
-  };
+  static Map<String, String> _gradeLabels(AppLocalizations l) => {
+        'S': l.gradeS,
+        'A': l.gradeA,
+        'B': l.gradeB,
+        'C': l.gradeC,
+        'F': l.gradeF,
+      };
 
   static const _denarioReward = {
     'S': 150,
@@ -77,7 +80,7 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
   Widget build(BuildContext context) {
     final grade = result?.grade ?? 'B';
     final color = gradeColor(grade);
-    final gradeLabel = _gradeLabels[grade] ?? '';
+    final gradeLabel = _gradeLabels(AppLocalizations.of(context))[grade] ?? '';
     // La recompensa real viene del resultado (incluye bonus de perks);
     // el mapa es solo fallback para resultados guardados con el schema viejo.
     final reward = (result?.denarios ?? 0) > 0
@@ -119,7 +122,8 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
               }),
               Expanded(
                 child: Text(
-                  '${mission.origin} → ${mission.destination}',
+                  '${ContentL10n.place(mission.origin)} → '
+                  '${ContentL10n.place(mission.destination)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style:
@@ -127,7 +131,8 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
                 ),
               ),
               if (mission.isTutorial)
-                const GameChip('PRUEBA DE VARUS', color: AppColors.sienna),
+                GameChip(AppLocalizations.of(context).resultTrialChip,
+                    color: AppColors.sienna),
             ]),
           ),
 
@@ -199,7 +204,7 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
 
                 CountUpText(
                   total.round(),
-                  suffix: '% de eficacia',
+                  suffix: AppLocalizations.of(context).resultEfficacySuffix,
                   duration: const Duration(milliseconds: 900),
                   style:
                       AppTextStyles.ui(14, color: AppColors.inkSoft),
@@ -265,7 +270,7 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
             padding: EdgeInsets.fromLTRB(
                 24, 8, 24, MediaQuery.of(context).padding.bottom + 16),
             child: GameButton(
-              label: 'VOLVER AL CUARTEL',
+              label: AppLocalizations.of(context).resultBackToBase,
               icon: Icons.home_rounded,
               onTap: () => context.go('/home'),
             ).animate(delay: at(950)).fadeIn(duration: d(300)),
@@ -295,7 +300,7 @@ class _EpilogueCard extends StatelessWidget {
         Row(children: [
           const Icon(Icons.auto_stories, color: AppColors.tyrian, size: 16),
           const SizedBox(width: 8),
-          Text('LA HISTORIA CONTINÚA',
+          Text(AppLocalizations.of(context).resultStoryContinues,
               style: AppTextStyles.ui(12,
                   color: AppColors.ink,
                   weight: FontWeight.bold,
@@ -320,7 +325,7 @@ class _GradeSeal extends StatelessWidget {
     final letter =
         color.computeLuminance() > 0.2 ? AppColors.ink : AppColors.paper;
     return Semantics(
-      label: 'Nota $grade',
+      label: AppLocalizations.of(context).gradeSemantics(grade),
       child: WaxSeal(
         size: 140,
         color: color,
@@ -348,6 +353,7 @@ class _ScoreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -357,7 +363,7 @@ class _ScoreCard extends StatelessWidget {
             Border.all(color: gradeColor.withValues(alpha: 0.3), width: 1.5),
       ),
       child: Column(children: [
-        Text('DESGLOSE',
+        Text(l.resultBreakdown,
             style: AppTextStyles.ui(12,
                 color: AppColors.inkMuted,
                 weight: FontWeight.bold,
@@ -365,24 +371,24 @@ class _ScoreCard extends StatelessWidget {
         const SizedBox(height: 14),
         _ScoreRow(
           icon: Icons.schedule,
-          label: 'Puntualidad',
-          sublabel: timeScore >= 80 ? 'A tiempo' : 'Con retraso',
+          label: l.resultPunctuality,
+          sublabel: timeScore >= 80 ? l.resultOnTime : l.resultLate,
           score: timeScore,
           weight: 30,
         ),
         const SizedBox(height: 12),
         _ScoreRow(
           icon: Icons.inventory_2,
-          label: 'Estado del paquete',
-          sublabel: _packageLabel(packageScore),
+          label: l.resultPackage,
+          sublabel: _packageLabel(l, packageScore),
           score: packageScore,
           weight: 35,
         ),
         const SizedBox(height: 12),
         _ScoreRow(
           icon: Icons.psychology,
-          label: 'Decisiones',
-          sublabel: _decisionLabel(decisionScore),
+          label: l.resultDecisions,
+          sublabel: _decisionLabel(l, decisionScore),
           score: decisionScore,
           weight: 35,
         ),
@@ -390,19 +396,19 @@ class _ScoreCard extends StatelessWidget {
     );
   }
 
-  String _packageLabel(double s) {
-    if (s >= 100) return 'Intacto';
-    if (s >= 75) return 'Humedad leve';
-    if (s >= 50) return 'Dañado';
-    if (s >= 25) return 'Comprometido';
-    return 'Perdido';
+  String _packageLabel(AppLocalizations l, double s) {
+    if (s >= 100) return l.packageIntact;
+    if (s >= 75) return l.packageDamp;
+    if (s >= 50) return l.packageDamaged;
+    if (s >= 25) return l.packageCompromised;
+    return l.packageLost;
   }
 
-  String _decisionLabel(double s) {
-    if (s >= 90) return 'Decisiones perfectas';
-    if (s >= 70) return 'Buenas decisiones';
-    if (s >= 50) return 'Decisiones regulares';
-    return 'Malas decisiones';
+  String _decisionLabel(AppLocalizations l, double s) {
+    if (s >= 90) return l.decisionsPerfect;
+    if (s >= 70) return l.decisionsGood;
+    if (s >= 50) return l.decisionsFair;
+    return l.decisionsBad;
   }
 }
 
@@ -487,7 +493,7 @@ class _WhatChanged extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final flagLines =
-        completion.flagsSet.map(flagDescription).whereType<String>().toList();
+        completion.flagsSet.map(lFlagDescription).whereType<String>().toList();
 
     final hasBody = completion.fatigueDelta != 0 || completion.injured;
     final hasAnything = completion.xpGained.isNotEmpty ||
@@ -511,7 +517,7 @@ class _WhatChanged extends StatelessWidget {
           const Icon(Icons.change_history,
               size: 15, color: AppColors.inkSoft),
           const SizedBox(width: 7),
-          Text('LO QUE CAMBIÓ',
+          Text(AppLocalizations.of(context).resultWhatChanged,
               style: AppTextStyles.ui(12,
                   color: AppColors.inkSoft, letterSpacing: 1.2)),
         ]),
@@ -548,7 +554,9 @@ class _WhatChanged extends StatelessWidget {
                   color: AppColors.ink, size: 22),
               const SizedBox(width: 8),
               Expanded(
-                child: Text('Ganaste el título «${completion.endingTitle}»',
+                child: Text(
+                    AppLocalizations.of(context)
+                        .resultTitleEarned(completion.endingTitle!),
                     style: AppTextStyles.ui(14,
                         color: AppColors.ink, weight: FontWeight.bold)),
               ),
@@ -577,15 +585,17 @@ class _WhatChanged extends StatelessWidget {
             if (completion.fatigueDelta != 0)
               GameChip(
                 completion.restStop == null
-                    ? '${completion.fatigueDelta} de fatiga al llegar'
-                    : '${completion.fatigueDelta} de fatiga: ${completion.restStop}',
+                    ? AppLocalizations.of(context)
+                        .resultFatigueOnArrival(completion.fatigueDelta)
+                    : AppLocalizations.of(context).resultFatigueRest(
+                        completion.fatigueDelta, completion.restStop!),
                 icon: Icons.self_improvement,
                 color: AppColors.verdigris,
                 size: GameChipSize.medium,
               ),
             if (completion.injured)
-              const GameChip(
-                'Llegaste herido: descansá antes de salir',
+              GameChip(
+                AppLocalizations.of(context).resultInjured,
                 icon: Icons.medical_services_outlined,
                 color: AppColors.cinnabar,
                 size: GameChipSize.medium,
@@ -609,8 +619,10 @@ class _WhatChanged extends StatelessWidget {
                 Expanded(
                   child: Text(
                     e.value > 0
-                        ? '${e.key.label} te tiene más en cuenta (+${e.value})'
-                        : '${e.key.label} desconfía más de vos (${e.value})',
+                        ? AppLocalizations.of(context)
+                            .resultRepUp(e.key.label, e.value)
+                        : AppLocalizations.of(context)
+                            .resultRepDown(e.key.label, e.value),
                     style: AppTextStyles.bodyMedium,
                   ),
                 ),
@@ -649,7 +661,7 @@ class _WhatChanged extends StatelessWidget {
                   size: 15, color: AppColors.tyrian),
               const SizedBox(width: 8),
               Expanded(
-                child: Text('«${completion.journalEntry}»',
+                child: Text(AppLocalizations.of(context).quotedTitle(completion.journalEntry!),
                     style: AppTextStyles.proseItalic(size: 14)),
               ),
             ]),
@@ -698,15 +710,16 @@ class _RewardCard extends StatelessWidget {
                   type: CurrencyType.denarios, amount: value, fontSize: 22),
             ),
             const SizedBox(width: 10),
-            const GameChip('RECOMPENSA', color: AppColors.egyptianBlue),
+            GameChip(AppLocalizations.of(context).resultReward,
+                color: AppColors.egyptianBlue),
           ],
         ),
         // De dónde sale el número: nota × la ruta que elegiste.
         if (payFactor != 1.0) ...[
           const SizedBox(height: 6),
           Text(
-            'Nota $grade: ${gradeBaseReward(grade)} × ruta '
-            '${payFactor.toStringAsFixed(1).replaceAll('.', ',')}',
+            AppLocalizations.of(context).resultPayFormula(grade,
+                gradeBaseReward(grade), NumberFormat('0.0').format(payFactor)),
             style: AppTextStyles.bodySmall
                 .copyWith(color: AppColors.inkSoft),
           ),
@@ -743,13 +756,13 @@ class _EventsSummary extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Text('EVENTOS RESUELTOS',
+            Text(AppLocalizations.of(context).missionResolvedHeader,
                 style: AppTextStyles.ui(12,
                     color: AppColors.inkMuted,
                     weight: FontWeight.bold,
                     letterSpacing: 1.5)),
             const Spacer(),
-            Text('$successes/$total exitosos',
+            Text(AppLocalizations.of(context).resultSuccesses(successes, total),
                 style: AppTextStyles.ui(12,
                     color: successes == total
                         ? AppColors.verdigris
@@ -788,7 +801,9 @@ class _EventsSummary extends StatelessWidget {
                                 color: AppColors.ink,
                                 weight: FontWeight.bold)),
                         if (e.outcome?.chosenOptionText != null)
-                          Text('Decidiste: ${e.outcome!.chosenOptionText}',
+                          Text(
+                              AppLocalizations.of(context).missionYouChose(
+                                  e.outcome!.chosenOptionText!),
                               style: AppTextStyles.bodySmall),
                       ],
                     ),

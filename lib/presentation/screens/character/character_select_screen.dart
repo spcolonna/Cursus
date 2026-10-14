@@ -7,6 +7,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/messenger_avatar.dart';
 import '../../providers/providers.dart';
 import '../../../domain/entities/entities.dart';
+import '../../../l10n/app_localizations.dart';
 
 class CharacterSelectScreen extends ConsumerStatefulWidget {
   const CharacterSelectScreen({super.key});
@@ -32,12 +33,12 @@ class _CharacterSelectScreenState
   Future<void> _confirm() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      setState(() => _error = 'Ponele un nombre a tu mensajero.');
+      setState(() => _error = AppLocalizations.of(context).charErrorEmpty);
       AppFeedback.denied();
       return;
     }
     if (name.length < 2) {
-      setState(() => _error = 'El nombre necesita al menos 2 letras.');
+      setState(() => _error = AppLocalizations.of(context).charErrorShort);
       AppFeedback.denied();
       return;
     }
@@ -49,6 +50,7 @@ class _CharacterSelectScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return GradientScaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -58,20 +60,19 @@ class _CharacterSelectScreenState
             children: [
               // Header
               Text(
-                'TU MENSAJERO',
+                l.charKicker,
                 style: AppTextStyles.ui(13,
                     color: AppColors.ochreDeep, letterSpacing: 2),
               )
                   .animate().fadeIn(duration: 300.ms),
               const SizedBox(height: 6),
               Text(
-                'Elegí quién lleva el mensaje',
+                l.charTitle,
                 style: AppTextStyles.heading(28),
               ).animate(delay: 100.ms).fadeIn(),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Va a ser tu mensajero principal. Más adelante vas a poder '
-                'contratar otros.',
+                l.charBody,
                 style: AppTextStyles.bodyLarge.copyWith(
                     color: AppColors.inkSoft, fontSize: 15),
               ).animate(delay: 150.ms).fadeIn(),
@@ -79,7 +80,7 @@ class _CharacterSelectScreenState
               const SizedBox(height: 36),
 
               // Gender selection
-              Text('Tipo de mensajero',
+              Text(l.charTypeLabel,
                   style: AppTextStyles.ui(14, color: AppColors.inkMuted)),
               const SizedBox(height: 12),
               Row(children: [
@@ -103,7 +104,7 @@ class _CharacterSelectScreenState
               const SizedBox(height: 32),
 
               // Name input
-              Text('Nombre del mensajero',
+              Text(l.charNameLabel,
                   style: AppTextStyles.ui(14, color: AppColors.inkMuted))
                   .animate(delay: 400.ms).fadeIn(),
               const SizedBox(height: 10),
@@ -125,8 +126,8 @@ class _CharacterSelectScreenState
                   maxLength: 20,
                   decoration: InputDecoration(
                     hintText: _gender == MessengerGender.male
-                        ? 'Ej: Marcus, Lucius...'
-                        : 'Ej: Julia, Livia...',
+                        ? l.charNameHintMale
+                        : l.charNameHintFemale,
                     hintStyle: AppTextStyles.bodyMedium
                         .copyWith(color: AppColors.inkMuted),
                     counterText: '',
@@ -174,8 +175,8 @@ class _CharacterSelectScreenState
                 width: double.infinity,
                 child: GameButton(
                   label: _saving
-                      ? 'Comenzando...'
-                      : 'COMENZAR LA AVENTURA',
+                      ? l.charStarting
+                      : l.charStart,
                   fontSize: 18,
                   isLoading: _saving,
                   onTap: _saving ? null : _confirm,
@@ -233,14 +234,16 @@ class _GenderCard extends StatelessWidget {
           MessengerAvatar(gender: gender, size: 72),
           const SizedBox(height: 12),
           Text(
-            isMale ? 'HOMBRE' : 'MUJER',
+            isMale
+                ? AppLocalizations.of(context).charMale
+                : AppLocalizations.of(context).charFemale,
             style: AppTextStyles.ui(13,
                 color: selected ? accentColor : AppColors.inkMuted,
                 letterSpacing: 1),
           ),
           const SizedBox(height: 4),
           Text(
-            isMale ? 'Mensajero' : 'Mensajera',
+            gender.label,
             style: AppTextStyles.bodyMedium,
           ),
           if (selected) ...[
@@ -285,14 +288,16 @@ class _PreviewCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${gender.label} · Correo · Rank 1',
+                AppLocalizations.of(context).charPreviewLine(gender.label),
                 style: AppTextStyles.bodyMedium,
               ),
               const SizedBox(height: 6),
               Row(children: [
-                _miniStat('Salud', '100', AppColors.verdigris),
+                _miniStat(AppLocalizations.of(context).statHealth, '100',
+                    AppColors.verdigris),
                 const SizedBox(width: 10),
-                _miniStat('Fatiga', '0', AppColors.inkMuted),
+                _miniStat(AppLocalizations.of(context).statFatigue, '0',
+                    AppColors.inkMuted),
               ]),
             ],
           ),

@@ -15,6 +15,7 @@ import '../feedback/feedback.dart';
 import '../theme/app_theme.dart';
 import '../theme/art_palette.dart';
 import 'insignia.dart';
+import '../../l10n/app_localizations.dart';
 
 class SkillTreeBoard extends StatefulWidget {
   final Messenger messenger;
@@ -154,7 +155,8 @@ class _Column extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
         button: true,
         selected: focused,
-        label: '${skill.label}, nivel $level de $kMaxSkillLevelElite',
+        label: AppLocalizations.of(context)
+            .skillNodeSemantics(skill.label, level, kMaxSkillLevelElite),
         excludeSemantics: true,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,

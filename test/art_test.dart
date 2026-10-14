@@ -17,6 +17,7 @@ import 'package:the_messenger/infrastructure/local/local_repositories.dart';
 import 'package:the_messenger/presentation/widgets/art_image.dart';
 import 'package:the_messenger/presentation/widgets/messenger_avatar.dart';
 import 'package:the_messenger/presentation/widgets/widgets.dart';
+import 'helpers/localized_app.dart';
 
 void main() {
   // ─── ArtImage ───
@@ -230,6 +231,9 @@ void main() {
       (tester) async {
     late BuildContext ctx;
     await tester.pumpWidget(MaterialApp(
+      locale: kTestLocale,
+      supportedLocales: kTestSupportedLocales,
+      localizationsDelegates: kTestLocalizationsDelegates,
       home: Scaffold(
         body: Builder(builder: (c) {
           ctx = c;

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../data/localized_content.dart';
+import '../../../domain/entities/content.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,9 +24,10 @@ import '../../../domain/entities/progression.dart';
 import '../../../domain/entities/weekly.dart';
 import '../../../domain/entities/world.dart';
 import '../../../domain/usecases/usecases.dart';
-import '../../../data/game_content.dart';
 import '../../../infrastructure/progress/player_progress.dart';
 import '../../../domain/entities/game_clock.dart';
+import '../../../domain/entities/content_l10n.dart';
+import '../../../l10n/app_localizations.dart';
 
 part 'parts/slot.dart';
 part 'parts/guild.dart';
@@ -124,10 +127,8 @@ class _HomeScaffoldState extends ConsumerState<_HomeScaffold> {
       context: context,
       alreadySeen: seen,
       onSeen: () => progress.markHomeTooltipSeen(),
-      title: 'Tu puesto de correo',
-      body:
-          'Acá ves a tus mensajeros, el progreso de cada misión y el tablón del gremio. '
-          'Las rutas cortas caben en una tarde; las largas siguen mientras dormís.',
+      title: AppLocalizations.of(context).homeSpotlightTitle,
+      body: AppLocalizations.of(context).homeSpotlightBody,
     );
   }
 
@@ -395,13 +396,14 @@ class _RosterChip extends StatelessWidget {
     final m = slot.messenger;
     final hasEvent = slot.pendingEvent != null;
     final mission = slot.activeMission;
+    final l = AppLocalizations.of(context);
     final status = hasEvent
-        ? 'Evento'
+        ? l.homeRosterEvent
         : mission != null
-            ? 'En camino'
+            ? l.homeRosterOnRoad
             : m.status == MessengerStatus.injured
-                ? 'Herido'
-                : 'Libre';
+                ? l.homeRosterInjured
+                : l.homeRosterFree;
 
     return Semantics(
       button: true,
@@ -494,7 +496,7 @@ class _AutoResolvedNotice extends StatelessWidget {
           const Icon(Icons.history_toggle_off,
               color: AppColors.sienna, size: 18),
           const SizedBox(width: AppSpacing.sm),
-          Text('PASÓ MIENTRAS NO ESTABAS',
+          Text(AppLocalizations.of(context).homeAwayHeader,
               style: AppTextStyles.ui(12,
                   color: AppColors.sienna,
                   weight: FontWeight.bold,
@@ -505,13 +507,13 @@ class _AutoResolvedNotice extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: AppSpacing.xs),
             child: Text(
-              '${e.messengerName} no podía esperar en «${e.eventTitle}»: '
-              'actuó por instinto y ${e.chosenOptionText.toLowerCase()}.',
+              AppLocalizations.of(context).homeAwayLine(e.messengerName,
+                  e.eventTitle, e.chosenOptionText.toLowerCase()),
               style: AppTextStyles.bodyMedium.copyWith(height: 1.4),
             ),
           ),
         const SizedBox(height: AppSpacing.xs),
-        Text('Responder a tiempo siempre sale mejor.',
+        Text(AppLocalizations.of(context).homeAwayHint,
             style: AppTextStyles.bodySmall),
       ]),
     );
