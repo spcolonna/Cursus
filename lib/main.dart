@@ -82,6 +82,10 @@ void main() async {
     container: container,
     child: const TheMessengerApp(),
   ));
+  // Consentimiento de anuncios (puede mostrar un formulario) y SDK de AdMob,
+  // con la app ya dibujada.
+  WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(container.read(rewardedAdsServiceProvider).init()));
 }
 
 class TheMessengerApp extends ConsumerStatefulWidget {

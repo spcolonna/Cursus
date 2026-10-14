@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -299,11 +301,57 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
   /// Mensajero que recibe el efecto (pociones, manuales, boosts).
   String? _targetId;
   static bool _spotlightShown = false;
+  StreamSubscription<IapUpdate>? _iapSub;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeSpotlight());
+    _iapSub = ref.read(iapServiceProvider).updates.listen(_onIapUpdate);
+  }
+
+  @override
+  void dispose() {
+    _iapSub?.cancel();
+    super.dispose();
+  }
+
+  /// La tienda confirmó, dejó pendiente, canceló o falló una compra.
+  void _onIapUpdate(IapUpdate u) {
+    if (!mounted) return;
+    final itemId = IapProducts.shopItemIdForProduct(u.productId);
+    final item = shopCatalogue.where((i) => i.id == itemId).firstOrNull;
+    switch (u.kind) {
+      case IapUpdateKind.credited:
+        if (item == null) return;
+        AppFeedback.reward();
+        setState(() => _purchasedId = item.id);
+        _showPurchaseToast(item, item.name);
+      case IapUpdateKind.pending:
+        showGameSnack(context,
+            'La compra quedó pendiente. Se acredita sola cuando la tienda la confirme.');
+      case IapUpdateKind.canceled:
+        showGameSnack(context, 'Compra cancelada.');
+      case IapUpdateKind.failed:
+        showGameSnack(
+            context,
+            'No se pudo completar la compra. Si se cobró, se acredita sola '
+            'la próxima vez que abras el juego.',
+            isError: true);
+    }
+  }
+
+  void _showPurchaseToast(ShopItem item, String note) {
+    showRewardToast(
+      context,
+      [
+        if (item.aureosReward != null)
+          (type: CurrencyType.aureos, amount: item.aureosReward!),
+        if (item.dinariosReward != null)
+          (type: CurrencyType.denarios, amount: item.dinariosReward!),
+      ],
+      note: note,
+    );
   }
 
   Future<void> _maybeSpotlight() async {
@@ -366,6 +414,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                   item: items[i],
                   messenger: messenger,
                   price: _priceFor(items[i], target),
+                  storePrice: ref
+                      .read(iapServiceProvider)
+                      .localizedPrice(items[i].id),
                   justBought: _purchasedId == items[i].id,
                   onBuy: () => _buy(items[i], target),
                 )
@@ -484,6 +535,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       context,
       builder: (_) => _PaywallDialog(
         item: item,
+        priceLabel: realMoneyLabel(
+            item, ref.read(iapServiceProvider).localizedPrice(item.id)),
         onConfirm: () => _purchaseIap(item),
       ),
     );
@@ -507,13 +560,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     }
 
     // Sandbox (debug sin productos de store): acreditamos ya. Con tienda
-    // real, el crédito llega por el stream de compras (IapService.onPurchased).
-    if (result.usedSandbox) {
-      await _creditIap(item);
-    } else {
-      if (!mounted) return;
-      showGameSnack(context, 'Compra iniciada. La tienda confirmará el pago.');
-    }
+    // real, el crédito llega por el stream de compras y se avisa en
+    // _onIapUpdate.
+    if (result.usedSandbox) await _creditIap(item);
   }
 
   Future<void> _creditIap(ShopItem item) async {
@@ -532,22 +581,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         .markTask(PlayerProgress.taskBuyItem);
 
     if (!mounted) return;
-    showRewardToast(
-      context,
-      [
-        if (item.aureosReward != null)
-          (type: CurrencyType.aureos, amount: item.aureosReward!),
-        if (item.dinariosReward != null)
-          (type: CurrencyType.denarios, amount: item.dinariosReward!),
-      ],
-      note: resultSandboxNote(item),
-    );
-  }
-
-  String resultSandboxNote(ShopItem item) {
-    final iap = ref.read(iapServiceProvider);
-    final sandbox = !iap.hasProducts;
-    return sandbox ? '${item.name} (sandbox de prueba)' : item.name;
+    _showPurchaseToast(item, '${item.name} (sandbox de prueba)');
   }
 
   void _showInsufficientFunds(PriceCurrency type) {
@@ -728,12 +762,16 @@ class _ShopCard extends StatelessWidget {
 
   /// Precio efectivo (los manuales escalan); null = no disponible.
   final int? price;
+
+  /// Precio de la tienda en la moneda del jugador (solo dinero real).
+  final String? storePrice;
   final bool justBought;
   final VoidCallback onBuy;
   const _ShopCard({
     required this.item,
     required this.messenger,
     required this.price,
+    this.storePrice,
     required this.justBought,
     required this.onBuy,
   });
@@ -750,9 +788,7 @@ class _ShopCard extends StatelessWidget {
   String get priceLabel {
     if (price == null) return 'MÁX';
     if (item.currency == PriceCurrency.realMoney) {
-      final dollars = price! ~/ 100;
-      final cents = price! % 100;
-      return '\$$dollars.${cents.toString().padLeft(2, '0')}';
+      return realMoneyLabel(item, storePrice);
     }
     return '$price';
   }
@@ -969,11 +1005,21 @@ class _BuyButton extends StatelessWidget {
   }
 }
 
+/// Precio de un producto de dinero real: el de la tienda (moneda e impuestos
+/// del jugador) o, si la tienda no cargó, el de referencia en USD.
+String realMoneyLabel(ShopItem item, String? storePrice) {
+  if (storePrice != null && storePrice.isNotEmpty) return storePrice;
+  final cents = item.price;
+  return 'US\$${cents ~/ 100}.${(cents % 100).toString().padLeft(2, '0')}';
+}
+
 // ─── Paywall Dialog ───────────────────────────────────────────────────────────
 class _PaywallDialog extends StatelessWidget {
   final ShopItem item;
+  final String priceLabel;
   final VoidCallback onConfirm;
-  const _PaywallDialog({required this.item, required this.onConfirm});
+  const _PaywallDialog(
+      {required this.item, required this.priceLabel, required this.onConfirm});
 
   @override
   Widget build(BuildContext context) {
@@ -983,7 +1029,7 @@ class _PaywallDialog extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: GameButton(
-            label: 'COMPRAR · ${_priceStr(item.price)}',
+            label: 'COMPRAR · $priceLabel',
             icon: Icons.shopping_cart,
             fontSize: 16,
             onTap: () {
@@ -1055,10 +1101,4 @@ class _PaywallDialog extends StatelessWidget {
           ),
         ]),
       );
-
-  String _priceStr(int cents) {
-    final d = cents ~/ 100;
-    final c = cents % 100;
-    return '\$$d.${c.toString().padLeft(2, '0')}';
-  }
 }

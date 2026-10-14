@@ -457,6 +457,7 @@ class _UsageDataCard extends ConsumerStatefulWidget {
 
 class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
   bool _enabled = true;
+  bool _adsPrivacy = false;
   RetentionLog? _log;
 
   @override
@@ -468,9 +469,17 @@ class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
   Future<void> _load() async {
     final enabled = await ref.read(playerProgressProvider).isAnalyticsEnabled();
     final log = await ref.read(retentionRepositoryProvider).load();
+    var adsPrivacy = false;
+    try {
+      adsPrivacy =
+          await ref.read(rewardedAdsServiceProvider).privacyOptionsRequired;
+    } catch (_) {
+      // Sin SDK de anuncios (tests, escritorio).
+    }
     if (!mounted) return;
     setState(() {
       _enabled = enabled;
+      _adsPrivacy = adsPrivacy;
       _log = log;
     });
   }
@@ -523,6 +532,18 @@ class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
                 style: AppTextStyles.ui(12, color: AppColors.inkSoft)),
           ),
         ),
+        // GDPR: quien dio (o negó) el consentimiento puede cambiarlo.
+        if (_adsPrivacy)
+          Center(
+            child: TextButton.icon(
+              onPressed: () =>
+                  ref.read(rewardedAdsServiceProvider).showPrivacyOptions(),
+              icon: const Icon(Icons.privacy_tip_outlined,
+                  size: 16, color: AppColors.inkSoft),
+              label: Text('Privacidad de los anuncios',
+                  style: AppTextStyles.ui(12, color: AppColors.inkSoft)),
+            ),
+          ),
       ]),
     );
   }

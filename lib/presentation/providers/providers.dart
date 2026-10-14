@@ -104,7 +104,12 @@ final iapServiceProvider = Provider<IapService>((ref) => IapService(
         final itemId = IapProducts.shopItemIdForProduct(productId);
         if (itemId == null) return;
         await ref.read(creditPurchaseUseCaseProvider).execute(itemId);
+        ref.read(analyticsProvider).track(AnalyticsEvent.iapCredited(itemId));
         ref.invalidate(homeProvider);
+        await ref
+            .read(primerosPasosProvider.notifier)
+            .markTask(PlayerProgress.taskBuyItem);
+        ref.read(cloudSyncProvider).markDirty();
       },
     ));
 final rewardedAdsServiceProvider =

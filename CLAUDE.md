@@ -9,6 +9,7 @@ Juego móvil Flutter. Mensajero en la Roma del 50 a.C.: las misiones corren en *
 - [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) — ilustraciones: estilo base, prompt de cada pieza y dónde va el archivo.
 - [docs/AUDIO.md](docs/AUDIO.md) — identidad sonora, el motivo D-A-E y la hoja de cues de música, SFX y aviso.
 - [docs/CUENTAS.md](docs/CUENTAS.md) — cuenta anónima, guardado en la nube (qué viaja), vincular Google/Apple, borrar cuenta.
+- [docs/MONETIZACION.md](docs/MONETIZACION.md) — compras (precios, estados, sin doble crédito), AdMob rewarded y consentimiento, qué falta para publicar.
 
 ## Skills de este proyecto (usalas antes de improvisar)
 
@@ -45,6 +46,7 @@ lib/
 ├── infrastructure/analytics/      AnalyticsService (fachada + opt-out), sinks de consola, buffer local y Firebase
 ├── infrastructure/firebase/       initFirebase (+ Crashlytics), FirebaseRemoteFlags (Remote Config)
 ├── infrastructure/cloud/          kCloudSaveKeys, CloudSyncService, Auth (anónimo/Google/Apple) y Firestore
+├── infrastructure/monetization/   IapService (precio localizado, estados, PurchaseLedger), RewardedAdsService (AdMob + UMP)
 ├── infrastructure/time/           TrustedTimeService: ancla GameClock al servidor y al reloj monotónico (canal cursus/clock)
 ├── infrastructure/audio/sfx_service.dart  enum Sfx + pool de players (los WAV salen de tool/gen_sfx.py)
 ├── infrastructure/audio/music_service.dart  MusicTrack + MusicService: loop, crossfade, ducking, pausa en 2.º plano
@@ -125,8 +127,9 @@ También: avisos locales (eventos, entrega, ocioso, contratos; el tap abre la mi
 Firebase (L1): cursus-dev en debug y cursus-prod en release; Crashlytics, Analytics y Remote Config (ver docs/ANALYTICS.md §7).
 Cuentas (L2): cuenta anónima, guardado en Firestore con elección de partida, borrar cuenta; Google/Apple listos en código, apagados hasta configurar la consola (docs/CUENTAS.md). Todo en plan Spark: nada de Cloud Functions.
 Reloj confiable (L3): `GameClock` anclado a la hora del servidor (cabecera Date de HTTPS) y, sin red, al reloj monotónico del sistema.
+Monetización (L4): precios de la tienda localizados, estados de compra y crédito idempotente por transacción; AdMob rewarded con ids de prueba y consentimiento UMP. Sin validar recibos en servidor (necesita Blaze).
 
-Pendiente (plan de lanzamiento L4-L9): precios y estados de compra, AdMob real, contenido a JSON, inglés, arte final, release.
+Pendiente (plan de lanzamiento L5-L9): contenido a JSON, inglés, arte final, release.
 
 ## Comandos
 

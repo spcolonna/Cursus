@@ -12,6 +12,7 @@ import '../../widgets/widgets.dart';
 import '../../../domain/entities/entities.dart';
 import '../../../domain/usecases/usecases.dart';
 import '../../../domain/entities/game_clock.dart';
+import '../../../infrastructure/monetization/rewarded_ads_service.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 class MissionScreen extends ConsumerStatefulWidget {
@@ -631,11 +632,16 @@ class _TravelAdButtonState extends ConsumerState<_TravelAdButton> {
   Future<void> _watch() async {
     setState(() => _loading = true);
     try {
-      final ok = await ref.read(rewardedAdsServiceProvider).showRewarded(
+      final outcome = await ref.read(rewardedAdsServiceProvider).showRewarded(
             context: context,
             placement: 'travel_skip_30',
           );
-      if (!ok || !mounted) return;
+      if (!mounted) return;
+      if (outcome == AdOutcome.unavailable) {
+        showGameSnack(context, 'No hay anuncios disponibles ahora. Probá en un rato.');
+        return;
+      }
+      if (outcome != AdOutcome.rewarded) return;
       await ref.read(playerProgressProvider).recordTravelAd();
       await ref.read(homeProvider.notifier).advanceMissionMinutes(
             widget.mission.messengerId,

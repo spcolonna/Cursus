@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Product IDs — deben coincidir con App Store Connect / Play Console.
 class IapProducts {
@@ -57,21 +58,71 @@ class IapPurchaseResult {
   });
 }
 
+// ─── Estados de compra para la UI ─────────────────────────────────────────────
+
+enum IapUpdateKind { credited, pending, canceled, failed }
+
+/// Lo que pasó con una compra después de abrir la hoja de la tienda.
+class IapUpdate {
+  final IapUpdateKind kind;
+  final String productId;
+  const IapUpdate(this.kind, this.productId);
+}
+
+// ─── Registro de compras acreditadas ──────────────────────────────────────────
+
+/// Ids de transacción ya acreditadas. La tienda puede volver a entregar una
+/// compra (reinicio, error al cerrarla); con esto nunca se acredita dos veces.
+/// Viaja con la partida a la nube.
+class PurchaseLedger {
+  static const kKey = 'iap_credited_v1';
+  static const _max = 200;
+
+  Future<bool> contains(String transactionId) async {
+    final p = await SharedPreferences.getInstance();
+    return (p.getStringList(kKey) ?? const []).contains(transactionId);
+  }
+
+  Future<void> add(String transactionId) async {
+    final p = await SharedPreferences.getInstance();
+    final ids = [...?p.getStringList(kKey), transactionId];
+    await p.setStringList(
+        kKey, ids.length > _max ? ids.sublist(ids.length - _max) : ids);
+  }
+}
+
+/// Id único de una transacción (purchaseID; si la tienda no lo da, producto
+/// y fecha).
+String transactionIdOf(PurchaseDetails p) =>
+    p.purchaseID ?? '${p.productID}@${p.transactionDate ?? ''}';
+
 /// Integra `in_app_purchase`. Si la tienda no está disponible (sim/dev sin
 /// productos), en debug acredita vía sandbox para poder playtestear la economía.
 class IapService {
   /// Acredita una compra confirmada por la tienda. Se llama ANTES de cerrar
   /// la transacción: si falla, la tienda la vuelve a entregar al reabrir.
   final Future<void> Function(String productId)? onPurchased;
-  IapService({this.onPurchased});
+  final PurchaseLedger ledger;
+  final Future<void> Function(PurchaseDetails)? _complete;
 
-  final InAppPurchase _iap = InAppPurchase.instance;
+  IapService({
+    this.onPurchased,
+    PurchaseLedger? ledger,
+    Future<void> Function(PurchaseDetails)? complete,
+  })  : ledger = ledger ?? PurchaseLedger(),
+        _complete = complete;
+
+  late final InAppPurchase _iap = InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _sub;
   bool _available = false;
   final Map<String, ProductDetails> _products = {};
+  final _updates = StreamController<IapUpdate>.broadcast();
 
   bool get isAvailable => _available;
   bool get hasProducts => _products.isNotEmpty;
+
+  /// Créditos, pendientes, cancelaciones y errores, para avisar al jugador.
+  Stream<IapUpdate> get updates => _updates.stream;
 
   Future<void> init() async {
     try {
@@ -80,7 +131,7 @@ class IapService {
         debugPrint('IAP: store not available');
         return;
       }
-      _sub = _iap.purchaseStream.listen(_onPurchases, onError: (e) {
+      _sub = _iap.purchaseStream.listen(handlePurchases, onError: (e) {
         debugPrint('IAP stream error: $e');
       });
       final response = await _iap.queryProductDetails(IapProducts.all);
@@ -98,18 +149,31 @@ class IapService {
 
   ProductDetails? product(String productId) => _products[productId];
 
+  /// Precio de la tienda, en la moneda y el formato del jugador. Null si la
+  /// tienda no cargó el producto.
+  String? localizedPrice(String shopItemId) {
+    final id = IapProducts.productIdForShopItem(shopItemId);
+    return id == null ? null : _products[id]?.price;
+  }
+
   /// Compra real si hay producto; si no, sandbox en debug.
   Future<IapPurchaseResult> purchase(String productId) async {
     final details = _products[productId];
     if (details != null && _available) {
       final param = PurchaseParam(productDetails: details);
-      final ok = await _iap.buyConsumable(purchaseParam: param);
-      if (!ok) {
+      try {
+        final ok = await _iap.buyConsumable(purchaseParam: param);
+        if (!ok) {
+          return const IapPurchaseResult(
+              success: false, error: 'No se pudo iniciar la compra.');
+        }
+      } catch (e) {
+        debugPrint('IAP buy failed: $e');
         return const IapPurchaseResult(
-            success: false, error: 'No se pudo iniciar la compra');
+            success: false,
+            error: 'La tienda no respondió. Probá de nuevo en un rato.');
       }
-      // El crédito real llega por purchaseStream; el caller en shop usa
-      // sandbox inmediato solo cuando no hay store.
+      // El crédito llega por purchaseStream y se avisa por [updates].
       return IapPurchaseResult(success: true, productId: productId);
     }
 
@@ -124,8 +188,7 @@ class IapService {
 
     return const IapPurchaseResult(
       success: false,
-      error:
-          'Compras no disponibles. Configurá los productos en App Store / Play Console.',
+      error: 'La tienda no está disponible ahora. Probá de nuevo en un rato.',
     );
   }
 
@@ -134,26 +197,45 @@ class IapService {
     await _iap.restorePurchases();
   }
 
-  Future<void> _onPurchases(List<PurchaseDetails> purchases) async {
+  /// Procesa lo que entrega la tienda. Público para los tests.
+  Future<void> handlePurchases(List<PurchaseDetails> purchases) async {
     for (final purchase in purchases) {
-      if (purchase.status == PurchaseStatus.purchased) {
-        try {
-          await onPurchased?.call(purchase.productID);
-        } catch (e) {
-          // Sin completar: la tienda reintenta la entrega en el próximo inicio.
-          debugPrint('IAP credit failed for ${purchase.productID}: $e');
-          continue;
-        }
-      } else if (purchase.status == PurchaseStatus.error) {
-        debugPrint('IAP purchase error: ${purchase.error}');
+      final id = purchase.productID;
+      switch (purchase.status) {
+        case PurchaseStatus.pending:
+          _updates.add(IapUpdate(IapUpdateKind.pending, id));
+          continue; // se cierra cuando llegue purchased o error
+        case PurchaseStatus.canceled:
+          _updates.add(IapUpdate(IapUpdateKind.canceled, id));
+        case PurchaseStatus.error:
+          debugPrint('IAP purchase error: ${purchase.error}');
+          _updates.add(IapUpdate(IapUpdateKind.failed, id));
+        case PurchaseStatus.purchased:
+        case PurchaseStatus.restored:
+          // Son consumibles: restored solo llega por errores de la tienda y
+          // se trata igual, con el registro evitando el doble crédito.
+          final tx = transactionIdOf(purchase);
+          if (!await ledger.contains(tx)) {
+            try {
+              await onPurchased?.call(id);
+              await ledger.add(tx);
+            } catch (e) {
+              // Sin cerrar: la tienda la vuelve a entregar en el próximo inicio.
+              debugPrint('IAP credit failed for $id: $e');
+              _updates.add(IapUpdate(IapUpdateKind.failed, id));
+              continue;
+            }
+            _updates.add(IapUpdate(IapUpdateKind.credited, id));
+          }
       }
       if (purchase.pendingCompletePurchase) {
-        await _iap.completePurchase(purchase);
+        await (_complete ?? _iap.completePurchase)(purchase);
       }
     }
   }
 
   Future<void> dispose() async {
     await _sub?.cancel();
+    await _updates.close();
   }
 }

@@ -23,6 +23,7 @@ const kCloudSaveKeys = <String>[
   'tooltip_home_seen_v1',
   'tooltip_event_seen_v1',
   'tooltip_shop_seen_v1',
+  'iap_credited_v1',
 ];
 
 /// Claves viejas o de respaldo que también son partida: al restaurar o
