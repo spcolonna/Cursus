@@ -477,5 +477,9 @@
   "shopBuyFor": "Buy for {price}",
   "shopBuyButton": "BUY · {price}",
   "shopRewardSecondMessenger": "+2nd messenger",
-  "shopRewardSkillLevels": "+2 skill levels of your choice (in Paths)"
+  "shopRewardSkillLevels": "+2 skill levels of your choice (in Paths)",
+  "settingsLegal": "Legal",
+  "settingsPrivacyPolicy": "Privacy policy",
+  "settingsTerms": "Terms of use",
+  "settingsLinkError": "Couldn't open the link."
 }

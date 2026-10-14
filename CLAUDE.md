@@ -9,6 +9,7 @@ Juego móvil Flutter. Mensajero en la Roma del 50 a.C.: las misiones corren en *
 - [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) — ilustraciones: estilo base, prompt de cada pieza y dónde va el archivo.
 - [docs/AUDIO.md](docs/AUDIO.md) — identidad sonora, el motivo D-A-E y la hoja de cues de música, SFX y aviso.
 - [docs/CUENTAS.md](docs/CUENTAS.md) — cuenta anónima, guardado en la nube (qué viaja), vincular Google/Apple, borrar cuenta.
+- [docs/PUBLICAR.md](docs/PUBLICAR.md) — checklist de publicación (firma, privacidad, tiendas) y [docs/STORE_LISTING.md](docs/STORE_LISTING.md) (fichas ES/EN).
 - [docs/LOCALIZACION.md](docs/LOCALIZACION.md) — español/inglés: ARB de la UI, tabla del contenido, glosario y voz.
 - [docs/MONETIZACION.md](docs/MONETIZACION.md) — compras (precios, estados, sin doble crédito), AdMob rewarded y consentimiento, qué falta para publicar.
 
@@ -135,7 +136,9 @@ Contenido (L5): validador de todo el contenido (`test/content_validator_test.dar
 Idiomas (L6): español neutro en UI e inglés completo (UI, contenido, dominio, avisos); selector en Ajustes, por defecto el del teléfono.
 Monetización (L4): precios de la tienda localizados, estados de compra y crédito idempotente por transacción; AdMob rewarded con ids de prueba y consentimiento UMP. Sin validar recibos en servidor (necesita Blaze).
 
-Pendiente (plan de lanzamiento L7-L9): arte final, release.
+Release (L8, parte de código): firma Android por key.properties, PrivacyInfo.xcprivacy, alarmas exactas opcionales, política y términos en site/ con enlaces en Ajustes.
+
+Pendiente (plan de lanzamiento L7-L9): arte final y música (los generás vos), cuentas de tienda y AdMob, beta.
 
 ## Comandos
 

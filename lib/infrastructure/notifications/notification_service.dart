@@ -106,6 +106,19 @@ class LocalNotificationService implements NotificationScheduler {
     _ready = true;
   }
 
+  /// Exacto si Android lo permite (SCHEDULE_EXACT_ALARM, que desde Android 14
+  /// viene apagado); si no, inexacto: el aviso puede correrse unos minutos.
+  /// No pedimos el permiso: obliga a ir a Ajustes del sistema, y Play solo
+  /// acepta USE_EXACT_ALARM en apps de alarma o calendario.
+  Future<AndroidScheduleMode> _scheduleMode() async {
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    final exact = await android?.canScheduleExactNotifications() ?? false;
+    return exact
+        ? AndroidScheduleMode.exactAllowWhileIdle
+        : AndroidScheduleMode.inexactAllowWhileIdle;
+  }
+
   // ─── Permiso ───────────────────────────────────────────────────────────────
 
   @override
@@ -145,8 +158,6 @@ class LocalNotificationService implements NotificationScheduler {
         AndroidFlutterLocalNotificationsPlugin>();
     if (android != null) {
       granted = await android.requestNotificationsPermission() ?? false;
-      // Sin alarmas exactas los avisos se corren varios minutos.
-      await android.requestExactAlarmsPermission();
     }
 
     final prefs = await SharedPreferences.getInstance();
@@ -328,7 +339,7 @@ class LocalNotificationService implements NotificationScheduler {
       body: _l.notifTestBody,
       scheduledDate: tz.TZDateTime.now(tz.local).add(delay),
       notificationDetails: _details(NotificationKind.event),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: await _scheduleMode(),
       payload: 'test|${DateTime.now().add(delay).toIso8601String()}',
     );
   }
@@ -366,7 +377,7 @@ class LocalNotificationService implements NotificationScheduler {
       // juego a la del dispositivo.
       scheduledDate: tz.TZDateTime.from(GameClock.toDevice(at), tz.local),
       notificationDetails: _details(kind),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: await _scheduleMode(),
       payload: '$payload|${at.toIso8601String()}',
     );
     return id;

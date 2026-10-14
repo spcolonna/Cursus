@@ -18,6 +18,8 @@ import 'package:intl/intl.dart';
 import '../../providers/providers.dart';
 import '../../../infrastructure/l10n/language_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../infrastructure/app_links.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/sky.dart';
 import '../../widgets/cloud_widgets.dart';
@@ -89,6 +91,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const _SkyDebugCard(),
                   const SizedBox(height: 20),
                 ],
+                SectionHeader(title: l.settingsLegal.toUpperCase()),
+                const _LegalCard(),
+                const SizedBox(height: 20),
                 SectionHeader(title: l.settingsDiagnosticsHeader),
                 FutureBuilder<_Diagnostics>(
                   future: _diagnostics,
@@ -623,6 +628,37 @@ class _LanguageCardState extends ConsumerState<_LanguageCard> {
             ),
         ]),
       ),
+    );
+  }
+}
+
+// ─── Legal ────────────────────────────────────────────────────────────────────
+
+class _LegalCard extends ConsumerWidget {
+  const _LegalCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final lang = ref.watch(languageProvider);
+
+    Future<void> open(Uri url) async {
+      final ok = await launchUrl(url, mode: LaunchMode.externalApplication);
+      if (!ok && context.mounted) showErrorSnack(context, l.settingsLinkError);
+    }
+
+    Widget link(IconData icon, String label, Uri url) => TextButton.icon(
+          onPressed: () => open(url),
+          icon: Icon(icon, size: 18, color: AppColors.inkSoft),
+          label: Text(label, style: AppTextStyles.ui(14, color: AppColors.ink)),
+        );
+
+    return GameCard(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        link(Icons.privacy_tip_outlined, l.settingsPrivacyPolicy,
+            privacyPolicyUrl(lang)),
+        link(Icons.description_outlined, l.settingsTerms, termsUrl(lang)),
+      ]),
     );
   }
 }

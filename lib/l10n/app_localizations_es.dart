@@ -1775,4 +1775,16 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get shopRewardSkillLevels =>
       '+2 niveles de habilidad a elección (en Caminos)';
+
+  @override
+  String get settingsLegal => 'Legal';
+
+  @override
+  String get settingsPrivacyPolicy => 'Política de privacidad';
+
+  @override
+  String get settingsTerms => 'Términos de uso';
+
+  @override
+  String get settingsLinkError => 'No se pudo abrir el enlace.';
 }

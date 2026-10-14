@@ -2965,6 +2965,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'+2 niveles de habilidad a elección (en Caminos)'**
   String get shopRewardSkillLevels;
+
+  /// No description provided for @settingsLegal.
+  ///
+  /// In es, this message translates to:
+  /// **'Legal'**
+  String get settingsLegal;
+
+  /// No description provided for @settingsPrivacyPolicy.
+  ///
+  /// In es, this message translates to:
+  /// **'Política de privacidad'**
+  String get settingsPrivacyPolicy;
+
+  /// No description provided for @settingsTerms.
+  ///
+  /// In es, this message translates to:
+  /// **'Términos de uso'**
+  String get settingsTerms;
+
+  /// No description provided for @settingsLinkError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir el enlace.'**
+  String get settingsLinkError;
 }
 
 class _AppLocalizationsDelegate

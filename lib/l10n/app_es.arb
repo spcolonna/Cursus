@@ -1328,5 +1328,9 @@
     }
   },
   "shopRewardSecondMessenger": "+2.º mensajero",
-  "shopRewardSkillLevels": "+2 niveles de habilidad a elección (en Caminos)"
+  "shopRewardSkillLevels": "+2 niveles de habilidad a elección (en Caminos)",
+  "settingsLegal": "Legal",
+  "settingsPrivacyPolicy": "Política de privacidad",
+  "settingsTerms": "Términos de uso",
+  "settingsLinkError": "No se pudo abrir el enlace."
 }
