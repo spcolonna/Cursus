@@ -64,7 +64,7 @@ Play offline. Your game is saved to the cloud and you can recover it on another 
 | 6 | Árbol de caminos | Haz crecer a tus mensajeros | Grow your messengers |
 
 Tamaños:
-- **iPhone 6,9":** 1320×2868.
+- **iPhone 6,9":** 1320×2868 o 1290×2796.
 - **iPad 13":** 2064×2752, si se publica para iPad.
 - **Android:** 1080×1920 o mayor.
 - **Feature graphic de Play:** 1024×500.

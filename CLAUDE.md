@@ -6,7 +6,8 @@ Juego móvil Flutter. Mensajero en la Roma del 50 a.C.: las misiones corren en *
 - [docs/GDD_MASTER_v2.md](docs/GDD_MASTER_v2.md) — §5 árbol de skills, §6 economía, §7 onboarding, §8 UX/legibilidad.
 - [docs/ROADMAP_MEJORAS_v1.md](docs/ROADMAP_MEJORAS_v1.md) — fases y criterios de salida.
 - [docs/ANALYTICS.md](docs/ANALYTICS.md) — eventos, métricas de retención y cómo enchufar Firebase. Todo evento nuevo sale de una factory de `AnalyticsEvent`.
-- [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) — ilustraciones: estilo base, prompt de cada pieza y dónde va el archivo.
+- [docs/IDENTIDAD.md](docs/IDENTIDAD.md) — manual de marca: color, tipografía, ilustración, sonido y voz.
+- [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) — ilustraciones: estilo base, prompt de cada pieza, flujo con ChatGPT (§11) y dónde va el archivo (`tool/process_art.py` lo deja listo).
 - [docs/AUDIO.md](docs/AUDIO.md) — identidad sonora, el motivo D-A-E y la hoja de cues de música, SFX y aviso.
 - [docs/CUENTAS.md](docs/CUENTAS.md) — cuenta anónima, guardado en la nube (qué viaja), vincular Google/Apple, borrar cuenta.
 - [docs/PUBLICAR.md](docs/PUBLICAR.md) — checklist de publicación (firma, privacidad, tiendas) y [docs/STORE_LISTING.md](docs/STORE_LISTING.md) (fichas ES/EN).

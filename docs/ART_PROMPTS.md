@@ -186,13 +186,36 @@ No las usa el código: son para App Store, Google Play y redes. Van en `assets/s
 | `store/key_art_ipad.jpg` | 2048×2732 | Igual que el anterior, más aire a los costados. |
 | `store/feature_graphic.jpg` | 1024×500 | `Wide panoramic fresco of the Roman countryside at dusk: a paved road crossing the frame from left to right, a small running messenger in a cinnabar cloak at the left third, Rome in flat layers on the right horizon, umbrella pines.` La mitad derecha queda calma para el logo. |
 
-**Capturas de tienda (6).** Marco: banda de cal arriba con el texto en Marcellus color tinta, la captura del simulador debajo con borde de tinta de 2 px. Tamaños: 1290×2796 (iPhone 6,9") y 1080×1920 (Android). Capturar con `debugSkyHour` fijo (Ajustes, solo debug) para que las seis tengan cielos distintos:
+**Capturas de tienda (6).**
+- **Marco:** banda de cal arriba con el texto en Marcellus color tinta; la captura del simulador va debajo, con borde de tinta de 2 px.
+- **Textos y orden:** en [STORE_LISTING.md](STORE_LISTING.md), en español neutro e inglés. Se capturan en los dos idiomas (Ajustes → Idioma).
+- **Tamaños:** 1320×2868 o 1290×2796 (iPhone 6,9"), y 1080×1920 (Android).
+- **Cielos:** capturar con `debugSkyHour` fijo (Ajustes, solo debug) para que cada una tenga un cielo distinto.
 
-| # | Pantalla | Hora | Texto |
-|---|---|---|---|
-| 1 | Home | Atardecer | Llevá cartas por la Roma del 50 a.C. |
-| 2 | Misión con el mapa | Día | Las misiones corren en tiempo real |
-| 3 | Evento con sus opciones | Noche | Cada camino tiene decisiones |
-| 4 | Resultado con el sello de la nota | Alba | Tu nota queda sellada en cera |
-| 5 | Árbol de caminos | Día | Cinco caminos para tu mensajero |
-| 6 | Perfil, pestaña Mundo | Atardecer | Las facciones recuerdan lo que hiciste |
+## 11. Generar con ChatGPT
+
+ChatGPT genera en 1024×1024, 1024×1536 (vertical) o 1536×1024 (horizontal). El recorte y el tamaño final los pone `tool/process_art.py`.
+
+**Sesión con estilo fijo:**
+1. Abrí una conversación nueva por tanda de piezas: escenarios, retratos o finales.
+2. El primer mensaje es el **estilo base** (sección 2) con esta línea al final: `Keep exactly this style for every image in this conversation. Reply only with the image.`
+3. Después, un mensaje por pieza con su prompt. Si una pieza se aleja del estilo, respondé `Same style as the first image: flatter shapes, only the palette colors, no gradients.`
+
+**Formato por pieza:**
+
+| Pieza | Pedir en ChatGPT | Comando |
+|---|---|---|
+| Escenario, evento, capítulo, final | vertical 1024×1536, con lo importante en el 40% de arriba | `python3 tool/process_art.py img.png scene road` (tipos `scene`, `event`, `story`, `ending` + id) |
+| Retrato de NPC | cuadrado 1024×1024, cara centrada | `python3 tool/process_art.py img.png npc varus --focus 0.3` |
+| Feature graphic | horizontal 1536×1024 | `python3 tool/process_art.py img.png feature` |
+| Key art | vertical 1024×1536 (después se reencuadra) | `key_iphone` / `key_ipad` |
+
+**Personajes consistentes:**
+1. Generá primero el retrato.
+2. En las escenas donde aparece, subí ese retrato como referencia, con `Use the attached portrait as the reference for this character's face, hair and clothes.`
+
+Varus, Lucius, Claudius y Aufidio necesitan el mismo rostro en todas las piezas.
+
+**Entrega:** pasame las imágenes (o dejalas en una carpeta) con el nombre de la pieza. Yo corro el script, controlo contraste y scrim en el simulador (§9) y las integro. Si preferís hacerlo vos, el script deja cada archivo en su lugar y con su nombre; después alcanza con `flutter run`.
+
+**Música:** ChatGPT no genera audio usable. Los cues, el motivo y los formatos están en [AUDIO.md](AUDIO.md). Opciones: Suno o Udio (en plan pago, por la licencia comercial) o una librería CC0. Cada archivo reemplaza al placeholder con el mismo nombre en `assets/audio/`, sin tocar código.
