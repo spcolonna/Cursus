@@ -50,11 +50,15 @@ class ArtImage extends StatelessWidget {
   final String asset;
   final Widget fallback;
   final BoxFit fit;
+
+  /// Qué parte queda a la vista cuando el recorte corta la imagen.
+  final Alignment alignment;
   const ArtImage({
     super.key,
     required this.asset,
     required this.fallback,
     this.fit = BoxFit.cover,
+    this.alignment = Alignment.center,
   });
 
   @override
@@ -64,6 +68,7 @@ class ArtImage extends StatelessWidget {
     return Image.asset(
       asset,
       fit: fit,
+      alignment: alignment,
       // Si el archivo está pero no decodifica, también vale el fallback.
       errorBuilder: (_, __, ___) => fallback,
       frameBuilder: (_, child, frame, sync) => sync

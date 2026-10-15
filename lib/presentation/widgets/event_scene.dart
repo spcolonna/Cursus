@@ -31,11 +31,18 @@ class EventBackdrop extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final painted = EventScene(category: event.category);
-    final scene =
-        ArtImage(asset: ArtPaths.scene(event.category.name), fallback: painted);
+    // Las ilustraciones son 9:16: en pantallas más altas o más bajas se
+    // recorta desde abajo, que igual lo tapa la card del evento.
+    final scene = ArtImage(
+        asset: ArtPaths.scene(event.category.name),
+        fallback: painted,
+        alignment: Alignment.topCenter);
     final id = event.configId;
     if (id == null) return scene;
-    return ArtImage(asset: ArtPaths.event(id), fallback: scene);
+    return ArtImage(
+        asset: ArtPaths.event(id),
+        fallback: scene,
+        alignment: Alignment.topCenter);
   }
 }
 

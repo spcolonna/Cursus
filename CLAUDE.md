@@ -7,6 +7,7 @@ Juego móvil Flutter. Mensajero en la Roma del 50 a.C.: las misiones corren en *
 - [docs/ROADMAP_MEJORAS_v1.md](docs/ROADMAP_MEJORAS_v1.md) — fases y criterios de salida.
 - [docs/ANALYTICS.md](docs/ANALYTICS.md) — eventos, métricas de retención y cómo enchufar Firebase. Todo evento nuevo sale de una factory de `AnalyticsEvent`.
 - [docs/IDENTIDAD.md](docs/IDENTIDAD.md) — manual de marca: color, tipografía, ilustración, sonido y voz.
+- [docs/GEMINI_ASSETS.md](docs/GEMINI_ASSETS.md) — especificación completa de las 61 ilustraciones para generarlas con Gemini (ruta, tamaño, composición, personajes).
 - [docs/ART_PROMPTS.md](docs/ART_PROMPTS.md) — ilustraciones: estilo base, prompt de cada pieza, flujo con ChatGPT (§11) y dónde va el archivo (`tool/process_art.py` lo deja listo).
 - [docs/AUDIO.md](docs/AUDIO.md) — identidad sonora, el motivo D-A-E y la hoja de cues de música, SFX y aviso.
 - [docs/CUENTAS.md](docs/CUENTAS.md) — cuenta anónima, guardado en la nube (qué viaja), vincular Google/Apple, borrar cuenta.

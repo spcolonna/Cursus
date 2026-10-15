@@ -1,5 +1,7 @@
 # Ilustraciones de Cursus: prompts y dónde va cada archivo
 
+> **Para generar con Gemini usá [GEMINI_ASSETS.md](GEMINI_ASSETS.md):** es la especificación completa y vigente de cada pieza. Este archivo queda como referencia de estilo.
+
 Estilo: **fresco pompeyano en siluetas planas por capas**, la misma paleta que el juego (ver `lib/presentation/theme/sky.dart` y `art_palette.dart`). El juego ya se ve completo sin ninguna ilustración: todo tiene un dibujo por código de respaldo. Cada pieza que se agrega reemplaza a ese dibujo en un solo lugar, sin tocar código.
 
 ## 1. Cómo se enchufa una ilustración
@@ -13,9 +15,9 @@ Estilo: **fresco pompeyano en siluetas planas por capas**, la misma paleta que e
 
 | Pieza | Carpeta y nombre | Tamaño | Formato | Respaldo por código |
 |---|---|---|---|---|
-| Escenario por categoría | `assets/art/scenes/<categoría>.jpg` | 1080×1350 | JPG, calidad 82 | `EventScene` |
-| Evento puntual (opcional) | `assets/art/events/<id del evento>.jpg` | 1080×1350 | JPG, calidad 82 | El escenario de su categoría |
-| Capítulo de historia | `assets/art/story/<id del capítulo>.jpg` | 1080×1350 | JPG, calidad 82 | `EventScene` del primer evento |
+| Escenario por categoría | `assets/art/scenes/<categoría>.jpg` | 1080×1920 (9:16) | JPG, calidad 82 | `EventScene` |
+| Evento puntual (opcional) | `assets/art/events/<id del evento>.jpg` | 1080×1920 (9:16) | JPG, calidad 82 | El escenario de su categoría |
+| Capítulo de historia | `assets/art/story/<id del capítulo>.jpg` | 1680×720 (21:9, se ve como franja) | JPG, calidad 82 | `EventScene` del primer evento |
 | Final de arco | `assets/art/endings/<id del final>.jpg` | 1080×1350 | JPG, calidad 82 | Nada (no ocupa lugar) |
 | Retrato de NPC | `assets/art/npcs/<id del NPC>.png` | 768×768 | PNG | La inicial en un medallón |
 
