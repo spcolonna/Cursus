@@ -51,3 +51,6 @@ app.*.map.json
 /android/key.properties
 *.jks
 *.keystore
+
+# Imágenes crudas de ChatGPT antes de process_art.py
+art_raw/
