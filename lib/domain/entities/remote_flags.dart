@@ -2,6 +2,8 @@
 // Remote Config). El juego siempre arranca con [RemoteFlags.defaults]: si no
 // hay red o Firebase falla, se juega igual.
 
+import 'economy.dart';
+
 class RemoteFlags {
   /// Versión mínima soportada (semver `x.y.z`). Si la app es más vieja, se
   /// pide actualizar. Vacío = sin mínimo.
@@ -17,12 +19,21 @@ class RemoteFlags {
   final String storeUrlIos;
   final String storeUrlAndroid;
 
+  /// Economía (ver [EconomyTuning]): escala de la curva de XP en %, Denarios
+  /// por minuto adelantado y escala del precio en Aureos de los manuales.
+  final int xpCurvePercent;
+  final int skipDenariosPerMinute;
+  final int manualAureosPercent;
+
   const RemoteFlags({
     this.minSupportedVersion = '',
     this.travelAdsPerDay = 4,
     this.contentBundleVersion = 0,
     this.storeUrlIos = '',
     this.storeUrlAndroid = '',
+    this.xpCurvePercent = 100,
+    this.skipDenariosPerMinute = 2,
+    this.manualAureosPercent = 100,
   });
 
   static const defaults = RemoteFlags();
@@ -33,6 +44,9 @@ class RemoteFlags {
   static const kContentBundleVersion = 'content_bundle_version';
   static const kStoreUrlIos = 'store_url_ios';
   static const kStoreUrlAndroid = 'store_url_android';
+  static const kXpCurvePercent = 'economy_xp_curve_percent';
+  static const kSkipDenariosPerMinute = 'economy_skip_denarios_per_minute';
+  static const kManualAureosPercent = 'economy_manual_aureos_percent';
 
   Map<String, Object> toDefaultsMap() => {
         kMinSupportedVersion: minSupportedVersion,
@@ -40,6 +54,9 @@ class RemoteFlags {
         kContentBundleVersion: contentBundleVersion,
         kStoreUrlIos: storeUrlIos,
         kStoreUrlAndroid: storeUrlAndroid,
+        kXpCurvePercent: xpCurvePercent,
+        kSkipDenariosPerMinute: skipDenariosPerMinute,
+        kManualAureosPercent: manualAureosPercent,
       };
 
   /// Lee los valores crudos; lo que falte o venga mal cae al default, y los
@@ -63,8 +80,23 @@ class RemoteFlags {
           .clamp(0, 1 << 30),
       storeUrlIos: str(kStoreUrlIos, defaults.storeUrlIos).trim(),
       storeUrlAndroid: str(kStoreUrlAndroid, defaults.storeUrlAndroid).trim(),
+      // Topes anchos pero sanos: ni regalar niveles ni volver el grind eterno.
+      xpCurvePercent:
+          integer(kXpCurvePercent, defaults.xpCurvePercent).clamp(50, 200),
+      skipDenariosPerMinute:
+          integer(kSkipDenariosPerMinute, defaults.skipDenariosPerMinute)
+              .clamp(1, 5),
+      manualAureosPercent:
+          integer(kManualAureosPercent, defaults.manualAureosPercent)
+              .clamp(50, 200),
     );
   }
+
+  EconomyTuning get economy => EconomyTuning(
+        xpCurvePercent: xpCurvePercent,
+        skipDenariosPerMinute: skipDenariosPerMinute,
+        manualAureosPercent: manualAureosPercent,
+      );
 
   /// true si [appVersion] es más vieja que [minSupportedVersion].
   bool requiresUpdate(String appVersion) {

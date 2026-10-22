@@ -2858,6 +2858,24 @@ abstract class AppLocalizations {
   /// **'No te alcanzan los Aureos.'**
   String get shopNoAurei;
 
+  /// No description provided for @shopManualAureosTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Te faltan Denarios'**
+  String get shopManualAureosTitle;
+
+  /// No description provided for @shopManualAureosBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Este manual cuesta {denarios} Denarios. Puedes pagarlo ahora con {aureos} Aureos (tienes {have}).'**
+  String shopManualAureosBody(int denarios, int aureos, int have);
+
+  /// No description provided for @shopManualAureosPay.
+  ///
+  /// In es, this message translates to:
+  /// **'Pagar {aureos} Aureos'**
+  String shopManualAureosPay(int aureos);
+
   /// No description provided for @shopTitle.
   ///
   /// In es, this message translates to:

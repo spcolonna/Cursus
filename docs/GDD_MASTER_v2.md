@@ -55,11 +55,11 @@ Flutter, arquitectura limpia (`domain/` → `infrastructure/` → `presentation/
 
 ### 2.3 Sistemas de soporte
 
-- **Skills:** 5 ramas (Velocidad, Sigilo, Combate, Supervivencia, Contactos), niveles 1-5, 100 XP/nivel. Sin nombres de habilidad ni perks: son solo un número que gatea opciones y suma al score.
+- **Skills:** 5 ramas (Velocidad, Sigilo, Combate, Supervivencia, Contactos), niveles 1-5, XP creciente (100/125/175/250). Sin nombres de habilidad ni perks: son solo un número que gatea opciones y suma al score.
 - **Rank:** derivado de la suma de niveles de skill → títulos Correo / Mensajero / Courier / Maestro / Leyenda. Gatea rutas.
 - **Fatiga:** 0-100. +8 por evento, −10 por entrega, se limpia con item de tienda. Penaliza el score de eventos.
 - **Multi-mensajero:** hasta 4 mensajeros con misiones paralelas. Slots 2/3/4 cuestan **20/50/100 Aureos** (requiere tutorial completo).
-- **Economía:** se arranca con **200 Denarios y 5 Aureos**. Tienda (`shop_screen.dart`, catálogo `shopCatalogue`): pociones (50/120 Denarios), descanso (80), manuales de skill (200/500/1.200/2.500 según el nivel; no se venden en nivel 5), Sandalias de Mercurio −20% tiempo (3 Aureos), Mapa del explorador revela evento (5 Aureos). "Adelantar" la misión cuesta 1 Denario/minuto (clamp 5-300).
+- **Economía:** se arranca con **200 Denarios y 5 Aureos**. Tienda (`shop_screen.dart`, catálogo `shopCatalogue`): pociones (50/120 Denarios), descanso (80), manuales de skill (200/500/1.200/2.500 según el nivel; no se venden en nivel 5), Sandalias de Mercurio −20% tiempo (3 Aureos), Mapa del explorador revela evento (5 Aureos). "Adelantar" la misión cuesta 2 Denarios/minuto (clamp 10-400).
 - **Perfil:** skills con barras de XP + historial de últimas 10 misiones con nota.
 - **Día/noche:** el fondo del Home cambia según la hora real del dispositivo, y el cielo de cada escenario de evento también. Detalle ambiental muy alineado con el pilar 2.
 
@@ -204,7 +204,8 @@ Una pantalla nueva (pestaña o desde el perfil): 5 columnas/caminos — **Veloci
 
 ### 5.3 Costos y el gate premium
 
-- **Niveles 1-5:** XP como hoy (100 XP/nivel) o manuales de tienda (200 Denarios el nivel 2; los manuales de niveles 3-5 escalan: 500/1.200/2.500 Denarios).
+- **Niveles 1-5:** XP con curva creciente (100/125/175/250, 650 en total) o manuales de tienda (200/500/1.200/2.500 Denarios). Si no alcanzan los Denarios, el manual se paga con Aureos (10/15/25/40): es el atajo comprable. Curva, precio de adelantar y precio en Aureos se ajustan por Remote Config (`economy_*`), sin publicar.
+- **Monetización (2026-10-22):** todo el juego se puede jugar gratis, sin arcos bloqueados. Pagar ahorra semanas de grind, nunca reemplaza jugar. Si el juego rinde, la versión paga (USD 1,99) quita anuncios y mantiene los packs de Aureos.
 - **Niveles 6-10:** XP **+ Sellos del Gremio**, escalado geométrico: **2 / 4 / 8 / 14 / 22 Sellos** (50 Sellos por camino completo; 250 los cinco).
 
 **Sellos del Gremio** (recurso de élite, nuevo):
@@ -243,7 +244,7 @@ Jugador que hace 3 sesiones, completa 2-3 misiones y los 3 contratos:
 
 **Paga por ruta (implementado).** Cada ruta tiene un factor que se fija al aceptar, con la duración *nominal* (un boost de velocidad no baja la paga): `factor = clamp(0,6 + 0,15·log2(horas+1) + 0,3·peligro, 0,7, 1,6)`. Ruta de 2 h ≈ ×0,9 · 8 h ≈ ×1,2 · 3 días = ×1,6. Crece con el logaritmo: la ruta larga paga más en total pero menos por hora. Los capítulos de historia pagan ×1,3. La card de ruta muestra "Paga ~N" (nota A) y el resultado explica "Nota A: 90 × ruta 1,2". Lo verifica `test/progression_test.dart` (día típico 435 ±10%; hoy da ~449).
 
-**Logros y títulos (implementado).** 26 logros en `data/progression_content.dart` (camino, notas, gremio, oficio, historia, fortuna). Premios: Denarios de una sola vez, un título, y como mucho 1 Sello por logro con **tope de 8 Sellos en toda la partida**; nunca Aureos. Las estadísticas viven en `progression_v2`; al migrar se reconstruyen desde el historial y los logros ya cumplidos se pagan en silencio. Celebraciones: cinta de logro desde arriba y laurel a pantalla completa al subir de rango; nunca durante un evento.
+**Logros y títulos (implementado).** 30 logros (incluye terminar los tres arcos y encontrar 4/6/9 finales; la galería de finales permite volver a recorrer un arco sin tocar la partida) en `data/progression_content.dart` (camino, notas, gremio, oficio, historia, fortuna). Premios: Denarios de una sola vez, un título, y como mucho 1 Sello por logro con **tope de 8 Sellos en toda la partida**; nunca Aureos. Las estadísticas viven en `progression_v2`; al migrar se reconstruyen desde el historial y los logros ya cumplidos se pagan en silencio. Celebraciones: cinta de logro desde arriba y laurel a pantalla completa al subir de rango; nunca durante un evento.
 
 **Sellos con el encargo semanal.** El Sello de "primera S de la semana" estaba en §6.1 pero no en este presupuesto: suma ~0,14/día. Con eso, nivel 10 de un camino (50 Sellos) baja de ~6 a ~5,5 semanas, todavía dentro de la meta de 5-7. La tarifa de facción (+10% en las rutas de un patrón) solo llega tras semanas de reputación y no cambia el día típico.
 

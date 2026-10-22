@@ -1709,6 +1709,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shopNoAurei => 'Not enough aurei.';
 
   @override
+  String get shopManualAureosTitle => 'Not enough denarii';
+
+  @override
+  String shopManualAureosBody(int denarios, int aureos, int have) {
+    return 'This manual costs $denarios denarii. You can pay $aureos aurei for it now (you have $have).';
+  }
+
+  @override
+  String shopManualAureosPay(int aureos) {
+    return 'Pay $aureos aurei';
+  }
+
+  @override
   String get shopTitle => 'SHOP';
 
   @override

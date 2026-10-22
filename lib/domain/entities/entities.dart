@@ -1,6 +1,7 @@
 import 'domain_strings.dart';
 import 'world.dart';
 import 'game_clock.dart';
+import 'economy.dart';
 
 // ─── Skill progression config ─────────────────────────────────────────────────
 /// XP necesario para subir un nivel de skill.
@@ -84,8 +85,9 @@ class Messenger {
     final leveledUp = <SkillType>[];
     var level = newSkills[skill] ?? 1;
     var xp = (newXp[skill] ?? 0) + amount;
-    while (xp >= kXpPerSkillLevel && level < kMaxSkillLevel) {
-      xp -= kXpPerSkillLevel;
+    while (level < kMaxSkillLevel &&
+        xp >= EconomyTuning.current.xpForLevel(level)) {
+      xp -= EconomyTuning.current.xpForLevel(level);
       level++;
       leveledUp.add(skill);
     }

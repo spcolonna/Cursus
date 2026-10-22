@@ -451,15 +451,36 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       return;
     }
 
-    final price = _priceFor(item, target);
+    var price = _priceFor(item, target);
     if (price == null) return; // botón deshabilitado: skill al máximo
+    var currency = item.currency;
 
     // Soft currency check
-    final balance = item.currency == PriceCurrency.denarios
+    final balance = currency == PriceCurrency.denarios
         ? messenger.denarios
         : messenger.aureos;
-    if (balance < price) {
-      _showInsufficientFunds(item.currency);
+    // Un manual sin Denarios suficientes se puede pagar con Aureos: es el
+    // atajo para quien no quiere esperar a juntarlos.
+    final skill = manualSkillFor(item.id);
+    final aureosPrice =
+        skill == null ? null : manualAureosPriceFor(target.skillLevel(skill));
+    var payWithAureos = false;
+    if (balance < price && aureosPrice != null) {
+      final ok = await showGameDialog<bool>(
+        context,
+        builder: (_) => _ManualAureosDialog(
+            denarios: price!, aureos: aureosPrice, have: messenger.aureos),
+      );
+      if (ok != true || !mounted) return;
+      if (messenger.aureos < aureosPrice) {
+        _showInsufficientFunds(PriceCurrency.aureos);
+        return;
+      }
+      payWithAureos = true;
+      price = aureosPrice;
+      currency = PriceCurrency.aureos;
+    } else if (balance < price) {
+      _showInsufficientFunds(currency);
       return;
     }
 
@@ -468,12 +489,13 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       await ref.read(applyShopItemUseCaseProvider).execute(
             targetId: target.id,
             itemId: item.id,
-            denariosCost: item.currency == PriceCurrency.denarios ? price : 0,
-            aureosCost: item.currency == PriceCurrency.aureos ? price : 0,
+            denariosCost: currency == PriceCurrency.denarios ? price : 0,
+            aureosCost: currency == PriceCurrency.aureos ? price : 0,
+            payWithAureos: payWithAureos,
           );
       ref.read(analyticsProvider).track(AnalyticsEvent.shopItem(
             itemId: item.id,
-            currency: item.currency.name,
+            currency: currency.name,
             price: price,
           ));
     } catch (e) {
@@ -497,7 +519,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         context,
         [
           (
-            type: item.currency == PriceCurrency.denarios
+            type: currency == PriceCurrency.denarios
                 ? CurrencyType.denarios
                 : CurrencyType.aureos,
             amount: -price,
@@ -1128,4 +1150,44 @@ class _PaywallDialog extends StatelessWidget {
           ),
         ]),
       );
+}
+
+/// Ofrece pagar un manual con Aureos cuando no alcanzan los Denarios.
+class _ManualAureosDialog extends StatelessWidget {
+  final int denarios;
+  final int aureos;
+  final int have;
+  const _ManualAureosDialog(
+      {required this.denarios, required this.aureos, required this.have});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return GameDialog(
+      icon: Icons.menu_book,
+      title: l.shopManualAureosTitle,
+      actions: [
+        SizedBox(
+          width: double.infinity,
+          child: GameButton(
+            label: l.shopManualAureosPay(aureos),
+            icon: Icons.monetization_on,
+            fontSize: 15,
+            onTap: () => Navigator.pop(context, true),
+          ),
+        ),
+        GameButton(
+          label: l.cancel,
+          fontSize: 14,
+          variant: GameButtonVariant.secondary,
+          onTap: () => Navigator.pop(context, false),
+        ),
+      ],
+      child: Text(
+        l.shopManualAureosBody(denarios, aureos, have),
+        style: AppTextStyles.bodyMedium.copyWith(height: 1.45),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
 }

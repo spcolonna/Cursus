@@ -1,3 +1,4 @@
+import '../../../domain/entities/economy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -555,7 +556,7 @@ class _NextLevelRow extends StatelessWidget {
                 Container(height: 8, color: AppColors.paperShade),
                 TweenAnimationBuilder<double>(
                   tween: Tween(
-                      begin: 0, end: (xp / kXpPerSkillLevel).clamp(0.0, 1.0)),
+                      begin: 0, end: (xp / EconomyTuning.current.xpForLevel(level)).clamp(0.0, 1.0)),
                   duration: AppMotion.of(context, AppMotion.slow * 2),
                   curve: AppMotion.enter,
                   builder: (_, v, __) => FractionallySizedBox(
@@ -567,7 +568,7 @@ class _NextLevelRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text('$xp/$kXpPerSkillLevel XP',
+          Text('$xp/${EconomyTuning.current.xpForLevel(level)} XP',
               style: AppTextStyles.ui(12,
                   color: GameChip.legibleText(color))),
         ]),

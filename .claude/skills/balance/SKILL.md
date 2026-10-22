@@ -34,7 +34,7 @@ Consecuencias: +8 fatiga y +25 XP a la skill usada por evento resuelto. Fallo: �
 
 ## Progresión de skills
 
-- Niveles **1-5**: 100 XP por nivel (`kXpPerSkillLevel`), o manuales de tienda. Solo gatean opciones y suman al score.
+- Niveles **1-5**: curva `kXpCurve` = 100/125/175/250 XP (650 hasta el 5), o manuales de tienda (Denarios, o Aureos 10/15/25/40 si no alcanzan). Todo en `lib/domain/entities/economy.dart`; Remote Config escala la curva y el precio en Aureos (`economy_*`, con topes). Solo gatean opciones y suman al score.
 - Niveles **6-10**: XP + **Sellos del Gremio**, `sealCostForLevel = {6:2, 7:4, 8:8, 9:14, 10:22}` (50 por camino, 250 los cinco).
 - Rank = suma de niveles: `<8` Correo · `<14` Mensajero · `<20` Courier · `<26` Maestro · resto Leyenda. Gatea rutas.
 - Definición de nodos y perks: `lib/domain/entities/skill_tree.dart` (`skillTree`, `SkillPerks`).
@@ -45,7 +45,7 @@ Consecuencias: +8 fatiga y +25 XP a la skill usada por evento resuelto. Fallo: �
 
 | Moneda | Rol | Faucets | Sinks |
 |---|---|---|---|
-| **Denarios** | operación diaria | misiones (nota × ruta), contratos, racha, logros (una vez) | pociones, descanso, manuales, adelantar misión (1 Den/min, clamp 5-300) |
+| **Denarios** | operación diaria | misiones (nota × ruta), contratos, racha, logros (una vez) | pociones, descanso, manuales, adelantar misión (2 Den/min, clamp 10-400, ajustable en remoto) |
 | **Aureos** | premium (la única comprable) | IAP, gotas de racha | slots de mensajero 20/50/100, boosts, Sellos |
 | **Sellos** | élite | 3.er contrato diario, día 7 de racha, 1.ª nota S semanal | **solo** niveles 6-10 del árbol |
 

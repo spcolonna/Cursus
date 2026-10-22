@@ -14,6 +14,7 @@ import 'presentation/widgets/music_director.dart';
 import 'presentation/widgets/force_update_gate.dart';
 import 'infrastructure/firebase/firebase_setup.dart';
 import 'infrastructure/firebase/firebase_remote_flags.dart';
+import 'domain/entities/economy.dart';
 import 'infrastructure/time/trusted_time_service.dart';
 import 'infrastructure/l10n/language_service.dart';
 import 'l10n/app_localizations.dart';
@@ -60,6 +61,8 @@ void main() async {
   container.read(languageProvider.notifier).state = lang;
   final flags = container.read(remoteFlagsSourceProvider);
   if (flags is FirebaseRemoteFlags) await flags.init();
+  // La economía de la sesión queda fija desde acá (ver EconomyTuning).
+  EconomyTuning.current = flags.current.economy;
   unawaited(flags.refresh());
   final scheduler = container.read(notificationSchedulerProvider);
   await scheduler.init();

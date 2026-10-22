@@ -62,7 +62,7 @@ lib/
 ├── data/road_events_v2.dart      CONTENIDO: 22 eventos de camino del lanzamiento (roadEventsV2)
 ├── data/story_rewards.dart       CONTENIDO: premios de los finales (rutas real_20/21, postas)
 ├── data/consequence_content.dart CONTENIDO: eventos que solo salen si el jugador hizo algo antes
-├── data/progression_content.dart CONTENIDO: 26 logros con premios y títulos
+├── data/progression_content.dart CONTENIDO: 30 logros con premios y títulos
 ├── data/faction_content.dart    CONTENIDO: rutas de facción, favores por escalón, encargos semanales
 ├── data/npc_content.dart        CONTENIDO: NPCs con retrato (id = nombre del archivo en assets/art/npcs)
 ├── data/geo_content.dart        CONTENIDO: coordenadas de ciudades, trazados de rutas, costas, Roma
@@ -128,7 +128,7 @@ Para búsquedas amplias (¿dónde se usa X?, ¿existe Y?), delegá en el subagen
 
 ## Estado real (2026-07)
 
-Implementado: cielo vivo según la hora real (home, splash, login, escenas, mapa); arte por código al estilo fresco (mapas de ruta, escenarios de evento, mensajero, sellos y árbol visual) (ilustraciones opcionales encima); identidad sonora: 18 SFX de materiales, motivo D-A-E (splash, nota S, avisos) y música por hora, viaje y arco (placeholders sintetizados); loop core con timer real, paga por ruta, 26 logros con títulos equipables y celebraciones, escalones de facción con rutas y favores, encargos semanales, tutorial de 4 pruebas, 25 rutas, 59 eventos de camino con prosa propia y selección con memoria (12 últimos), 9 eventos de consecuencia, arcos `arc_claudius`, `arc_lucius` y `arc_legion` con finales que abren rutas/postas/tienda, reputación/flags/diario, árbol de skills 1-10 con Sellos, contratos diarios, paga del gremio, tienda, multi-mensajero (4 slots).
+Implementado: cielo vivo según la hora real (home, splash, login, escenas, mapa); arte por código al estilo fresco (mapas de ruta, escenarios de evento, mensajero, sellos y árbol visual) (ilustraciones opcionales encima); identidad sonora: 18 SFX de materiales, motivo D-A-E (splash, nota S, avisos) y música por hora, viaje y arco (placeholders sintetizados); loop core con timer real, paga por ruta, 30 logros con títulos equipables y celebraciones, galería de 9 finales con recorrido de arcos, escalones de facción con rutas y favores, encargos semanales, tutorial de 4 pruebas, 25 rutas, 59 eventos de camino con prosa propia y selección con memoria (12 últimos), 9 eventos de consecuencia, arcos `arc_claudius`, `arc_lucius` y `arc_legion` con finales que abren rutas/postas/tienda, reputación/flags/diario, árbol de skills 1-10 con Sellos, contratos diarios, paga del gremio, tienda, multi-mensajero (4 slots).
 
 También: avisos locales (eventos, entrega, ocioso, contratos; el tap abre la misión) y auto-resolución de eventos a los 60 min.
 

@@ -1,3 +1,4 @@
+import '../entities/economy.dart';
 import 'dart:math';
 import '../entities/domain_strings.dart';
 import '../entities/entities.dart';
@@ -577,13 +578,11 @@ SkillType? manualSkillFor(String itemId) => switch (itemId) {
 
 /// Precio en Denarios del manual que sube una skill desde [currentLevel]
 /// (GDD §5: 200 / 500 / 1.200 / 2.500). null = ya está en el nivel máximo.
-int? manualPriceFor(int currentLevel) => switch (currentLevel) {
-      1 => 200,
-      2 => 500,
-      3 => 1200,
-      4 => 2500,
-      _ => null,
-    };
+int? manualPriceFor(int currentLevel) => kManualDenarios[currentLevel];
+
+/// El mismo manual pagado con Aureos (ajustable en remoto).
+int? manualAureosPriceFor(int currentLevel) =>
+    EconomyTuning.current.manualAureosFor(currentLevel);
 
 /// Compra con moneda blanda: cobra de la billetera común (la del principal)
 /// y aplica el efecto al mensajero [targetId].
@@ -596,6 +595,7 @@ class ApplyShopItemUseCase {
     required String itemId,
     int denariosCost = 0,
     int aureosCost = 0,
+    bool payWithAureos = false,
   }) async {
     final all = await _messenger.getAllMessengers();
     var payer = all.first;
@@ -603,7 +603,10 @@ class ApplyShopItemUseCase {
 
     final manualSkill = manualSkillFor(itemId);
     if (manualSkill != null) {
-      final price = manualPriceFor(target.skillLevel(manualSkill));
+      final level = target.skillLevel(manualSkill);
+      final price = payWithAureos
+          ? manualAureosPriceFor(level)
+          : manualPriceFor(level);
       if (price == null) {
         throw Exception(ds('ui.error.manual_maxed', {
           'name': target.name,
@@ -611,7 +614,14 @@ class ApplyShopItemUseCase {
           'level': kMaxSkillLevel,
         }));
       }
-      denariosCost = price;
+      // El precio lo pone el dominio, no la pantalla.
+      if (payWithAureos) {
+        denariosCost = 0;
+        aureosCost = price;
+      } else {
+        denariosCost = price;
+        aureosCost = 0;
+      }
     }
     if (payer.denarios < denariosCost) {
       throw Exception(ds('ui.error.no_denarios',
@@ -821,8 +831,10 @@ class SkipToNextEventUseCase {
     final minutesAhead = mission.minutesToNextStopAt(at);
     // Sin eventos por delante y ya en destino: no hay nada que cobrar.
     if (minutesAhead <= 0 && mission.nextUpcomingEventAt(at) == null) return 0;
-    // 1 denario por minuto adelantado, mínimo 5, máximo 300
-    return minutesAhead.clamp(5, 300);
+    // Denarios por minuto adelantado (ajustable en remoto), mínimo 10,
+    // máximo 400: barato no, para no reemplazar los anuncios ni los Aureos.
+    return (minutesAhead * EconomyTuning.current.skipDenariosPerMinute)
+        .clamp(10, 400);
   }
 
   Future<({Mission mission, int cost})> execute({

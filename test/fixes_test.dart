@@ -6,7 +6,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:the_messenger/data/static_game_content.dart';
 import 'package:the_messenger/data/story_content.dart';
+import 'package:the_messenger/domain/entities/economy.dart';
 import 'package:the_messenger/domain/entities/entities.dart';
+import 'package:the_messenger/domain/entities/remote_flags.dart';
 import 'package:the_messenger/domain/entities/notifications.dart';
 import 'package:the_messenger/domain/entities/world.dart';
 import 'package:the_messenger/domain/repositories/repositories.dart';
@@ -437,6 +439,39 @@ void main() {
       expect(repo.messengers[1].health, 100);
     });
 
+    test('el manual se puede pagar con Aureos y el precio lo pone el dominio',
+        () async {
+      final repo = _MessengerRepo([_messenger(denarios: 0, aureos: 12)]);
+      final m = await ApplyShopItemUseCase(repo).execute(
+          targetId: 'm1', itemId: 'skill_speed_1', payWithAureos: true);
+      expect(m.skillLevel(SkillType.speed), 2);
+      expect(m.aureos, 2); // nivel 1 → 10 Aureos
+      expect(m.denarios, 0);
+      // Nivel 2 → 15 Aureos: con 2 no alcanza.
+      expect(
+          () => ApplyShopItemUseCase(repo).execute(
+              targetId: 'm1', itemId: 'skill_speed_1', payWithAureos: true),
+          throwsException);
+    });
+
+    test('la curva de XP sube con el nivel y escala en remoto', () {
+      var m = _messenger();
+      m = m.addSkillXp(SkillType.speed, 100).messenger;
+      expect(m.skillLevel(SkillType.speed), 2);
+      m = m.addSkillXp(SkillType.speed, 100).messenger;
+      expect(m.skillLevel(SkillType.speed), 2, reason: 'el 2→3 pide 125');
+      m = m.addSkillXp(SkillType.speed, 25).messenger;
+      expect(m.skillLevel(SkillType.speed), 3);
+      const half = EconomyTuning(xpCurvePercent: 50);
+      expect(half.xpForLevel(4), 125);
+      final f = RemoteFlags.fromValues({
+        RemoteFlags.kXpCurvePercent: '999',
+        RemoteFlags.kSkipDenariosPerMinute: '0',
+      });
+      expect(f.economy.xpCurvePercent, 200);
+      expect(f.economy.skipDenariosPerMinute, 1);
+    });
+
     test('sin saldo no se cobra ni se aplica nada', () async {
       final repo = _MessengerRepo([_messenger(denarios: 10)]);
       expect(
@@ -496,9 +531,9 @@ void main() {
       expect(ff.readyToDeliverAt(now.add(const Duration(seconds: 3))), isTrue);
     });
 
-    test('costo de adelantar: 1 denario por minuto, entre 5 y 300', () {
+    test('costo de adelantar: 2 denarios por minuto, entre 10 y 400', () {
       final now = t0.add(const Duration(minutes: 10));
-      expect(SkipToNextEventUseCase.costFor(m(), now: now), 20);
+      expect(SkipToNextEventUseCase.costFor(m(), now: now), 40);
       final llegado = _mission(
           startedAt: t0, deadlineAt: t0.add(const Duration(minutes: 5)));
       expect(SkipToNextEventUseCase.costFor(llegado, now: now), 0);
