@@ -13,6 +13,7 @@ import 'presentation/screens/profile/profile_screen.dart';
 import 'presentation/screens/skills/skill_tree_screen.dart';
 import 'presentation/screens/settings/settings_screen.dart';
 import 'presentation/screens/achievements/achievements_screen.dart';
+import 'presentation/screens/achievements/endings_screen.dart';
 import 'domain/entities/entities.dart';
 import 'presentation/theme/motion.dart';
 import 'domain/usecases/usecases.dart';
@@ -70,6 +71,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/achievements',
       pageBuilder: (_, state) => _slidePage(state, const AchievementsScreen()),
+    ),
+    GoRoute(
+      path: '/endings',
+      pageBuilder: (_, state) => _slidePage(state, const EndingsScreen()),
     ),
     GoRoute(
       path: '/settings',

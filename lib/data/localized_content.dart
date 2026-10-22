@@ -18,6 +18,7 @@ import 'game_content_expansion.dart';
 import 'npc_content.dart';
 import 'progression_content.dart';
 import 'story_content.dart';
+import 'story_endings.dart';
 import 'story_rewards.dart';
 
 String _t(String key, String es) => ContentL10n.t(key, es);
@@ -67,6 +68,27 @@ StoryMissionConfig? lStoryMissionFor(
     String arcId, int stage, Set<String> flags) {
   final id = storyMissionFor(arcId, stage, flags)?.id;
   return id == null ? null : lStoryChapters.where((c) => c.id == id).first;
+}
+
+/// Pista traducida del final [endingId] (ver story_endings.dart).
+String? lEndingHint(String endingId) =>
+    _tn('$endingId.hint', endingHints[endingId]);
+
+/// Flags que puede poner un arco: los de sus capítulos y los de las opciones
+/// de sus eventos. Son lo que un recorrido nuevo del arco deja de ver.
+Set<String> arcFlagsOf(String arcId) {
+  final pool = switch (arcId) {
+    kArcClaudius => storyEventPool,
+    kArcLucius => luciusEventPool,
+    kArcLegion => legionEventPool,
+    _ => const <RealEventConfig>[],
+  };
+  return {
+    for (final c in allStoryChapters)
+      if (c.arcId == arcId) ...?c.setFlagsOnComplete,
+    for (final e in pool)
+      for (final o in e.options) ...?o.setFlags,
+  };
 }
 
 /// Qué significa un flag para el jugador (pantalla de resultado).
@@ -346,6 +368,9 @@ Map<String, String> contentKeys() {
   }
   for (final a in storyArcs) {
     put('${a.id}.title', a.title);
+  }
+  for (final h in endingHints.entries) {
+    put('${h.key}.hint', h.value);
   }
   for (final a in allAchievements) {
     put('${a.id}.name', a.name);

@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // FACCIONES — lo que abre cada escalón de reputación, las rutas que
 // solo te dan si te conocen y los encargos semanales con nombre propio.
-// Español rioplatense, sin emojis, sin anacronismos (ver skill historia).
+// Español neutro, sin emojis, sin anacronismos (ver skill historia).
 // ═══════════════════════════════════════════════════════════════
 
 import '../domain/entities/content.dart';
@@ -105,7 +105,7 @@ const List<FactionUnlock> factionUnlocks = [
     perk: FactionPerk.contractReroll,
     orFlag: 'ending_varus',
     name: 'Cambiar un contrato',
-    description: 'Una vez por día podés cambiar un contrato del tablón por otro.',
+    description: 'Una vez por día puedes cambiar un contrato del tablón por otro.',
   ),
   FactionUnlock(
     faction: Faction.guild,
@@ -224,7 +224,7 @@ const List<WeeklyCommissionDef> weeklyCommissionPool = [
     npcFaction: Faction.guild,
     intro: 'Una entrega perfecta por semana. Es lo único que te pido, y lo '
         'único que voy a recordar.',
-    goalText: 'Conseguí una nota S',
+    goalText: 'Consigue una nota S',
     goal: WeeklyGoal.gradeS,
     target: 1,
     seals: 1,
@@ -238,7 +238,7 @@ const List<WeeklyCommissionDef> weeklyCommissionPool = [
     npcFaction: Faction.guild,
     intro: 'Se me amontonan las tablillas. Si salen cinco esta semana, '
         'te debo una.',
-    goalText: 'Entregá 5 mensajes',
+    goalText: 'Entrega 5 mensajes',
     goal: WeeklyGoal.deliver,
     target: 5,
     denarios: 80,
@@ -252,7 +252,7 @@ const List<WeeklyCommissionDef> weeklyCommissionPool = [
     npcFaction: Faction.guild,
     intro: 'Semana de mercado: todo el mundo escribe. Necesito alguien que '
         'no pare.',
-    goalText: 'Entregá 8 mensajes',
+    goalText: 'Entrega 8 mensajes',
     goal: WeeklyGoal.deliver,
     target: 8,
     denarios: 100,
@@ -264,9 +264,9 @@ const List<WeeklyCommissionDef> weeklyCommissionPool = [
     npcName: 'Marco',
     npcRole: 'mensajero de la casa',
     npcFaction: Faction.guild,
-    intro: 'Tengo la pierna a la miseria. ¿Me cubrís las rutas de la casa '
+    intro: 'Tengo la pierna hecha pedazos. ¿Me cubres las rutas de la casa '
         'unos días?',
-    goalText: 'Entregá 3 mensajes en rutas del Gremio',
+    goalText: 'Entrega 3 mensajes en rutas del Gremio',
     goal: WeeklyGoal.patronDelivery,
     faction: Faction.guild,
     target: 3,
@@ -280,9 +280,9 @@ const List<WeeklyCommissionDef> weeklyCommissionPool = [
     npcName: 'Marco',
     npcRole: 'mensajero de la casa',
     npcFaction: Faction.guild,
-    intro: 'Apuesto a que no hacés tres entregas limpias seguidas. '
-        'Si las hacés, pago yo.',
-    goalText: 'Conseguí 3 notas A o mejores',
+    intro: 'Apuesto a que no haces tres entregas limpias seguidas. '
+        'Si las haces, pago yo.',
+    goalText: 'Consigue 3 notas A o mejores',
     goal: WeeklyGoal.gradeAOrS,
     target: 3,
     denarios: 95,
@@ -294,9 +294,9 @@ const List<WeeklyCommissionDef> weeklyCommissionPool = [
     npcName: 'Sexto',
     npcRole: 'centurión de la Puerta Capena',
     npcFaction: Faction.legions,
-    intro: 'La posta militar anda corta de gente. Si llevás lo nuestro, '
+    intro: 'La posta militar anda corta de gente. Si llevas lo nuestro, '
         'en la Puerta se acuerdan.',
-    goalText: 'Entregá 2 mensajes en rutas de las Legiones',
+    goalText: 'Entrega 2 mensajes en rutas de las Legiones',
     goal: WeeklyGoal.patronDelivery,
     faction: Faction.legions,
     target: 2,
@@ -312,7 +312,7 @@ const List<WeeklyCommissionDef> weeklyCommissionPool = [
     npcFaction: Faction.legions,
     intro: 'Cualquiera corre una hora. Quiero ver quién aguanta un día entero '
         'en el camino.',
-    goalText: 'Entregá una ruta de 8 h o más',
+    goalText: 'Entrega una ruta de 8 h o más',
     goal: WeeklyGoal.longRoute,
     target: 1,
     denarios: 85,
@@ -325,9 +325,9 @@ const List<WeeklyCommissionDef> weeklyCommissionPool = [
     npcName: 'Fulvia',
     npcRole: 'matrona de una villa del Palatino',
     npcFaction: Faction.patricians,
-    intro: 'Mi marido confía en cualquiera. Yo no. Llevá lo de las villas '
+    intro: 'Mi marido confía en cualquiera. Yo no. Lleva lo de las villas '
         'y veremos.',
-    goalText: 'Entregá 2 mensajes en rutas de los Patricios',
+    goalText: 'Entrega 2 mensajes en rutas de los Patricios',
     goal: WeeklyGoal.patronDelivery,
     faction: Faction.patricians,
     target: 2,
@@ -343,7 +343,7 @@ const List<WeeklyCommissionDef> weeklyCommissionPool = [
     npcFaction: Faction.patricians,
     intro: 'Tengo parientes lejos y cartas que no esperan. Necesito piernas '
         'que no se cansen.',
-    goalText: 'Entregá 2 rutas de 8 h o más',
+    goalText: 'Entrega 2 rutas de 8 h o más',
     goal: WeeklyGoal.longRoute,
     target: 2,
     denarios: 100,
@@ -355,9 +355,9 @@ const List<WeeklyCommissionDef> weeklyCommissionPool = [
     npcName: 'Rufo',
     npcRole: 'barquero del Muelle Viejo',
     npcFaction: Faction.underworld,
-    intro: 'No te pregunto qué llevás si vos no me preguntás de quién es. '
+    intro: 'No te pregunto qué llevas si tú no me preguntas de quién es. '
         'Dos viajes, y quedamos amigos.',
-    goalText: 'Entregá 2 mensajes en rutas de los Bajos Fondos',
+    goalText: 'Entrega 2 mensajes en rutas de los Bajos Fondos',
     goal: WeeklyGoal.patronDelivery,
     faction: Faction.underworld,
     target: 2,
@@ -371,9 +371,9 @@ const List<WeeklyCommissionDef> weeklyCommissionPool = [
     npcName: 'Atia',
     npcRole: 'sacerdotisa del templo de Mercurio',
     npcFaction: Faction.patricians,
-    intro: 'Mercurio protege a los que saben elegir. Mostrame que sos '
+    intro: 'Mercurio protege a los que saben elegir. Muéstrame que eres '
         'uno de ellos.',
-    goalText: 'Salí bien parado de 4 eventos',
+    goalText: 'Sal bien parado de 4 eventos',
     goal: WeeklyGoal.eventSuccesses,
     target: 4,
     denarios: 85,
@@ -386,8 +386,8 @@ const List<WeeklyCommissionDef> weeklyCommissionPool = [
     npcRole: 'viuda de un mensajero',
     npcFaction: Faction.underworld,
     intro: 'Mi marido decía que el camino te prueba seis veces por semana. '
-        'Contame si tenía razón.',
-    goalText: 'Resolvé 6 eventos en el camino',
+        'Cuéntame si tenía razón.',
+    goalText: 'Resuelve 6 eventos en el camino',
     goal: WeeklyGoal.resolveEvents,
     target: 6,
     denarios: 75,

@@ -200,6 +200,16 @@ final repairArcStateUseCaseProvider = Provider((ref) => RepairArcStateUseCase(
       ref.read(worldRepositoryProvider),
       ref.read(gameContentProvider),
     ));
+final startArcReplayUseCaseProvider = Provider((ref) => StartArcReplayUseCase(
+      ref.read(worldRepositoryProvider),
+      ref.read(missionRepositoryProvider),
+      ref.read(gameContentProvider),
+    ));
+final abandonArcReplayUseCaseProvider =
+    Provider((ref) => AbandonArcReplayUseCase(
+          ref.read(worldRepositoryProvider),
+          ref.read(missionRepositoryProvider),
+        ));
 final autoResolveExpiredEventsUseCaseProvider =
     Provider((ref) => AutoResolveExpiredEventsUseCase(
   ref.read(messengerRepositoryProvider),

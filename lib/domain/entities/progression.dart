@@ -47,6 +47,7 @@ enum StatMetric {
   maxSkillLevel,
   eliteLevels,
   arcEndings,
+  endingsFound,
   distinctRoutes,
   longMissions,
   messengers,
@@ -69,6 +70,8 @@ class PlayerStats {
   /// Niveles 6-10 comprados con Sellos, sumando todos los caminos.
   final int eliteLevels;
   final int arcEndings;
+  /// Finales distintos vistos, contando los de los recorridos.
+  final int endingsFound;
   final Set<String> routes;
   /// Entregas de rutas de 24 h o más.
   final int longMissions;
@@ -87,6 +90,7 @@ class PlayerStats {
     this.maxSkillLevel = 1,
     this.eliteLevels = 0,
     this.arcEndings = 0,
+    this.endingsFound = 0,
     this.routes = const {},
     this.longMissions = 0,
     this.messengers = 1,
@@ -120,6 +124,7 @@ class PlayerStats {
         StatMetric.maxSkillLevel => maxSkillLevel,
         StatMetric.eliteLevels => eliteLevels,
         StatMetric.arcEndings => arcEndings,
+        StatMetric.endingsFound => endingsFound,
         StatMetric.distinctRoutes => routes.length,
         StatMetric.longMissions => longMissions,
         StatMetric.messengers => messengers,
@@ -138,6 +143,7 @@ class PlayerStats {
     int? maxSkillLevel,
     int? eliteLevels,
     int? arcEndings,
+    int? endingsFound,
     Set<String>? routes,
     int? longMissions,
     int? messengers,
@@ -155,6 +161,7 @@ class PlayerStats {
         maxSkillLevel: maxSkillLevel ?? this.maxSkillLevel,
         eliteLevels: eliteLevels ?? this.eliteLevels,
         arcEndings: arcEndings ?? this.arcEndings,
+        endingsFound: endingsFound ?? this.endingsFound,
         routes: routes ?? this.routes,
         longMissions: longMissions ?? this.longMissions,
         messengers: messengers ?? this.messengers,
@@ -173,6 +180,7 @@ class PlayerStats {
         'maxSkillLevel': maxSkillLevel,
         'eliteLevels': eliteLevels,
         'arcEndings': arcEndings,
+        'endingsFound': endingsFound,
         'routes': routes.toList(),
         'longMissions': longMissions,
         'messengers': messengers,
@@ -193,6 +201,7 @@ class PlayerStats {
       maxSkillLevel: i('maxSkillLevel', 1),
       eliteLevels: i('eliteLevels'),
       arcEndings: i('arcEndings'),
+      endingsFound: i('endingsFound'),
       routes: {...?(j['routes'] as List?)?.cast<String>()},
       longMissions: i('longMissions'),
       messengers: i('messengers', 1),

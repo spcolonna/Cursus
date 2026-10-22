@@ -34,7 +34,7 @@ const List<RealMissionConfig> storyRewardMissions = [
     patron: Faction.patricians,
     requiredFlag: 'ending_claudius',
     lore: 'La correspondencia privada de Claudius, entre el Senado y su villa. '
-        'Paga bien y nadie te pregunta nada; vos tampoco preguntás.',
+        'Paga bien y nadie te pregunta nada; tú tampoco preguntas.',
     packageOptions: [
       'Un borrador de discurso con tachaduras de puño del Senador',
       'Una caja de higos secos con una carta en el fondo',
@@ -104,7 +104,7 @@ const List<RealMissionConfig> storyRewardMissions = [
     patron: Faction.patricians,
     requiredFlag: 'ending_legion_senate',
     lore: 'Las cartas de la Curia hacia el norte, por la Flaminia. '
-        'Cada senador quiere saber primero; vos llegás antes que todos.',
+        'Cada senador quiere saber primero; tú llegas antes que todos.',
     packageOptions: [
       'Un decreto del Senado con el lacre todavía blando',
       'Cartas de un cónsul para los magistrados de Ariminum',

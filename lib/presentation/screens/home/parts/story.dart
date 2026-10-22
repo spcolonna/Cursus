@@ -6,7 +6,10 @@ part of '../home_screen.dart';
 class _StoryChapterCard extends ConsumerStatefulWidget {
   final StoryMissionConfig config;
   final String? arcTitle;
-  const _StoryChapterCard({required this.config, this.arcTitle});
+  /// Capítulo de un arco que se vuelve a recorrer.
+  final bool isReplay;
+  const _StoryChapterCard(
+      {required this.config, this.arcTitle, this.isReplay = false});
 
   @override
   ConsumerState<_StoryChapterCard> createState() => _StoryChapterCardState();
@@ -49,6 +52,11 @@ class _StoryChapterCardState extends ConsumerState<_StoryChapterCard> {
         Row(children: [
           GameChip(AppLocalizations.of(context).storyChip,
               icon: Icons.auto_stories, color: AppColors.tyrian),
+          if (widget.isReplay) ...[
+            const SizedBox(width: AppSpacing.xs),
+            GameChip(AppLocalizations.of(context).storyReplayTag,
+                icon: Icons.replay, color: AppColors.egyptianBlue),
+          ],
           const Spacer(),
           GameChip(_durationLabel(c.durationMinutes),
               icon: Icons.schedule, color: AppColors.ochreDeep),

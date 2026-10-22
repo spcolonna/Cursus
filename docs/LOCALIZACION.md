@@ -33,8 +33,8 @@ Fase L6 del plan de lanzamiento.
 ## Voz y registro
 
 - **Español:**
-  - UI neutra (tienes, mira, elige).
-  - El narrador y los personajes conservan su voz rioplatense (vos, tenés), como pidió el usuario: "voseo en voces".
+  - Todo neutro con tuteo (tienes, mira, elige): UI, narrador, personajes, diario y dominio. Nada de voseo: no encaja en la época.
+  - Los personajes conservan su carácter con vocabulario y ritmo, no con regionalismos.
 - **Inglés:**
   - Segunda persona y presente, seco y con algo de ironía, como el original.
   - Nada de arcaísmos de cartón ("thee", "thou") ni de modernismos ("OK", "check the map").

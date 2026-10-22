@@ -35,6 +35,16 @@ class StaticGameContent implements GameContentCatalog {
       lStoryMissionFor(arcId, stage, flags);
 
   @override
+  List<StoryMissionConfig> endingsOf(String arcId) =>
+      lStoryChapters.where((c) => c.arcId == arcId && c.isFinal).toList();
+
+  @override
+  String? endingHint(String endingId) => lEndingHint(endingId);
+
+  @override
+  Set<String> arcFlags(String arcId) => arcFlagsOf(arcId);
+
+  @override
   StoryMissionConfig? storyMissionById(String id) =>
       lStoryChapters.where((c) => c.id == id).firstOrNull;
 

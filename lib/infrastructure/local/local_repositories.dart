@@ -217,7 +217,7 @@ class LocalMessengerRepository implements MessengerRepository {
   }) async {
     final cost = messengerSlotCosts[slotIndex] ?? 999;
     if (payer.aureos < cost) {
-      throw Exception('Aureos insuficientes (necesitás $cost, tenés ${payer.aureos})');
+      throw Exception('Aureos insuficientes (necesitas $cost, tienes ${payer.aureos})');
     }
     // Descontar Aureos del mensajero que paga
     final updatedPayer = payer.copyWith(aureos: payer.aureos - cost);
@@ -914,6 +914,13 @@ class LocalWorldRepository implements WorldRepository {
     },
     'recentEvents': s.recentEvents,
     'seenEvents': s.seenEvents.toList(),
+    if (s.replay case final r?)
+      'replay': {
+        'arcId': r.arcId,
+        'stage': r.stage,
+        'flags': r.flags.toList(),
+        'hidden': r.hidden.toList(),
+      },
   };
 
   WorldState _fromJson(Map<String, dynamic> j) => WorldState(
@@ -943,6 +950,15 @@ class LocalWorldRepository implements WorldRepository {
     recentEvents:
         ((j['recentEvents'] as List?) ?? const []).cast<String>().toList(),
     seenEvents: ((j['seenEvents'] as List?) ?? const []).cast<String>().toSet(),
+    replay: switch (j['replay']) {
+      final Map<String, dynamic> r => ArcReplay(
+          arcId: r['arcId'] as String,
+          stage: r['stage'] as int? ?? 0,
+          flags: ((r['flags'] as List?) ?? const []).cast<String>().toSet(),
+          hidden: ((r['hidden'] as List?) ?? const []).cast<String>().toSet(),
+        ),
+      _ => null,
+    },
   );
 }
 // ─── Progresión (estadísticas, logros, títulos) ───────────────────────────────

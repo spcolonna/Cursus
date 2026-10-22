@@ -950,7 +950,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get slotNotifQuote =>
-      '«El camino toma lo que toma. Cerrá los ojos si querés — yo te aviso si pasa algo.»';
+      '«El camino toma lo que toma. Cierra los ojos si quieres — yo te aviso si pasa algo.»';
 
   @override
   String get slotNotifBody =>
@@ -1787,4 +1787,56 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsLinkError => 'No se pudo abrir el enlace.';
+
+  @override
+  String get endingsTitle => 'Finales';
+
+  @override
+  String endingsCount(int found, int total) {
+    return '$found de $total finales';
+  }
+
+  @override
+  String get endingsExplainer =>
+      'Cada arco tiene tres finales. Vuelve a recorrer un arco terminado para buscar los que faltan: tu partida no cambia.';
+
+  @override
+  String get endingsArcLocked => 'Termina este arco para ver sus finales.';
+
+  @override
+  String get endingsUnknown => 'Final sin descubrir';
+
+  @override
+  String get endingsFoundLabel => 'Encontrado';
+
+  @override
+  String get endingsReplay => 'Volver a recorrer';
+
+  @override
+  String get endingsReplayStarted =>
+      'El arco vuelve a empezar: su capítulo te espera en el inicio.';
+
+  @override
+  String endingsReplayActive(int chapter) {
+    return 'Recorriéndolo de nuevo: capítulo $chapter de 5.';
+  }
+
+  @override
+  String get endingsAbandon => 'Dejar el recorrido';
+
+  @override
+  String get endingsAbandoned =>
+      'Dejaste el recorrido. Puedes empezarlo otra vez cuando quieras.';
+
+  @override
+  String get achSeeEndings => 'Ver los finales';
+
+  @override
+  String get storyReplayTag => 'Nuevo recorrido';
+
+  @override
+  String get resultEndingNew => 'Final nuevo';
+
+  @override
+  String get resultSeeEndings => 'Ver los finales';
 }

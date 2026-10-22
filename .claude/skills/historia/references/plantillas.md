@@ -78,4 +78,4 @@ RealMissionConfig(
 ## Reputación
 
 `repDelta: {Faction.guild: 2}` — rango −100..100, títulos en `reputationTitle()` (`world.dart`).
-`minReputation` + `lockedHint` muestra la opción bloqueada con motivo narrativo ("Los patricios no confían en vos").
+`minReputation` + `lockedHint` muestra la opción bloqueada con motivo narrativo ("Los patricios no confían en ti").

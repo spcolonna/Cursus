@@ -22,6 +22,15 @@ abstract class GameContentCatalog {
   /// Capítulo que corresponde jugar para un arco/stage según los flags.
   StoryMissionConfig? storyMissionFor(String arcId, int stage, Set<String> flags);
 
+  /// Capítulos finales del arco, uno por final.
+  List<StoryMissionConfig> endingsOf(String arcId);
+
+  /// Pista del final para quien todavía no lo encontró.
+  String? endingHint(String endingId);
+
+  /// Flags que pueden poner las decisiones del arco.
+  Set<String> arcFlags(String arcId);
+
   /// Capítulo de historia por id (el `routeId` de una misión de historia).
   StoryMissionConfig? storyMissionById(String id);
 

@@ -319,7 +319,8 @@ class _BodyState extends ConsumerState<_Body> {
         if (state.nextStoryMission != null) ...[
           _StoryChapterCard(
                   config: state.nextStoryMission!,
-                  arcTitle: state.storyArcTitle)
+                  arcTitle: state.storyArcTitle,
+                  isReplay: state.storyIsReplay)
               .animate(delay: next())
               .fadeIn(duration: AppMotion.of(context, AppMotion.base))
               .slideY(begin: 0.06, end: 0),

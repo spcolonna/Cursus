@@ -156,7 +156,7 @@ flutter test tool/gen_icon_test.dart && dart run flutter_launcher_icons && dart 
 
 ## Convenciones
 
-- **Idiomas: español (fuente) e inglés.** La UI va en `lib/l10n/app_*.arb` en **español neutro** (tú: tienes/mira) — nunca texto literal en `presentation/` (`test/ui_literals_test.dart`). El contenido (`lib/data/`) y el narrador conservan el **rioplatense** (vos/tenés/mirá); su inglés va en `assets/l10n/content_en.json` y los textos que arma el dominio en `kDomainStrings` (`ds()`). Contenido nuevo → agregá su inglés (`test/content_l10n_test.dart` lo exige). Ver docs/LOCALIZACION.md.
+- **Idiomas: español (fuente) e inglés.** Todo el español que ve el jugador (UI, contenido, narrador, personajes) va en **español neutro con tuteo** (tienes/mira), sin voseo. La UI va en `lib/l10n/app_*.arb` — nunca texto literal en `presentation/` (`test/ui_literals_test.dart`). Del contenido (`lib/data/`), el inglés va en `assets/l10n/content_en.json` y los textos que arma el dominio en `kDomainStrings` (`ds()`). Contenido nuevo → agregá su inglés (`test/content_l10n_test.dart` lo exige). Ver docs/LOCALIZACION.md.
 - El código y los comentarios, en español.
 - IDs en snake_case con prefijo: `evt_`, `opt_`, `claudius_`, `boost_`, `route_`.
 - Comentarios de sección con `// ─── Título ───` y `// ═══` para bloques grandes: seguí ese estilo.

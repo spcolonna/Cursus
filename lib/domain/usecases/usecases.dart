@@ -53,13 +53,27 @@ class StoryStep {
   final StoryArcDef arc;
   final StoryMissionConfig chapter;
   final int requiredRank;
-  const StoryStep(this.arc, this.chapter, this.requiredRank);
+  /// Capítulo de un arco que se vuelve a recorrer (ver [ArcReplay]).
+  final bool isReplay;
+  const StoryStep(this.arc, this.chapter, this.requiredRank,
+      {this.isReplay = false});
 }
 
 /// Próximo capítulo de la historia según el mundo, o null si no queda
 /// ninguno abierto. Los arcos se juegan en orden: uno que pide otro arco
 /// terminado espera a que se cierre.
 StoryStep? nextStoryStep(GameContentCatalog content, WorldState world) {
+  // Un recorrido en curso va primero: el jugador lo eligió.
+  if (world.replay case final r?) {
+    final arc = content.arcs.where((a) => a.id == r.arcId).firstOrNull;
+    final chapter = arc == null
+        ? null
+        : content.storyMissionFor(
+            arc.id, r.stage, world.viewFor(arc.id).flags);
+    if (arc != null && chapter != null) {
+      return StoryStep(arc, chapter, 0, isReplay: true);
+    }
+  }
   for (final arc in content.arcs) {
     if (world.arcCompleted(arc.id)) continue;
     if (arc.requiredArc != null && !world.arcCompleted(arc.requiredArc!)) {
@@ -83,6 +97,8 @@ class HomeState {
   /// Capítulo que sigue pero pide más rango: el Home lo muestra cerrado,
   /// para que el jugador sepa que la historia sigue y qué le falta.
   final StoryStep? lockedStory;
+  /// [nextStoryMission] es de un arco que se vuelve a recorrer.
+  final bool storyIsReplay;
   /// Eventos que se resolvieron solos mientras el jugador no estaba mirando.
   /// El Home tiene que avisarlo: pasó algo y no fue decisión suya.
   final List<AutoResolvedEvent> autoResolved;
@@ -92,6 +108,7 @@ class HomeState {
     this.nextStoryMission,
     this.storyArcTitle,
     this.lockedStory,
+    this.storyIsReplay = false,
     this.autoResolved = const [],
   });
 
@@ -216,6 +233,7 @@ class GetHomeStateUseCase {
       nextStoryMission: open ? step.chapter : null,
       storyArcTitle: step?.arc.title,
       lockedStory: teaser ? step : null,
+      storyIsReplay: open && step.isReplay,
       autoResolved: autoResolved,
     );
   }
@@ -253,6 +271,58 @@ class RepairArcStateUseCase {
     }
     if (repaired) await _world.saveState(world);
     return repaired;
+  }
+}
+
+// ─── Volver a recorrer un arco ───────────────────────────────────────────────
+// Un arco terminado se puede jugar de nuevo para buscar otro final. Corre
+// aparte de la partida (ver [ArcReplay]): la partida no cambia, y un final
+// nuevo suma a la galería, a los logros y abre su premio.
+
+/// ¿Se puede empezar a recorrer [arcId] ahora? Hace falta haberlo terminado,
+/// no tener otro recorrido abierto ni un capítulo de historia en viaje.
+bool canStartArcReplay(
+        WorldState world, String arcId, List<Mission> activeMissions) =>
+    world.arcCompleted(arcId) &&
+    world.replay == null &&
+    !activeMissions.any((m) => m.arcId != null);
+
+class StartArcReplayUseCase {
+  final WorldRepository _world;
+  final MissionRepository _mission;
+  final GameContentCatalog _content;
+  StartArcReplayUseCase(this._world, this._mission, this._content);
+
+  Future<void> execute(String arcId) async {
+    final world = await _world.getState();
+    final active = await _mission.getAllActiveMissions();
+    if (!canStartArcReplay(world, arcId, active)) {
+      throw Exception(ds('ui.error.replay_unavailable'));
+    }
+    await _world.saveState(world.copyWith(
+      replay: ArcReplay(
+        arcId: arcId,
+        hidden: world.flags.intersection(_content.arcFlags(arcId)),
+      ),
+    ));
+  }
+}
+
+/// Deja el recorrido sin terminar. No se puede con un capítulo en viaje.
+class AbandonArcReplayUseCase {
+  final WorldRepository _world;
+  final MissionRepository _mission;
+  AbandonArcReplayUseCase(this._world, this._mission);
+
+  Future<void> execute() async {
+    final world = await _world.getState();
+    final arcId = world.replay?.arcId;
+    if (arcId == null) return;
+    final active = await _mission.getAllActiveMissions();
+    if (active.any((m) => m.arcId == arcId)) {
+      throw Exception(ds('ui.error.replay_in_progress'));
+    }
+    await _world.saveState(world.copyWith(clearReplay: true));
   }
 }
 
@@ -303,8 +373,9 @@ class AutoResolveExpiredEventsUseCase {
       // La opción más segura entre las que el mensajero puede usar.
       final usable = expired.options
           .where((o) =>
-              optionVisible(o, world) &&
-              meetsOptionRequirements(o, messenger, world: world))
+              optionVisible(o, world.viewFor(mission.arcId)) &&
+              meetsOptionRequirements(o, messenger,
+                  world: world.viewFor(mission.arcId)))
           .toList()
         ..sort((a, b) => a.riskLevel.compareTo(b.riskLevel));
       final option = usable.isNotEmpty ? usable.first : expired.options.first;
@@ -339,7 +410,8 @@ class AutoResolveExpiredEventsUseCase {
       if (option.repDelta != null ||
           option.setFlags != null ||
           option.journalNote != null) {
-        world = world.applyChoiceEffects(
+        world = world.applyChoiceEffectsFor(
+          mission.arcId,
           repDelta: option.repDelta,
           setFlags: option.setFlags,
           journalNote: option.journalNote == null
@@ -845,6 +917,10 @@ class MissionCompletion {
   final String? endingTitle;
   /// Final alcanzado (`end_varus`…), para su ilustración.
   final String? endingId;
+  /// El final es la primera vez que el jugador lo ve.
+  final bool endingIsNew;
+  /// El capítulo era de un arco que se volvía a recorrer.
+  final bool isReplay;
   /// El mensajero terminó herido (salud en 0).
   final bool injured;
   /// Posta amiga que alivió la fatiga al llegar ([RestStop]).
@@ -860,6 +936,8 @@ class MissionCompletion {
     this.journalEntry,
     this.endingTitle,
     this.endingId,
+    this.endingIsNew = false,
+    this.isReplay = false,
     this.injured = false,
     this.restStop,
   });
@@ -948,7 +1026,48 @@ class CompleteMissionUseCase {
     String? journalEntry;
     String? endingTitle;
     String? endingId;
-    if (mission.arcId != null) {
+    var endingIsNew = false;
+    var isReplay = false;
+    final replayWorld = await _world.getState();
+    if (mission.arcId != null && replayWorld.isReplaying(mission.arcId)) {
+      // Recorrido de un arco ya terminado: no toca reputación ni diario, y
+      // de lo que decidió el capítulo solo quedan los flags del recorrido.
+      isReplay = true;
+      final config = _content.storyMissionById(mission.routeId);
+      final r = replayWorld.replay!;
+      if (config != null) {
+        endingTitle = config.endingTitle;
+        endingId = config.endingId;
+        var world = replayWorld;
+        if (config.isFinal) {
+          final key = '${config.arcId}:${config.endingId}';
+          endingIsNew = !world.completedArcs.contains(key);
+          // Un final nuevo abre su premio en la partida (ver story_rewards).
+          world = world
+              .addFlags(endingIsNew
+                  ? config.setFlagsOnComplete
+                      ?.where((f) => f.startsWith('ending_'))
+                  : null)
+              .copyWith(
+                completedArcs: {...world.completedArcs, key},
+                clearReplay: true,
+              );
+          flagsSet = [
+            if (endingIsNew)
+              ...?config.setFlagsOnComplete
+                  ?.where((f) => f.startsWith('ending_')),
+          ];
+        } else {
+          world = world.copyWith(
+            replay: r.copyWith(
+              stage: config.stage + 1,
+              flags: {...r.flags, ...?config.setFlagsOnComplete},
+            ),
+          );
+        }
+        await _world.saveState(world);
+      }
+    } else if (mission.arcId != null) {
       final config = _content.storyMissionById(mission.routeId);
       if (config != null) {
         repDelta = config.repDeltaOnComplete ?? const {};
@@ -962,6 +1081,7 @@ class CompleteMissionUseCase {
             .addFlags(config.setFlagsOnComplete)
             .addJournal(config.journalEntry);
         if (config.isFinal) {
+          endingIsNew = true;
           world = world.copyWith(
             completedArcs: {
               ...world.completedArcs,
@@ -1041,6 +1161,8 @@ class CompleteMissionUseCase {
       journalEntry: journalEntry,
       endingTitle: endingTitle,
       endingId: endingId,
+      endingIsNew: endingIsNew,
+      isReplay: isReplay,
       injured: injured,
       restStop: restStop?.name,
     );
@@ -1108,7 +1230,7 @@ class ResolveEventUseCase {
         .firstOrNull;
 
     // La UI ya oculta/bloquea estas opciones; el dominio no confía en ella.
-    final world = await _world.getState();
+    final world = (await _world.getState()).viewFor(mission.arcId);
     if (!optionVisible(option, world) ||
         !meetsOptionRequirements(option, messenger, world: world)) {
       throw Exception(ds('ui.error.option_locked'));
@@ -1134,7 +1256,8 @@ class ResolveEventUseCase {
         option.setFlags != null ||
         option.journalNote != null) {
       final world = await _world.getState();
-      await _world.saveState(world.applyChoiceEffects(
+      await _world.saveState(world.applyChoiceEffectsFor(
+        mission.arcId,
         repDelta: option.repDelta,
         setFlags: option.setFlags,
         journalNote: option.journalNote,

@@ -1589,7 +1589,7 @@ abstract class AppLocalizations {
   /// No description provided for @slotNotifQuote.
   ///
   /// In es, this message translates to:
-  /// **'«El camino toma lo que toma. Cerrá los ojos si querés — yo te aviso si pasa algo.»'**
+  /// **'«El camino toma lo que toma. Cierra los ojos si quieres — yo te aviso si pasa algo.»'**
   String get slotNotifQuote;
 
   /// No description provided for @slotNotifBody.
@@ -2989,6 +2989,96 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo abrir el enlace.'**
   String get settingsLinkError;
+
+  /// No description provided for @endingsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Finales'**
+  String get endingsTitle;
+
+  /// No description provided for @endingsCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{found} de {total} finales'**
+  String endingsCount(int found, int total);
+
+  /// No description provided for @endingsExplainer.
+  ///
+  /// In es, this message translates to:
+  /// **'Cada arco tiene tres finales. Vuelve a recorrer un arco terminado para buscar los que faltan: tu partida no cambia.'**
+  String get endingsExplainer;
+
+  /// No description provided for @endingsArcLocked.
+  ///
+  /// In es, this message translates to:
+  /// **'Termina este arco para ver sus finales.'**
+  String get endingsArcLocked;
+
+  /// No description provided for @endingsUnknown.
+  ///
+  /// In es, this message translates to:
+  /// **'Final sin descubrir'**
+  String get endingsUnknown;
+
+  /// No description provided for @endingsFoundLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Encontrado'**
+  String get endingsFoundLabel;
+
+  /// No description provided for @endingsReplay.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a recorrer'**
+  String get endingsReplay;
+
+  /// No description provided for @endingsReplayStarted.
+  ///
+  /// In es, this message translates to:
+  /// **'El arco vuelve a empezar: su capítulo te espera en el inicio.'**
+  String get endingsReplayStarted;
+
+  /// No description provided for @endingsReplayActive.
+  ///
+  /// In es, this message translates to:
+  /// **'Recorriéndolo de nuevo: capítulo {chapter} de 5.'**
+  String endingsReplayActive(int chapter);
+
+  /// No description provided for @endingsAbandon.
+  ///
+  /// In es, this message translates to:
+  /// **'Dejar el recorrido'**
+  String get endingsAbandon;
+
+  /// No description provided for @endingsAbandoned.
+  ///
+  /// In es, this message translates to:
+  /// **'Dejaste el recorrido. Puedes empezarlo otra vez cuando quieras.'**
+  String get endingsAbandoned;
+
+  /// No description provided for @achSeeEndings.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver los finales'**
+  String get achSeeEndings;
+
+  /// No description provided for @storyReplayTag.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo recorrido'**
+  String get storyReplayTag;
+
+  /// No description provided for @resultEndingNew.
+  ///
+  /// In es, this message translates to:
+  /// **'Final nuevo'**
+  String get resultEndingNew;
+
+  /// No description provided for @resultSeeEndings.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver los finales'**
+  String get resultSeeEndings;
 }
 
 class _AppLocalizationsDelegate

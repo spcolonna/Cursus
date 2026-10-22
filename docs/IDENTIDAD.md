@@ -58,9 +58,9 @@ Materiales (cera, papel, cuero, piedra) y el motivo **D-A-E**: splash, nota S y 
 ## Voz
 
 - **Narrador y personajes:**
-  - Español rioplatense (vos, tenés), seco y con algo de ironía.
+  - Español neutro con tuteo (tú, tienes), seco y con algo de ironía.
   - Varus, parco; Lucius, socarrón; Claudius, cortés y frío.
-- **UI:** español neutro (tú), corto y directo. En inglés, segunda persona y presente.
+- **UI:** el mismo español neutro, corto y directo. En inglés, segunda persona y presente.
 - **Glosario y detalles:** [LOCALIZACION.md](LOCALIZACION.md).
 - **Íconos y emojis:** nunca emojis; íconos Material del set ya usado.
 

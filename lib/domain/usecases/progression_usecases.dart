@@ -68,7 +68,8 @@ PlayerStats withSnapshot(
     maxSkillLevel: math.max(s.maxSkillLevel, maxLevel),
     eliteLevels: math.max(s.eliteLevels, elite),
     messengers: math.max(s.messengers, messengers.length),
-    arcEndings: math.max(s.arcEndings, world.completedArcs.length),
+    arcEndings: math.max(s.arcEndings, world.arcsCompletedCount),
+    endingsFound: math.max(s.endingsFound, world.endingsFound.length),
   );
 }
 

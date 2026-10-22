@@ -1780,4 +1780,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsLinkError => 'Couldn\'t open the link.';
+
+  @override
+  String get endingsTitle => 'Endings';
+
+  @override
+  String endingsCount(int found, int total) {
+    return '$found of $total endings';
+  }
+
+  @override
+  String get endingsExplainer =>
+      'Each arc has three endings. Replay a finished arc to find the ones you are missing: your game does not change.';
+
+  @override
+  String get endingsArcLocked => 'Finish this arc to see its endings.';
+
+  @override
+  String get endingsUnknown => 'Undiscovered ending';
+
+  @override
+  String get endingsFoundLabel => 'Found';
+
+  @override
+  String get endingsReplay => 'Replay arc';
+
+  @override
+  String get endingsReplayStarted =>
+      'The arc starts over: its chapter is waiting on the home screen.';
+
+  @override
+  String endingsReplayActive(int chapter) {
+    return 'Replaying: chapter $chapter of 5.';
+  }
+
+  @override
+  String get endingsAbandon => 'Leave the replay';
+
+  @override
+  String get endingsAbandoned =>
+      'You left the replay. You can start it again whenever you like.';
+
+  @override
+  String get achSeeEndings => 'See the endings';
+
+  @override
+  String get storyReplayTag => 'Replay';
+
+  @override
+  String get resultEndingNew => 'New ending';
+
+  @override
+  String get resultSeeEndings => 'See the endings';
 }

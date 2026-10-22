@@ -85,6 +85,13 @@ class _Body extends ConsumerWidget {
             .animate()
             .fadeIn(duration: AppMotion.of(context, AppMotion.base))
             .slideY(begin: 0.06, end: 0),
+        const SizedBox(height: AppSpacing.md),
+        GameButton(
+          label: AppLocalizations.of(context).achSeeEndings,
+          icon: Icons.auto_stories,
+          variant: GameButtonVariant.secondary,
+          onTap: () => context.push('/endings'),
+        ),
         const SizedBox(height: AppSpacing.xl),
         SectionHeader(title: AppLocalizations.of(context).achYourTitle),
         GameCard(

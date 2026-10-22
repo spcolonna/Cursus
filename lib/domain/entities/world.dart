@@ -117,6 +117,30 @@ class JournalEntry {
   const JournalEntry({required this.date, required this.text});
 }
 
+/// Un arco ya terminado que el jugador vuelve a recorrer para buscar otro
+/// final. Corre aparte de la partida: sus decisiones viven en [flags] y no
+/// tocan la reputación ni el diario. Lo que la partida decidió en ese arco
+/// ([hidden]) no cuenta mientras dura el recorrido.
+class ArcReplay {
+  final String arcId;
+  final int stage;
+  final Set<String> flags;
+  final Set<String> hidden;
+  const ArcReplay({
+    required this.arcId,
+    this.stage = 0,
+    this.flags = const {},
+    this.hidden = const {},
+  });
+
+  ArcReplay copyWith({int? stage, Set<String>? flags}) => ArcReplay(
+        arcId: arcId,
+        stage: stage ?? this.stage,
+        flags: flags ?? this.flags,
+        hidden: hidden,
+      );
+}
+
 class WorldState {
   /// Reputación por facción, -100..100.
   final Map<Faction, int> reputation;
@@ -144,6 +168,9 @@ class WorldState {
   /// Eventos de una sola vez que ya salieron.
   final Set<String> seenEvents;
 
+  /// Arco que se está volviendo a recorrer, si hay uno.
+  final ArcReplay? replay;
+
   const WorldState({
     required this.reputation,
     required this.flags,
@@ -153,6 +180,7 @@ class WorldState {
     this.patronDays = const {},
     this.recentEvents = const [],
     this.seenEvents = const {},
+    this.replay,
   });
 
   factory WorldState.initial() => WorldState(
@@ -171,6 +199,45 @@ class WorldState {
   bool arcCompleted(String arcId) =>
       completedArcs.any((c) => c == arcId || c.startsWith('$arcId:'));
 
+  /// Finales encontrados ('arc_claudius:end_varus'…), sin las marcas viejas
+  /// que guardaban solo el arco.
+  Set<String> get endingsFound => {
+        for (final c in completedArcs)
+          if (c.contains(':')) c,
+      };
+
+  /// Arcos con al menos un final.
+  int get arcsCompletedCount =>
+      {for (final c in completedArcs) c.split(':').first}.length;
+
+  bool isReplaying(String? arcId) => arcId != null && replay?.arcId == arcId;
+
+  /// El mundo como lo ve una misión del arco [arcId]: durante un recorrido,
+  /// las decisiones de la partida en ese arco no cuentan y sí las del
+  /// recorrido. Para cualquier otra misión es el mismo mundo.
+  WorldState viewFor(String? arcId) {
+    final r = replay;
+    if (r == null || arcId != r.arcId) return this;
+    return copyWith(flags: {...flags.difference(r.hidden), ...r.flags});
+  }
+
+  /// [applyChoiceEffects] para una decisión tomada en una misión del arco
+  /// [arcId]: si es un recorrido, solo anota sus flags en el recorrido.
+  WorldState applyChoiceEffectsFor(
+    String? arcId, {
+    Map<Faction, int>? repDelta,
+    Iterable<String>? setFlags,
+    String? journalNote,
+  }) {
+    final r = replay;
+    if (r != null && arcId == r.arcId) {
+      if (setFlags == null) return this;
+      return copyWith(replay: r.copyWith(flags: {...r.flags, ...setFlags}));
+    }
+    return applyChoiceEffects(
+        repDelta: repDelta, setFlags: setFlags, journalNote: journalNote);
+  }
+
   WorldState copyWith({
     Map<Faction, int>? reputation,
     Set<String>? flags,
@@ -180,6 +247,8 @@ class WorldState {
     Map<Faction, String>? patronDays,
     List<String>? recentEvents,
     Set<String>? seenEvents,
+    ArcReplay? replay,
+    bool clearReplay = false,
   }) =>
       WorldState(
         reputation: reputation ?? this.reputation,
@@ -190,6 +259,7 @@ class WorldState {
         patronDays: patronDays ?? this.patronDays,
         recentEvents: recentEvents ?? this.recentEvents,
         seenEvents: seenEvents ?? this.seenEvents,
+        replay: clearReplay ? null : (replay ?? this.replay),
       );
 
   /// Anota los eventos que salieron en una misión nueva. [once] son los que

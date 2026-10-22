@@ -481,5 +481,20 @@
   "settingsLegal": "Legal",
   "settingsPrivacyPolicy": "Privacy policy",
   "settingsTerms": "Terms of use",
-  "settingsLinkError": "Couldn't open the link."
+  "settingsLinkError": "Couldn't open the link.",
+  "endingsTitle": "Endings",
+  "endingsCount": "{found} of {total} endings",
+  "endingsExplainer": "Each arc has three endings. Replay a finished arc to find the ones you are missing: your game does not change.",
+  "endingsArcLocked": "Finish this arc to see its endings.",
+  "endingsUnknown": "Undiscovered ending",
+  "endingsFoundLabel": "Found",
+  "endingsReplay": "Replay arc",
+  "endingsReplayStarted": "The arc starts over: its chapter is waiting on the home screen.",
+  "endingsReplayActive": "Replaying: chapter {chapter} of 5.",
+  "endingsAbandon": "Leave the replay",
+  "endingsAbandoned": "You left the replay. You can start it again whenever you like.",
+  "achSeeEndings": "See the endings",
+  "storyReplayTag": "Replay",
+  "resultEndingNew": "New ending",
+  "resultSeeEndings": "See the endings"
 }

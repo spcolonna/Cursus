@@ -55,9 +55,9 @@ const Map<String, String> kDomainStrings = {
   'ui.instinct.narrative':
       'No estabas ahí para decidir. Tu mensajero actuó por instinto: {option}. Salió del paso, pero perdió tiempo.',
   'ui.instinct.option': '{option} (por instinto)',
-  'ui.instinct.journal': 'No estabas: tu mensajero decidió por vos. {note}',
+  'ui.instinct.journal': 'No estabas: tu mensajero decidió por ti. {note}',
   'ui.outcome.success.0':
-      'Tu instinto no te falló. Salís del paso sin contratiempos.',
+      'Tu instinto no te falló. Sales del paso sin contratiempos.',
   'ui.outcome.success.1':
       'Una decisión precisa en el momento exacto. El camino queda libre.',
   'ui.outcome.success.2':
@@ -72,7 +72,7 @@ const Map<String, String> kDomainStrings = {
       'Las cosas no salieron como planeabas. Perdiste tiempo valioso.',
   'ui.outcome.fail.1':
       'Una decisión equivocada. Ahora vas más lento y el tiempo corre.',
-  'ui.outcome.fail.2': 'El camino te venció esta vez. Pero seguís en pie.',
+  'ui.outcome.fail.2': 'El camino te venció esta vez. Pero sigues en pie.',
   'ui.factor.craft': 'Oficio de mensajero',
   'ui.factor.skill': '{skill} Nv.{level}',
   'ui.factor.perks': 'Perks de {skill}',
@@ -91,6 +91,10 @@ const Map<String, String> kDomainStrings = {
       'Tu mensajero está herido. Cúralo en la tienda antes de salir.',
   'ui.error.chapter_rank': 'Este capítulo pide rango {rank}.',
   'ui.error.primary_busy': 'Tu mensajero principal está ocupado.',
+  'ui.error.replay_unavailable':
+      'Para volver a recorrer un arco, termínalo y espera a que no haya un capítulo en viaje.',
+  'ui.error.replay_in_progress':
+      'Hay un capítulo de este recorrido en viaje: espera a que llegue.',
   'ui.error.manual_maxed':
       '{name} ya tiene {skill} en nivel {level}. Un manual no le enseña nada nuevo.',
   'ui.error.no_denarios':
@@ -126,20 +130,20 @@ const Map<String, String> kDomainStrings = {
   'ui.forecast.tired': 'El cansancio te está pesando en las manos.',
   'ui.forecast.noskill.assured': 'Es la opción prudente. Lenta, pero segura.',
   'ui.forecast.noskill.favourable':
-      'No necesitás nada especial para intentarlo.',
+      'No necesitas nada especial para intentarlo.',
   'ui.forecast.noskill.uncertain':
-      'Salís del paso, pero sin oficio no sale redondo.',
+      'Sales del paso, pero sin oficio no sale redondo.',
   'ui.forecast.noskill.risky': 'Puro pulso y suerte. Puede salir feo.',
   'ui.forecast.noskill.reckless':
       'Esto es tirarse al vacío y esperar lo mejor.',
-  'ui.forecast.perk': 'Tu camino de {skill} te da una ventaja acá.',
+  'ui.forecast.perk': 'Tu camino de {skill} te da una ventaja aquí.',
   'ui.forecast.craft': 'oficio',
   'ui.forecast.your_craft': 'tu oficio',
   'ui.forecast.skill.assured': '{skill} Nv.{level} te sobra para esto.',
   'ui.forecast.skill.favourable': '{skill} Nv.{level} debería alcanzar.',
   'ui.forecast.skill.uncertain_danger':
       'Tu {skill} ayuda, pero el peligro es alto.',
-  'ui.forecast.skill.uncertain': 'Podés lograrlo, aunque no está garantizado.',
+  'ui.forecast.skill.uncertain': 'Puedes lograrlo, aunque no está garantizado.',
   'ui.forecast.skill.risky': 'Con {skill} Nv.{level}, esto es una apuesta.',
   'ui.forecast.skill.reckless':
       'Te falta {skill} para algo así. Sería un milagro.',

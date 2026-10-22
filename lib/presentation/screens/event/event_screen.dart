@@ -113,7 +113,8 @@ class _EventScreenState extends ConsumerState<EventScreen> {
             event: event,
             mission: mission,
             messenger: slot?.messenger,
-            world: world,
+            // Un capítulo de un arco recorrido de nuevo ve sus propios flags.
+            world: world?.viewFor(mission.arcId),
             selected: _selected,
             resolving: _resolving,
             onSelect: (opt) => setState(() => _selected = opt),

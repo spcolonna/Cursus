@@ -566,7 +566,7 @@
   "slotNotifTitle": "Varus te alcanza en la puerta",
   "slotNotifYes": "AVÍSAME",
   "slotNotifNo": "Prefiero mirar yo",
-  "slotNotifQuote": "«El camino toma lo que toma. Cerrá los ojos si querés — yo te aviso si pasa algo.»",
+  "slotNotifQuote": "«El camino toma lo que toma. Cierra los ojos si quieres — yo te aviso si pasa algo.»",
   "slotNotifBody": "Te avisamos cuando tu mensajero necesite una decisión o llegue a destino. Nada entre las 22 y las 8.",
   "@gradeSemantics": {
     "placeholders": {
@@ -1332,5 +1332,37 @@
   "settingsLegal": "Legal",
   "settingsPrivacyPolicy": "Política de privacidad",
   "settingsTerms": "Términos de uso",
-  "settingsLinkError": "No se pudo abrir el enlace."
+  "settingsLinkError": "No se pudo abrir el enlace.",
+  "endingsTitle": "Finales",
+  "endingsCount": "{found} de {total} finales",
+  "endingsExplainer": "Cada arco tiene tres finales. Vuelve a recorrer un arco terminado para buscar los que faltan: tu partida no cambia.",
+  "endingsArcLocked": "Termina este arco para ver sus finales.",
+  "endingsUnknown": "Final sin descubrir",
+  "endingsFoundLabel": "Encontrado",
+  "endingsReplay": "Volver a recorrer",
+  "endingsReplayStarted": "El arco vuelve a empezar: su capítulo te espera en el inicio.",
+  "endingsReplayActive": "Recorriéndolo de nuevo: capítulo {chapter} de 5.",
+  "endingsAbandon": "Dejar el recorrido",
+  "endingsAbandoned": "Dejaste el recorrido. Puedes empezarlo otra vez cuando quieras.",
+  "achSeeEndings": "Ver los finales",
+  "storyReplayTag": "Nuevo recorrido",
+  "resultEndingNew": "Final nuevo",
+  "resultSeeEndings": "Ver los finales",
+  "@endingsCount": {
+    "placeholders": {
+      "found": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@endingsReplayActive": {
+    "placeholders": {
+      "chapter": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -560,7 +560,22 @@ class _WhatChanged extends StatelessWidget {
                     style: AppTextStyles.ui(14,
                         color: AppColors.ink, weight: FontWeight.bold)),
               ),
+              if (completion.endingIsNew && completion.isReplay)
+                GameChip(AppLocalizations.of(context).resultEndingNew,
+                    icon: Icons.star, color: AppColors.ink),
             ]),
+          ),
+          // Los otros finales del arco: la galería dice cuántos faltan.
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => context.push('/endings'),
+              icon: const Icon(Icons.auto_stories,
+                  size: 18, color: AppColors.ochreDeep),
+              label: Text(AppLocalizations.of(context).resultSeeEndings,
+                  style: AppTextStyles.ui(14,
+                      color: AppColors.ochreDeep, weight: FontWeight.bold)),
+            ),
           ),
           const SizedBox(height: 12),
         ],

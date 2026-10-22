@@ -6,10 +6,10 @@ Roma real y peligrosa, contada con picardía. **Sabor histórico auténtico, ton
 
 ## Cómo suena
 
-- **Segunda persona, presente.** "Te deslizás entre los matorrales como una sombra más del atardecer."
-- **Detalle concreto antes que adjetivo.** No "fue difícil": "llegás arañado y con el orgullo intacto a medias".
-- **Humor seco en el fallo**, nunca burla al jugador. "Terminás explicando ante el centurión por qué un mensajero honesto evita los controles."
-- **Cierre con imagen, no con balance.** Mal: "Perdiste 30 minutos." Bien: "El sol se mueve en el cielo y vos seguís en la misma fila."
+- **Segunda persona, presente.** "Te deslizas entre los matorrales como una sombra más del atardecer."
+- **Detalle concreto antes que adjetivo.** No "fue difícil": "llegas arañado y con el orgullo intacto a medias".
+- **Humor seco en el fallo**, nunca burla al jugador. "Terminas explicando ante el centurión por qué un mensajero honesto evita los controles."
+- **Cierre con imagen, no con balance.** Mal: "Perdiste 30 minutos." Bien: "El sol se mueve en el cielo y tú sigues en la misma fila."
 - **Una voz por NPC.** Los NPCs hablan entre comillas y dicen poco.
 
 ## Los tres registros del outcome
@@ -39,7 +39,7 @@ Regla: subir con una suele bajar con otra solo en decisiones fuertes. Los evento
 
 - Emojis, signos de exclamación en cadena, mayúsculas de énfasis.
 - Anacronismos y calcos del inglés ("chequear", "OK", "resetear").
-- Español neutro o peninsular (nada de "tú", "vosotros", "coger").
-- Explicar la mecánica dentro de la prosa ("perdés 2 puntos de reputación").
+- Voseo y regionalismos ("vos", "tenés", "che", "laburo") y peninsularismos ("vosotros", "coger"). Se escribe en neutro con tuteo.
+- Explicar la mecánica dentro de la prosa ("pierdes 2 puntos de reputación").
 - Muerte del mensajero, mutilación, crueldad gráfica. El juego es liviano.
 - Reutilizar un texto de outcome en otra opción u otro evento.
