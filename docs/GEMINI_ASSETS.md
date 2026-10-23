@@ -142,7 +142,7 @@ Secondary unnamed figures (legionaries, crowds, priests, senators, innkeepers) h
 - **Safe zone:** keep a 4% margin free of important details on all sides. Composition can use the whole frame; this is a complete painting.
 - One clear emotional idea per ending (written in the entry).
 
-### 5.4 PORTRAIT (recurring character) — `assets/art/npcs/*.png`
+### 5.4 PORTRAIT (recurring character) — `assets/art/npcs/*.jpg`
 - **Generate at 1:1 (square). Final size 768×768.** Opaque. **NOT transparent**: the background is a **plain flat painted wall in a single pigment** (given per character) with a slightly darker thin band at the very bottom.
 - The game shows the portrait **cropped to a circle** at very small size (**48×48 px**) and sometimes larger. Therefore:
   - **Head and shoulders bust, three-quarter view, looking slightly toward the viewer**, like a Fayum mummy portrait painted in fresco style.
@@ -281,79 +281,79 @@ These cover every road event of the game. **No characters with faces; no messeng
 Common to all portraits: **Type portrait, Generate at 1:1, Final size 768×768, Background: plain flat painted wall (color given) with a slightly darker thin band at the bottom, opaque, NO transparency. Head and shoulders, three-quarter view, head ≈50% of image height, eyes at ≈42% from top, everything important inside the central 90% circle. References: `assets/art/scenes/road.jpg` (style).** Expression restrained.
 
 #### B1 — Varus
-- **PATH:** `assets/art/npcs/varus.png`
+- **PATH:** `assets/art/npcs/varus.jpg`
 - **Wall color:** yellow ochre #D9A441.
 - **Description:** man in his fifties, broad shoulders, close-cropped grey hair, an old pale scar across the chin, plain dark brown wool tunic, ink stains on the fingers of one hand visible at the bottom edge holding the edge of a scroll. Stern, paternal, tired eyes.
 - **Must avoid:** toga, armor, smile, beard.
 
 #### B2 — Décimo
-- **PATH:** `assets/art/npcs/decimo.png`
+- **PATH:** `assets/art/npcs/decimo.jpg`
 - **Wall color:** warm parchment #E6D8BE.
 - **Description:** thin young man (about 20), narrow face, tired eyes with shadows, a wax tablet held against the chest, a stylus tucked behind the ear, faded Egyptian-blue tunic.
 - **Must avoid:** paper book, quill pen, glasses.
 
 #### B3 — Marco
-- **PATH:** `assets/art/npcs/marco.png`
+- **PATH:** `assets/art/npcs/marco.jpg`
 - **Wall color:** yellow ochre #D9A441.
 - **Description:** wiry man in his twenties, cocky half smile, sunburnt skin, curly black hair, an ochre travel cloak thrown over one shoulder, simple tunic.
 - **Must avoid:** red cloak (red is the player's color), armor.
 
 #### B4 — Sexto
-- **PATH:** `assets/art/npcs/sexto.png`
+- **PATH:** `assets/art/npcs/sexto.jpg`
 - **Wall color:** Pompeian red #C4544A (light enough to contrast with the helmet).
 - **Description:** stern centurion in his forties, bronze Montefortino helmet with a **transverse** (side-to-side) red horsehair crest, chain mail, red military cloak on the shoulders, heavy jaw, broken nose, the top of a vine staff visible at the side.
 - **Must avoid:** front-to-back crest, plate armor, eagle emblems.
 
 #### B5 — Fulvia
-- **PATH:** `assets/art/npcs/fulvia.png`
+- **PATH:** `assets/art/npcs/fulvia.jpg`
 - **Wall color:** pale Egyptian blue #9DB7D5.
 - **Description:** patrician woman in her forties, elaborate braided hair pinned up with ochre-gold pins, deep Tyrian-purple palla draped over the shoulders, ochre-gold earrings, a measuring, slightly skeptical gaze.
 - **Must avoid:** crown, tiara, modern makeup.
 
 #### B6 — Rufo
-- **PATH:** `assets/art/npcs/rufo.png`
+- **PATH:** `assets/art/npcs/rufo.jpg`
 - **Wall color:** deep verdigris #3F7F72.
 - **Description:** heavy-set boatman, bushy red beard, one missing front tooth in a rough grin, coiled rope over the shoulder, wet off-white linen tunic, warm ochre lantern light from below on the face.
 - **Must avoid:** pirate hat, eye patch, parrot.
 
 #### B7 — Atia
-- **PATH:** `assets/art/npcs/atia.png`
+- **PATH:** `assets/art/npcs/atia.jpg`
 - **Wall color:** lime white #F2E8D5 with faint thin incense smoke curls.
 - **Description:** young priestess (early twenties), calm serene face, white veil over dark hair, a small bronze caduceus pendant (staff with two snakes) on the chest.
 - **Must avoid:** halo, glowing magic, nun-like Christian habit.
 
 #### B8 — Cornelia
-- **PATH:** `assets/art/npcs/cornelia.png`
+- **PATH:** `assets/art/npcs/cornelia.jpg`
 - **Wall color:** warm parchment #E6D8BE.
 - **Description:** woman in her thirties, mourning grey stola, hair tied back simply, sharp attentive eyes, a small round bronze messenger's badge hanging on a cord as a necklace.
 - **Must avoid:** black veil over the face, tears.
 
 #### B9 — Claudius
-- **PATH:** `assets/art/npcs/claudius.png`
+- **PATH:** `assets/art/npcs/claudius.jpg`
 - **Wall color:** pale Egyptian blue #9DB7D5.
 - **Description:** senator in his sixties, white toga with a broad Tyrian-purple stripe, receding white hair, thin cold courteous smile, a heavy signet ring on a hand raised near the chest.
 - **Must avoid:** laurel crown, emperor look, beard.
 
 #### B10 — Lucius
-- **PATH:** `assets/art/npcs/lucius.png`
+- **PATH:** `assets/art/npcs/lucius.jpg`
 - **Wall color:** Pompeian red #C4544A.
 - **Description:** innkeeper in his fifties, completely bald, thick forearms, leather apron over an ochre tunic, suspicious squint, a clay cup in one hand near the chest.
 - **Must avoid:** beer mug, medieval tavern look, beard.
 
 #### B11 — Petro
-- **PATH:** `assets/art/npcs/petro.png`
+- **PATH:** `assets/art/npcs/petro.jpg`
 - **Wall color:** pale Egyptian blue #9DB7D5.
 - **Description:** plump senator, rosy round cheeks, rings on every finger (ochre), white toga with a laurel-leaf patterned border in ochre, a broad politician smile.
 - **Must avoid:** looking like Claudius (Petro is plump, dark-haired with a little grey, cheerful; Claudius is thin, white-haired, cold).
 
 #### B12 — The Widow
-- **PATH:** `assets/art/npcs/viuda.png`
+- **PATH:** `assets/art/npcs/viuda.jpg`
 - **Wall color:** deep verdigris #3F7F72 darkened, with a faint warm candle glow on one side.
 - **Description:** older woman (around sixty), silver hair in a severe bun, black stola, an ochre-gold brooch shaped like a she-wolf on the chest, calm dangerous eyes.
 - **Must avoid:** witch look, pointed hat, jewelry overload.
 
 #### B13 — Aufidio
-- **PATH:** `assets/art/npcs/aufidio.png`
+- **PATH:** `assets/art/npcs/aufidio.jpg`
 - **Wall color:** Pompeian red #C4544A.
 - **Description:** weathered centurion in his late forties, grey stubble, old scars on the forearms, round bronze phalerae medals on a leather harness over chain mail, holding a vine staff, no helmet, short grey hair, tired honest eyes.
 - **Must avoid:** looking like Sexto (Aufidio is bareheaded, older, thinner, kinder).
@@ -396,13 +396,13 @@ Common to all: **Type chapter, Generate at 21:9, Final size 1680×720, Backgroun
 ##### C6 — Claudius IV (Underworld path): The night of knives
 - **PATH:** `assets/art/story/claudius_4_underworld.jpg`
 - **Time:** INTERIOR (smoky tavern) · **Characters:** the Widow (§4, viuda) seated; generic bidders; the messenger seen from behind.
-- **References add:** `assets/art/npcs/viuda.png`.
+- **References add:** `assets/art/npcs/viuda.jpg`.
 - **Description:** A smoky tavern with no sign in the Subura: around a back table lit by oil lamps, shadowy figures bid in low voices; the Widow presides, the ochre she-wolf brooch on her black stola catching the light; the messenger stands in the foreground, from behind.
 
 ##### C7 — Claudius V (Varus path): Varus's man
 - **PATH:** `assets/art/story/claudius_5_varus.jpg`
 - **Time:** DAY (morning) · **Characters:** the messenger; Claudius (§4) on the Forum steps; Petro is NOT shown; Varus (§4) watching from a distance.
-- **References add:** `assets/art/npcs/claudius.png`, `assets/art/npcs/varus.png`.
+- **References add:** `assets/art/npcs/claudius.jpg`, `assets/art/npcs/varus.jpg`.
 - **Description:** On the steps of the Forum in morning light, the messenger calmly hands a formal sealed letter to Claudius, who reads it with a cold face; far behind, near a column, Varus watches with arms crossed.
 
 ##### C8 — Claudius V (Claudius path): The Senator's protégé
@@ -420,7 +420,7 @@ Common to all: **Type chapter, Generate at 21:9, Final size 1680×720, Backgroun
 ##### C10 — Lucius I: An old debt (same image for three paths)
 - **PATHS (same image, deliver it once and list the three paths):** `assets/art/story/lucius_1_varus.jpg`, `assets/art/story/lucius_1_claudius.jpg`, `assets/art/story/lucius_1_underworld.jpg`
 - **Time:** INTERIOR (warm tavern) · **Characters:** Lucius (§4); the messenger from behind.
-- **References add:** `assets/art/npcs/lucius.png`.
+- **References add:** `assets/art/npcs/lucius.jpg`.
 - **Description:** Inside the Ox tavern: Lucius, bald with a leather apron, leans on a stone counter with built-in clay jars, talking low to the messenger; shelves of amphorae, a wooden trapdoor to the cellar in the floor, warm lamplight.
 
 ##### C11 — Lucius II: Gaius, the deserter
@@ -436,7 +436,7 @@ Common to all: **Type chapter, Generate at 21:9, Final size 1680×720, Backgroun
 ##### C13 — Lucius IV (Legion path): The Appia burns
 - **PATH:** `assets/art/story/lucius_4_legion.jpg`
 - **Time:** DUSK · **Characters:** Sexto (§4) at the front; half a century of generic legionaries; the messenger beside them.
-- **References add:** `assets/art/npcs/sexto.png`.
+- **References add:** `assets/art/npcs/sexto.jpg`.
 - **Description:** On the paved Via Appia, a column of legionaries led by Sexto marches toward a tall column of black smoke rising from a burning roadside inn on the horizon; the messenger walks with them.
 
 ##### C14 — Lucius IV (Book path): The Appia burns
@@ -453,19 +453,19 @@ Common to all: **Type chapter, Generate at 21:9, Final size 1680×720, Backgroun
 ##### C16 — Lucius V (Legion path): The Ox
 - **PATH:** `assets/art/story/lucius_5_legion.jpg`
 - **Time:** DAWN · **Characters:** Sexto (§4); Gaius (young soldier, now in a clean tunic of the Tenth Legion); the messenger.
-- **References add:** `assets/art/npcs/sexto.png`.
+- **References add:** `assets/art/npcs/sexto.jpg`.
 - **Description:** At the Porta Capena gate of Rome at dawn, the young Gaius in a fresh legionary tunic swears an oath with a raised hand beside the messenger; Sexto holds a standard topped with a bronze bull (no letters).
 
 ##### C17 — Lucius V (Book path): The Ox
 - **PATH:** `assets/art/story/lucius_5_book.jpg`
 - **Time:** INTERIOR (candlelit tavern) · **Characters:** the Widow (§4); four rich buyers in fine cloaks (generic); the messenger from behind.
-- **References add:** `assets/art/npcs/viuda.png`.
+- **References add:** `assets/art/npcs/viuda.jpg`.
 - **Description:** The back table of the Golden She-Wolf tavern in the Subura: four buyers in rich cloaks sit around a closed ledger, the Widow presides at the head of the table, candles, deep shadows.
 
 ##### C18 — Lucius V (Family path): The Ox
 - **PATH:** `assets/art/story/lucius_5_family.jpg`
 - **Time:** INTERIOR / NIGHT · **Characters:** Lucius (§4); about ten generic innkeepers; the messenger at the end of the table.
-- **References add:** `assets/art/npcs/lucius.png`.
+- **References add:** `assets/art/npcs/lucius.jpg`.
 - **Description:** A dozen innkeepers sit around the big table of the closed Ox tavern at night, clay cups raised together; Lucius at the head; in the hearth behind them, a ledger burns.
 
 #### Arc 3 — "The Eagle of the Thirteenth" (the Legion, the Rubicon)
@@ -473,13 +473,13 @@ Common to all: **Type chapter, Generate at 21:9, Final size 1680×720, Backgroun
 ##### C19 — Legion I (Sexto entry): The satchel from the north
 - **PATH:** `assets/art/story/legion_1_sexto.jpg`
 - **Time:** DAY (winter, pale cold light) · **Characters:** Sexto (§4); the messenger.
-- **References add:** `assets/art/npcs/sexto.png`.
+- **References add:** `assets/art/npcs/sexto.jpg`.
 - **Description:** At the Porta Capena gate of Rome in winter, Sexto stops the messenger and hands over a sealed letter; on the messenger's chest a small bronze plaque with a bull; beyond the gate the Via Flaminia heads north toward distant snowy hills.
 
 ##### C20 — Legion I (default): The satchel from the north
 - **PATH:** `assets/art/story/legion_1.jpg`
 - **Time:** INTERIOR (post house, daylight from a window) · **Characters:** Varus (§4); the messenger.
-- **References add:** `assets/art/npcs/varus.png`.
+- **References add:** `assets/art/npcs/varus.jpg`.
 - **Description:** In the Guild's post house, Varus places a sealed contract (a tablet with a red seal) on a heavy wooden table in front of the messenger, without smiling; on the wall, a painted map of Roman roads (lines only, no writing); a window shows a cold winter sky.
 
 ##### C21 — Legion II: The centurion Aufidio
@@ -496,7 +496,7 @@ Common to all: **Type chapter, Generate at 21:9, Final size 1680×720, Backgroun
 ##### C23 — Legion IV (Caesar path): The price of the warning
 - **PATH:** `assets/art/story/legion_4_caesar.jpg`
 - **Time:** INTERIOR (command tent, lamplight) · **Characters:** a legate (generic senior officer, red cloak, muscled bronze cuirass painted flat); Aufidio (§4) standing apart; the messenger.
-- **References add:** `assets/art/npcs/aufidio.png`.
+- **References add:** `assets/art/npcs/aufidio.jpg`.
 - **Description:** Inside the legate's tent, the messenger hands the legate a sealed letter; in the shadow at the tent entrance, Aufidio watches, understanding what is happening; maps and a lamp on a camp table.
 - **Must avoid:** readable maps.
 
@@ -518,13 +518,13 @@ Common to all: **Type chapter, Generate at 21:9, Final size 1680×720, Backgroun
 ##### C27 — Legion V (Senate ending chapter): The voice in the Curia
 - **PATH:** `assets/art/story/legion_5_senate.jpg`
 - **Time:** DAY · **Characters:** the messenger; Claudius (§4); messengers waiting on the steps (generic).
-- **References add:** `assets/art/npcs/claudius.png`.
+- **References add:** `assets/art/npcs/claudius.jpg`.
 - **Description:** On the steps of the Curia, Claudius guides the travel-stained messenger past a crowd of senators in white togas who look at the messenger with contempt, toward the open bronze doors.
 
 ##### C28 — Legion V (Guild ending chapter): The satchel without a side
 - **PATH:** `assets/art/story/legion_5_guild.jpg`
 - **Time:** INTERIOR / NIGHT (post house) · **Characters:** Varus (§4) at the head of a table; a tribune of Caesar (red cloak) and an agent of Pompey (blue-grey cloak) at the sides; the messenger arriving with the satchel.
-- **References add:** `assets/art/npcs/varus.png`.
+- **References add:** `assets/art/npcs/varus.jpg`.
 - **Description:** In the Guild's post house at night, Varus sits at the head of a plain wooden table with two enemies seated far apart on each side; the messenger enters with the sealed satchel; lamplight, tense silence.
 
 ---
@@ -536,14 +536,14 @@ Common to all: **Type ending, Generate at 4:5, Final size 1080×1350, Background
 #### D1 — End: Varus's man (loyalty)
 - **PATH:** `assets/art/endings/end_varus.jpg`
 - **Time:** INTERIOR / NIGHT · **Characters:** Varus (§4); the messenger (hood down but face turned away / in shadow).
-- **References add:** `assets/art/npcs/varus.png`.
+- **References add:** `assets/art/npcs/varus.jpg`.
 - **Emotion:** earned trust.
 - **Description:** In the modest post house at night, Varus and the messenger share a quiet cup of wine at a small table; a painted map of Roman roads (no writing) on the wall behind, a single oil lamp between them.
 
 #### D2 — End: The Senator's protégé (ambition)
 - **PATH:** `assets/art/endings/end_claudius.jpg`
 - **Time:** DUSK · **Characters:** Claudius (§4); the messenger in fine livery (cinnabar cloak with Tyrian-purple trim), seen from behind.
-- **References add:** `assets/art/npcs/claudius.png`.
+- **References add:** `assets/art/npcs/claudius.jpg`.
 - **Emotion:** ambition with a price.
 - **Description:** On the marble terrace of a villa overlooking Rome at dusk, Claudius rests a hand on the messenger's shoulder as they both look at the city below; warm ochre light, long shadows.
 
@@ -568,7 +568,7 @@ Common to all: **Type ending, Generate at 4:5, Final size 1080×1350, Background
 #### D6 — End: Guest of the Ox (belonging)
 - **PATH:** `assets/art/endings/end_lucius_family.jpg`
 - **Time:** DUSK · **Characters:** Lucius (§4) at the door waving; travelers (generic).
-- **References add:** `assets/art/npcs/lucius.png`.
+- **References add:** `assets/art/npcs/lucius.jpg`.
 - **Emotion:** belonging, home.
 - **Description:** The Ox tavern seen from the road at dusk, with a new post-house sign over the door showing a red wax-seal symbol (no letters); travelers' mules tied outside, warm light from the door where Lucius waves.
 
@@ -581,14 +581,14 @@ Common to all: **Type ending, Generate at 4:5, Final size 1080×1350, Background
 #### D8 — End: Voice of the Curia (a voice)
 - **PATH:** `assets/art/endings/end_legion_senate.jpg`
 - **Time:** INTERIOR (the Curia, daylight from high windows) · **Characters:** the messenger standing alone in the center (dusty cinnabar cloak, from behind); hundreds of senators in white togas on the benches (generic, small); Claudius (§4) nodding on the front bench.
-- **References add:** `assets/art/npcs/claudius.png`.
+- **References add:** `assets/art/npcs/claudius.jpg`.
 - **Emotion:** a small voice changing history.
 - **Description:** Inside the Senate house, tiered benches full of senators in white togas shout and gesture; in the center of the floor, alone, the travel-stained messenger stands; Claudius, in the front row, nods slightly.
 
 #### D9 — End: The satchel without a side (neutrality)
 - **PATH:** `assets/art/endings/end_legion_guild.jpg`
 - **Time:** DAWN (window light in an interior) · **Characters:** Varus (§4) signing; two enemies in military cloaks (red and blue-grey) at each end of the table; the messenger standing.
-- **References add:** `assets/art/npcs/varus.png`.
+- **References add:** `assets/art/npcs/varus.jpg`.
 - **Emotion:** neutrality as strength.
 - **Description:** At a plain table in the post house at dawn, two enemies sit at opposite ends; Varus signs last on a wax tablet; in the middle of the table lies a sealed leather satchel with the Guild's red wax seal; pale dawn light through the window.
 

@@ -19,7 +19,7 @@ Estilo: **fresco pompeyano en siluetas planas por capas**, la misma paleta que e
 | Evento puntual (opcional) | `assets/art/events/<id del evento>.jpg` | 1080×1920 (9:16) | JPG, calidad 82 | El escenario de su categoría |
 | Capítulo de historia | `assets/art/story/<id del capítulo>.jpg` | 1680×720 (21:9, se ve como franja) | JPG, calidad 82 | `EventScene` del primer evento |
 | Final de arco | `assets/art/endings/<id del final>.jpg` | 1080×1350 | JPG, calidad 82 | Nada (no ocupa lugar) |
-| Retrato de NPC | `assets/art/npcs/<id del NPC>.png` | 768×768 | PNG | La inicial en un medallón |
+| Retrato de NPC | `assets/art/npcs/<id del NPC>.jpg` | 768×768 | JPG | La inicial en un medallón |
 
 **Orden de búsqueda de un evento:** primero su ilustración propia, después la de su escenario y al final el escenario pintado. Con los 10 escenarios ya se cubren todos los eventos.
 
@@ -150,19 +150,19 @@ Cada prompt arranca con el estilo base más el bloque de retrato. La descripció
 
 | Archivo | Personaje | Descripción (de `look`) |
 |---|---|---|
-| `npcs/varus.png` | Varus, jefe de la casa de postas | man in his fifties, broad shoulders, close-cropped grey hair, old scar across the chin, plain dark wool tunic, ink-stained fingers |
-| `npcs/decimo.png` | Décimo, escriba del Gremio | thin young man, narrow face, tired eyes, wax tablet under the arm, stylus behind the ear, faded blue tunic |
-| `npcs/marco.png` | Marco, mensajero de la casa | wiry man in his twenties, cocky half smile, sunburnt, curly black hair, travel cloak thrown over one shoulder |
-| `npcs/sexto.png` | Sexto, centurión de la Puerta Capena | stern centurion in his forties, transverse red crest on the helmet, chain mail, vine staff, heavy jaw, broken nose |
-| `npcs/fulvia.png` | Fulvia, matrona del Palatino | patrician woman in her forties, elaborate braided hair with pins, deep violet palla, gold earrings, measuring gaze |
-| `npcs/rufo.png` | Rufo, barquero del Muelle Viejo | heavy-set boatman, red beard, missing tooth, rope coiled on the shoulder, wet linen tunic, lantern light |
-| `npcs/atia.png` | Atia, sacerdotisa de Mercurio | young priestess, calm face, white veil over dark hair, small caduceus pendant, incense smoke |
-| `npcs/cornelia.png` | Cornelia, viuda de un mensajero | woman in her thirties, mourning grey stola, sharp eyes, a messenger's bronze badge as a necklace |
-| `npcs/claudius.png` | Claudius, senador | senator in his sixties, toga with broad purple stripe, thin smile, heavy signet ring, receding white hair |
-| `npcs/lucius.png` | Lucius, tabernero del Buey | innkeeper in his fifties, bald, thick forearms, leather apron, suspicious squint, clay cup in hand |
-| `npcs/petro.png` | Petro, senador rival | plump senator, rosy cheeks, rings on every finger, laurel-patterned toga border, politician smile |
-| `npcs/viuda.png` | la Viuda, dueña de La Loba Dorada | older woman, silver hair in a severe bun, black stola, gold she-wolf brooch, candlelit tavern behind |
-| `npcs/aufidio.png` | Aufidio, centurión de la Decimotercera | weathered centurion in his late forties, grey stubble, Gallic campaign scars on the forearms, phalerae on a leather harness, vine staff, tired honest eyes |
+| `npcs/varus.jpg` | Varus, jefe de la casa de postas | man in his fifties, broad shoulders, close-cropped grey hair, old scar across the chin, plain dark wool tunic, ink-stained fingers |
+| `npcs/decimo.jpg` | Décimo, escriba del Gremio | thin young man, narrow face, tired eyes, wax tablet under the arm, stylus behind the ear, faded blue tunic |
+| `npcs/marco.jpg` | Marco, mensajero de la casa | wiry man in his twenties, cocky half smile, sunburnt, curly black hair, travel cloak thrown over one shoulder |
+| `npcs/sexto.jpg` | Sexto, centurión de la Puerta Capena | stern centurion in his forties, transverse red crest on the helmet, chain mail, vine staff, heavy jaw, broken nose |
+| `npcs/fulvia.jpg` | Fulvia, matrona del Palatino | patrician woman in her forties, elaborate braided hair with pins, deep violet palla, gold earrings, measuring gaze |
+| `npcs/rufo.jpg` | Rufo, barquero del Muelle Viejo | heavy-set boatman, red beard, missing tooth, rope coiled on the shoulder, wet linen tunic, lantern light |
+| `npcs/atia.jpg` | Atia, sacerdotisa de Mercurio | young priestess, calm face, white veil over dark hair, small caduceus pendant, incense smoke |
+| `npcs/cornelia.jpg` | Cornelia, viuda de un mensajero | woman in her thirties, mourning grey stola, sharp eyes, a messenger's bronze badge as a necklace |
+| `npcs/claudius.jpg` | Claudius, senador | senator in his sixties, toga with broad purple stripe, thin smile, heavy signet ring, receding white hair |
+| `npcs/lucius.jpg` | Lucius, tabernero del Buey | innkeeper in his fifties, bald, thick forearms, leather apron, suspicious squint, clay cup in hand |
+| `npcs/petro.jpg` | Petro, senador rival | plump senator, rosy cheeks, rings on every finger, laurel-patterned toga border, politician smile |
+| `npcs/viuda.jpg` | la Viuda, dueña de La Loba Dorada | older woman, silver hair in a severe bun, black stola, gold she-wolf brooch, candlelit tavern behind |
+| `npcs/aufidio.jpg` | Aufidio, centurión de la Decimotercera | weathered centurion in his late forties, grey stubble, Gallic campaign scars on the forearms, phalerae on a leather harness, vine staff, tired honest eyes |
 
 ## 8. Eventos puntuales (opcional)
 

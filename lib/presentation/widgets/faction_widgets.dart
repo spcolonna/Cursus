@@ -58,7 +58,7 @@ class FactionBadge extends StatelessWidget {
 }
 
 // ─── Retrato de NPC ───────────────────────────────────────────────────────────
-/// Retrato del personaje (`assets/art/npcs/<id>.png`) en un medallón con el
+/// Retrato del personaje (`assets/art/npcs/<id>.jpg`) en un medallón con el
 /// borde de su facción. Sin ilustración, la inicial.
 class NpcPortrait extends StatelessWidget {
   final String name;

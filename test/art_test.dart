@@ -45,7 +45,7 @@ void main() {
 
     test('las rutas de cada pieza siguen la convención', () {
       expect(ArtPaths.event('evt_storm'), 'assets/art/events/evt_storm.jpg');
-      expect(ArtPaths.npc('varus'), 'assets/art/npcs/varus.png');
+      expect(ArtPaths.npc('varus'), 'assets/art/npcs/varus.jpg');
       expect(ArtPaths.story('claudius_1'), 'assets/art/story/claudius_1.jpg');
       expect(ArtPaths.ending('end_varus'), 'assets/art/endings/end_varus.jpg');
     });

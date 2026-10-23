@@ -13,8 +13,8 @@ de referencia. Este archivo sale de esa especificación: si cambia una pieza all
 - **Adjuntos:** cada bloque dice qué imágenes ya generadas adjuntar al mensaje. `road` es la referencia de estilo de
   todo el juego y los retratos son la referencia de cada personaje. Por eso el orden importa: bloque 1, después 2 y
   3 (retratos), después el resto.
-- ChatGPT no les pone nombre: salen en el orden de la lista. Guardá cada PNG en `art_raw/` con el nombre que figura
-  en `Image N — <nombre>` (por ejemplo `art_raw/road.png`) y pedile a Claude que las integre. También podés correr
+- ChatGPT no les pone nombre: salen en el orden de la lista. Guardá cada PNG en `assets/art_raw/` con el nombre que figura
+  en `Image N — <nombre>` (por ejemplo `assets/art_raw/road.png`) y pedile a Claude que las integre. También podés correr
   vos los comandos de cada bloque: `tool/process_art.py` recorta a la proporción final, escala, comprime y deja el
   archivo con el nombre que busca el juego.
 - Si una sale mal, regenerala sola: copiá su párrafo `Image N — …` del bloque y pegalo en una conversación nueva con
@@ -32,19 +32,56 @@ tienda a 2:1).
 
 | Bloque | Qué | Carpeta final | Imágenes | Estado |
 |---|---|---|---|---|
-| 1 | Escenarios de eventos | `assets/art/scenes/` | 10 | ⬜ |
-| 2 | Retratos (1 de 2) | `assets/art/npcs/` | 7 | ⬜ |
-| 3 | Retratos (2 de 2) | `assets/art/npcs/` | 6 | ⬜ |
-| 4 | Capítulos — Arco 1 «La sombra del Senado» | `assets/art/story/` | 9 | ⬜ |
-| 5 | Capítulos — Arco 2 «La taberna del Buey» | `assets/art/story/` | 9 | ⬜ |
-| 6 | Capítulos — Arco 3 «El águila de la Decimotercera» | `assets/art/story/` | 10 | ⬜ |
-| 7 | Finales de arco + gráfico de Google Play | `assets/store/ + assets/art/endings/` | 10 | ⬜ |
+| 1 | Escenarios de eventos | `assets/art/scenes/` | 10 | ✅ |
+| 2 | Retratos (1 de 2) | `assets/art/npcs/` | 7 | ✅ |
+| 3 | Retratos (2 de 2) | `assets/art/npcs/` | 6 | ✅ |
+| 4 | Capítulos — Arco 1 «La sombra del Senado» | `assets/art/story/` | 9 | ✅ |
+| 5 | Capítulos — Arco 2 «La taberna del Buey» | `assets/art/story/` | 9 | ✅ |
+| 6 | Capítulos — Arco 3 «El águila de la Decimotercera» | `assets/art/story/` | 10 | 9 de 10: falta `legion_1` |
+| 7 | Finales de arco + gráfico de Google Play | `assets/store/ + assets/art/endings/` | 10 | ✅ |
 
 Total: 61 imágenes (63 archivos: la del capítulo `lucius_1` se usa en sus tres caminos).
 
+Integradas al 2026-10-23: 60 de 61. Los retratos se guardan como JPG (fondo opaco, 10 veces más livianos que PNG).
+
+## Pendiente — `legion_1` (1)
+
+La única que falta. ChatGPT la salteó al correr el bloque 6. Es un mensaje aparte, listo para pegar.
+
+**Adjuntá:** `road` y el retrato `varus` (los originales ya no están en `assets/art_raw/`: exportalos desde
+`assets/art/scenes/road.jpg` y `assets/art/npcs/varus.jpg`).
+
+Guardala como `assets/art_raw/legion_1.png` y pedile a Claude que la integre, o corré:
+
+```bash
+python3 tool/process_art.py assets/art_raw/legion_1.png story legion_1
+```
+
+```
+Generate exactly 1 image. Start generating immediately, without asking questions or requesting confirmation. One single image, not a grid or collage.
+
+Create a LANDSCAPE image with a 3:2 aspect ratio (1536×1024), fully opaque.
+
+PURPOSE: The wide cinematic banner of a story chapter of a narrative mobile game set in Rome and Italy in 50 BC, about a civilian courier of a messenger guild. It will be cropped to a thin 21:9 strip: only the horizontal band between 18% and 82% of the height survives.
+
+SUBJECT: In the Guild's post house, Varus places a sealed contract (a tablet with a red seal) on a heavy wooden table in front of the messenger, without smiling; on the wall, a painted map of Roman roads (lines only, no writing); a window shows a cold winter sky.
+
+COMPOSITION: Establishing shot of one place and one moment, one or two prominent figures at most, medium-small and readable as silhouettes. Keep everything important inside the central 85% horizontally and inside the band between 20% and 80% of the height; the top and bottom 20% are only sky, ground or plain wall.
+
+TIME OF DAY: INTERIOR (post house, daylight from a window). Interior: no sky; warm ochre lamplight or torchlight with deep ink shadows; walls in parchment, Pompeian red or ochre.
+
+CONTINUITY: People in the image: Varus; the messenger. THE MESSENGER is the player character, so they must NEVER have a visible face or a defined gender: always seen from behind, in profile under the hood, in silhouette or small in the distance, face hidden or in shadow. Outfit: cinnabar-red (#A8322D) hooded paenula travel cloak, plain parchment tunic, wide-brimmed straw petasos hat (worn or hanging on the back), leather shoulder satchel with a red wax seal on the flap, sturdy sandals. Slim, medium height, ambiguous build. No armor, no weapon in hand. VARUS is a recurring character: man in his fifties, broad shoulders, close-cropped grey hair, old pale scar across the chin, plain dark brown wool tunic, ink-stained fingers; stern but paternal, no beard. Any other person is generic and must not resemble the recurring characters.
+
+REFERENCES: If images are attached, match the attached road scene (style master) for style, palette, line weight and texture; and the attached portrait of VARUS for face, hair, age and clothes.
+
+STYLE: Digital illustration imitating a Pompeian fresco, in flat layered silhouettes: simple bold shapes in 3 to 5 depth layers, two-tone shading at most per shape (no airbrush gradients; only the sky may have a gentle gradient), thin ink-brown contour lines (#231A16) on figures, buildings and important objects, matte mineral pigments on lime plaster with a very subtle plaster grain (the image must not look damaged, old or dirty), distant layers fade toward the horizon color. Figures stylized but naturally proportioned (about 7 heads tall) with simple faces like Roman wall paintings or Fayum portraits: almond eyes, straight noses, small mouths, restrained expressions. One clear light direction, flat shadow shapes. Strict palette: lime white #F2E8D5, warm parchment #E6D8BE, yellow ochre #D9A441 (gold is always painted as ochre, never metallic), cinnabar red #A8322D, Egyptian blue #2F5D9E, verdigris #3F7F72, Tyrian purple #6B3E6E (sparingly), olive #6E7F4E, cypress green #2C4231, ink brown-black #231A16. Mood: quiet, slightly mysterious, warm even at night, adult storybook; danger is suggested, never shown. Late Roman Republic, Italy, 50 BC, historically grounded. Not cartoonish, not anime, not a photograph, not a 3D render.
+
+DO NOT INCLUDE: any text, letters, numbers or inscriptions anywhere (signs, scrolls, maps, seals, pediments, milestones; writing is only sealed or illegible marks); logo, watermark or signature; frame, border, white margin, rounded corners, vignette, paper edge or a photo of a fresco on a wall (the painting fills the canvas edge to edge); transparency or checkerboard; a grid, collage or diptych; lens effects (bokeh, flare, blur); medieval elements (castles, Gothic arches, plate armor, knights, heraldic shields, horned helmets), stirrups, crossbows, banners with letters, crosses, paper books with bound pages, glass window panes, modern objects, fantasy creatures, magic glows, gore, blood, nudity; metallic gold, neon, navy-and-gold combinations.
+```
+
 ## Bloque 1 — Escenarios de eventos (10)
 
-Archivos, en orden: `road.png`, `patrol.png`, `river.png`, `storm.png`, `bandits.png`, `temple.png`, `forum.png`, `inn.png`, `port.png`, `subura.png`. Guardalos en `art_raw/`.
+Archivos, en orden: `road.png`, `patrol.png`, `river.png`, `storm.png`, `bandits.png`, `temple.png`, `forum.png`, `inn.png`, `port.png`, `subura.png`. Guardalos en `assets/art_raw/`.
 
 **Adjuntá:** Nada (la primera, `road`, define el estilo). Si se aleja del estilo, regenerá `road` sola antes de seguir.
 
@@ -235,21 +272,21 @@ DO NOT INCLUDE: any text, letters, numbers or inscriptions anywhere (signs, scro
 **Integrar** (desde `messenger_app/`):
 
 ```bash
-python3 tool/process_art.py art_raw/road.png scene road
-python3 tool/process_art.py art_raw/patrol.png scene patrol
-python3 tool/process_art.py art_raw/river.png scene river
-python3 tool/process_art.py art_raw/storm.png scene storm
-python3 tool/process_art.py art_raw/bandits.png scene bandits
-python3 tool/process_art.py art_raw/temple.png scene temple
-python3 tool/process_art.py art_raw/forum.png scene forum
-python3 tool/process_art.py art_raw/inn.png scene inn
-python3 tool/process_art.py art_raw/port.png scene port
-python3 tool/process_art.py art_raw/subura.png scene subura
+python3 tool/process_art.py assets/art_raw/road.png scene road
+python3 tool/process_art.py assets/art_raw/patrol.png scene patrol
+python3 tool/process_art.py assets/art_raw/river.png scene river
+python3 tool/process_art.py assets/art_raw/storm.png scene storm
+python3 tool/process_art.py assets/art_raw/bandits.png scene bandits
+python3 tool/process_art.py assets/art_raw/temple.png scene temple
+python3 tool/process_art.py assets/art_raw/forum.png scene forum
+python3 tool/process_art.py assets/art_raw/inn.png scene inn
+python3 tool/process_art.py assets/art_raw/port.png scene port
+python3 tool/process_art.py assets/art_raw/subura.png scene subura
 ```
 
 ## Bloque 2 — Retratos (1 de 2) (7)
 
-Archivos, en orden: `varus.png`, `decimo.png`, `marco.png`, `sexto.png`, `fulvia.png`, `rufo.png`, `atia.png`. Guardalos en `art_raw/`.
+Archivos, en orden: `varus.png`, `decimo.png`, `marco.png`, `sexto.png`, `fulvia.png`, `rufo.png`, `atia.png`. Guardalos en `assets/art_raw/`.
 
 **Adjuntá:** `road`.
 
@@ -365,18 +402,18 @@ DO NOT INCLUDE: any text, letters, numbers or inscriptions anywhere (signs, scro
 **Integrar** (desde `messenger_app/`):
 
 ```bash
-python3 tool/process_art.py art_raw/varus.png npc varus
-python3 tool/process_art.py art_raw/decimo.png npc decimo
-python3 tool/process_art.py art_raw/marco.png npc marco
-python3 tool/process_art.py art_raw/sexto.png npc sexto
-python3 tool/process_art.py art_raw/fulvia.png npc fulvia
-python3 tool/process_art.py art_raw/rufo.png npc rufo
-python3 tool/process_art.py art_raw/atia.png npc atia
+python3 tool/process_art.py assets/art_raw/varus.png npc varus
+python3 tool/process_art.py assets/art_raw/decimo.png npc decimo
+python3 tool/process_art.py assets/art_raw/marco.png npc marco
+python3 tool/process_art.py assets/art_raw/sexto.png npc sexto
+python3 tool/process_art.py assets/art_raw/fulvia.png npc fulvia
+python3 tool/process_art.py assets/art_raw/rufo.png npc rufo
+python3 tool/process_art.py assets/art_raw/atia.png npc atia
 ```
 
 ## Bloque 3 — Retratos (2 de 2) (6)
 
-Archivos, en orden: `cornelia.png`, `claudius.png`, `lucius.png`, `petro.png`, `viuda.png`, `aufidio.png`. Guardalos en `art_raw/`.
+Archivos, en orden: `cornelia.png`, `claudius.png`, `lucius.png`, `petro.png`, `viuda.png`, `aufidio.png`. Guardalos en `assets/art_raw/`.
 
 **Adjuntá:** `road`.
 
@@ -477,17 +514,17 @@ DO NOT INCLUDE: any text, letters, numbers or inscriptions anywhere (signs, scro
 **Integrar** (desde `messenger_app/`):
 
 ```bash
-python3 tool/process_art.py art_raw/cornelia.png npc cornelia
-python3 tool/process_art.py art_raw/claudius.png npc claudius
-python3 tool/process_art.py art_raw/lucius.png npc lucius
-python3 tool/process_art.py art_raw/petro.png npc petro
-python3 tool/process_art.py art_raw/viuda.png npc viuda
-python3 tool/process_art.py art_raw/aufidio.png npc aufidio
+python3 tool/process_art.py assets/art_raw/cornelia.png npc cornelia
+python3 tool/process_art.py assets/art_raw/claudius.png npc claudius
+python3 tool/process_art.py assets/art_raw/lucius.png npc lucius
+python3 tool/process_art.py assets/art_raw/petro.png npc petro
+python3 tool/process_art.py assets/art_raw/viuda.png npc viuda
+python3 tool/process_art.py assets/art_raw/aufidio.png npc aufidio
 ```
 
 ## Bloque 4 — Capítulos — Arco 1 «La sombra del Senado» (9)
 
-Archivos, en orden: `claudius_1.png`, `claudius_2.png`, `claudius_3.png`, `claudius_4_varus.png`, `claudius_4_claudius.png`, `claudius_4_underworld.png`, `claudius_5_varus.png`, `claudius_5_claudius.png`, `claudius_5_underworld.png`. Guardalos en `art_raw/`.
+Archivos, en orden: `claudius_1.png`, `claudius_2.png`, `claudius_3.png`, `claudius_4_varus.png`, `claudius_4_claudius.png`, `claudius_4_underworld.png`, `claudius_5_varus.png`, `claudius_5_claudius.png`, `claudius_5_underworld.png`. Guardalos en `assets/art_raw/`.
 
 **Adjuntá:** `road` y los retratos `viuda`, `claudius`, `varus`.
 
@@ -669,20 +706,20 @@ DO NOT INCLUDE: any text, letters, numbers or inscriptions anywhere (signs, scro
 **Integrar** (desde `messenger_app/`):
 
 ```bash
-python3 tool/process_art.py art_raw/claudius_1.png story claudius_1
-python3 tool/process_art.py art_raw/claudius_2.png story claudius_2
-python3 tool/process_art.py art_raw/claudius_3.png story claudius_3
-python3 tool/process_art.py art_raw/claudius_4_varus.png story claudius_4_varus
-python3 tool/process_art.py art_raw/claudius_4_claudius.png story claudius_4_claudius
-python3 tool/process_art.py art_raw/claudius_4_underworld.png story claudius_4_underworld
-python3 tool/process_art.py art_raw/claudius_5_varus.png story claudius_5_varus
-python3 tool/process_art.py art_raw/claudius_5_claudius.png story claudius_5_claudius
-python3 tool/process_art.py art_raw/claudius_5_underworld.png story claudius_5_underworld
+python3 tool/process_art.py assets/art_raw/claudius_1.png story claudius_1
+python3 tool/process_art.py assets/art_raw/claudius_2.png story claudius_2
+python3 tool/process_art.py assets/art_raw/claudius_3.png story claudius_3
+python3 tool/process_art.py assets/art_raw/claudius_4_varus.png story claudius_4_varus
+python3 tool/process_art.py assets/art_raw/claudius_4_claudius.png story claudius_4_claudius
+python3 tool/process_art.py assets/art_raw/claudius_4_underworld.png story claudius_4_underworld
+python3 tool/process_art.py assets/art_raw/claudius_5_varus.png story claudius_5_varus
+python3 tool/process_art.py assets/art_raw/claudius_5_claudius.png story claudius_5_claudius
+python3 tool/process_art.py assets/art_raw/claudius_5_underworld.png story claudius_5_underworld
 ```
 
 ## Bloque 5 — Capítulos — Arco 2 «La taberna del Buey» (9)
 
-Archivos, en orden: `lucius_1.png`, `lucius_2.png`, `lucius_3.png`, `lucius_4_legion.png`, `lucius_4_book.png`, `lucius_4_family.png`, `lucius_5_legion.png`, `lucius_5_book.png`, `lucius_5_family.png`. Guardalos en `art_raw/`.
+Archivos, en orden: `lucius_1.png`, `lucius_2.png`, `lucius_3.png`, `lucius_4_legion.png`, `lucius_4_book.png`, `lucius_4_family.png`, `lucius_5_legion.png`, `lucius_5_book.png`, `lucius_5_family.png`. Guardalos en `assets/art_raw/`.
 
 **Adjuntá:** `road` y los retratos `lucius`, `sexto`, `viuda`.
 
@@ -864,22 +901,22 @@ DO NOT INCLUDE: any text, letters, numbers or inscriptions anywhere (signs, scro
 **Integrar** (desde `messenger_app/`):
 
 ```bash
-python3 tool/process_art.py art_raw/lucius_1.png story lucius_1_varus
-python3 tool/process_art.py art_raw/lucius_1.png story lucius_1_claudius
-python3 tool/process_art.py art_raw/lucius_1.png story lucius_1_underworld
-python3 tool/process_art.py art_raw/lucius_2.png story lucius_2
-python3 tool/process_art.py art_raw/lucius_3.png story lucius_3
-python3 tool/process_art.py art_raw/lucius_4_legion.png story lucius_4_legion
-python3 tool/process_art.py art_raw/lucius_4_book.png story lucius_4_book
-python3 tool/process_art.py art_raw/lucius_4_family.png story lucius_4_family
-python3 tool/process_art.py art_raw/lucius_5_legion.png story lucius_5_legion
-python3 tool/process_art.py art_raw/lucius_5_book.png story lucius_5_book
-python3 tool/process_art.py art_raw/lucius_5_family.png story lucius_5_family
+python3 tool/process_art.py assets/art_raw/lucius_1.png story lucius_1_varus
+python3 tool/process_art.py assets/art_raw/lucius_1.png story lucius_1_claudius
+python3 tool/process_art.py assets/art_raw/lucius_1.png story lucius_1_underworld
+python3 tool/process_art.py assets/art_raw/lucius_2.png story lucius_2
+python3 tool/process_art.py assets/art_raw/lucius_3.png story lucius_3
+python3 tool/process_art.py assets/art_raw/lucius_4_legion.png story lucius_4_legion
+python3 tool/process_art.py assets/art_raw/lucius_4_book.png story lucius_4_book
+python3 tool/process_art.py assets/art_raw/lucius_4_family.png story lucius_4_family
+python3 tool/process_art.py assets/art_raw/lucius_5_legion.png story lucius_5_legion
+python3 tool/process_art.py assets/art_raw/lucius_5_book.png story lucius_5_book
+python3 tool/process_art.py assets/art_raw/lucius_5_family.png story lucius_5_family
 ```
 
 ## Bloque 6 — Capítulos — Arco 3 «El águila de la Decimotercera» (10)
 
-Archivos, en orden: `legion_1_sexto.png`, `legion_1.png`, `legion_2.png`, `legion_3.png`, `legion_4_caesar.png`, `legion_4_senate.png`, `legion_4_guild.png`, `legion_5_caesar.png`, `legion_5_senate.png`, `legion_5_guild.png`. Guardalos en `art_raw/`.
+Archivos, en orden: `legion_1_sexto.png`, `legion_1.png`, `legion_2.png`, `legion_3.png`, `legion_4_caesar.png`, `legion_4_senate.png`, `legion_4_guild.png`, `legion_5_caesar.png`, `legion_5_senate.png`, `legion_5_guild.png`. Guardalos en `assets/art_raw/`.
 
 **Adjuntá:** `road` y los retratos `sexto`, `varus`, `aufidio`, `claudius`.
 
@@ -1080,21 +1117,21 @@ DO NOT INCLUDE: any text, letters, numbers or inscriptions anywhere (signs, scro
 **Integrar** (desde `messenger_app/`):
 
 ```bash
-python3 tool/process_art.py art_raw/legion_1_sexto.png story legion_1_sexto
-python3 tool/process_art.py art_raw/legion_1.png story legion_1
-python3 tool/process_art.py art_raw/legion_2.png story legion_2
-python3 tool/process_art.py art_raw/legion_3.png story legion_3
-python3 tool/process_art.py art_raw/legion_4_caesar.png story legion_4_caesar
-python3 tool/process_art.py art_raw/legion_4_senate.png story legion_4_senate
-python3 tool/process_art.py art_raw/legion_4_guild.png story legion_4_guild
-python3 tool/process_art.py art_raw/legion_5_caesar.png story legion_5_caesar
-python3 tool/process_art.py art_raw/legion_5_senate.png story legion_5_senate
-python3 tool/process_art.py art_raw/legion_5_guild.png story legion_5_guild
+python3 tool/process_art.py assets/art_raw/legion_1_sexto.png story legion_1_sexto
+python3 tool/process_art.py assets/art_raw/legion_1.png story legion_1
+python3 tool/process_art.py assets/art_raw/legion_2.png story legion_2
+python3 tool/process_art.py assets/art_raw/legion_3.png story legion_3
+python3 tool/process_art.py assets/art_raw/legion_4_caesar.png story legion_4_caesar
+python3 tool/process_art.py assets/art_raw/legion_4_senate.png story legion_4_senate
+python3 tool/process_art.py assets/art_raw/legion_4_guild.png story legion_4_guild
+python3 tool/process_art.py assets/art_raw/legion_5_caesar.png story legion_5_caesar
+python3 tool/process_art.py assets/art_raw/legion_5_senate.png story legion_5_senate
+python3 tool/process_art.py assets/art_raw/legion_5_guild.png story legion_5_guild
 ```
 
 ## Bloque 7 — Finales de arco + gráfico de Google Play (10)
 
-Archivos, en orden: `end_varus.png`, `end_claudius.png`, `end_underworld.png`, `end_lucius_legion.png`, `end_lucius_book.png`, `end_lucius_family.png`, `end_legion_caesar.png`, `end_legion_senate.png`, `end_legion_guild.png`, `feature_graphic.png`. Guardalos en `art_raw/`.
+Archivos, en orden: `end_varus.png`, `end_claudius.png`, `end_underworld.png`, `end_lucius_legion.png`, `end_lucius_book.png`, `end_lucius_family.png`, `end_legion_caesar.png`, `end_legion_senate.png`, `end_legion_guild.png`, `feature_graphic.png`. Guardalos en `assets/art_raw/`.
 
 **Adjuntá:** `road` y los retratos `varus`, `claudius`, `lucius`.
 
@@ -1295,14 +1332,14 @@ DO NOT INCLUDE: any text, letters, numbers or inscriptions anywhere (signs, scro
 **Integrar** (desde `messenger_app/`):
 
 ```bash
-python3 tool/process_art.py art_raw/end_varus.png ending end_varus
-python3 tool/process_art.py art_raw/end_claudius.png ending end_claudius
-python3 tool/process_art.py art_raw/end_underworld.png ending end_underworld
-python3 tool/process_art.py art_raw/end_lucius_legion.png ending end_lucius_legion
-python3 tool/process_art.py art_raw/end_lucius_book.png ending end_lucius_book
-python3 tool/process_art.py art_raw/end_lucius_family.png ending end_lucius_family
-python3 tool/process_art.py art_raw/end_legion_caesar.png ending end_legion_caesar
-python3 tool/process_art.py art_raw/end_legion_senate.png ending end_legion_senate
-python3 tool/process_art.py art_raw/end_legion_guild.png ending end_legion_guild
-python3 tool/process_art.py art_raw/feature_graphic.png feature
+python3 tool/process_art.py assets/art_raw/end_varus.png ending end_varus
+python3 tool/process_art.py assets/art_raw/end_claudius.png ending end_claudius
+python3 tool/process_art.py assets/art_raw/end_underworld.png ending end_underworld
+python3 tool/process_art.py assets/art_raw/end_lucius_legion.png ending end_lucius_legion
+python3 tool/process_art.py assets/art_raw/end_lucius_book.png ending end_lucius_book
+python3 tool/process_art.py assets/art_raw/end_lucius_family.png ending end_lucius_family
+python3 tool/process_art.py assets/art_raw/end_legion_caesar.png ending end_legion_caesar
+python3 tool/process_art.py assets/art_raw/end_legion_senate.png ending end_legion_senate
+python3 tool/process_art.py assets/art_raw/end_legion_guild.png ending end_legion_guild
+python3 tool/process_art.py assets/art_raw/feature_graphic.png feature
 ```

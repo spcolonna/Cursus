@@ -16,7 +16,7 @@ class ArtPaths {
   /// Escenario genérico por categoría: lo usan los eventos sin ilustración.
   static String scene(String category) => 'assets/art/scenes/$category.jpg';
   static String story(String storyId) => 'assets/art/story/$storyId.jpg';
-  static String npc(String npcId) => 'assets/art/npcs/$npcId.png';
+  static String npc(String npcId) => 'assets/art/npcs/$npcId.jpg';
   static String ending(String endingId) => 'assets/art/endings/$endingId.jpg';
 }
 

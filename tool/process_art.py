@@ -7,7 +7,7 @@ la comprime y la guarda con el nombre que busca ArtCatalog.
     python3 tool/process_art.py <imagen> <tipo> <id> [--focus 0.0-1.0]
 
 Tipos: scene, event (1080×1920 JPG), story (1680×720 JPG), ending
-(1080×1350 JPG), npc (768×768 PNG),
+(1080×1350 JPG), npc (768×768 JPG),
 feature (1024×500 JPG), key_iphone (1290×2796 JPG), key_ipad (2048×2732 JPG),
 icon (1024×1024 PNG). --focus mueve el recorte vertical (0 = arriba,
 0.5 = centro, 1 = abajo); útil para no cortar la cabeza de un retrato.
@@ -24,7 +24,7 @@ KINDS = {
     'event': ('assets/art/events/{id}.jpg', (1080, 1920)),
     'story': ('assets/art/story/{id}.jpg', (1680, 720)),
     'ending': ('assets/art/endings/{id}.jpg', (1080, 1350)),
-    'npc': ('assets/art/npcs/{id}.png', (768, 768)),
+    'npc': ('assets/art/npcs/{id}.jpg', (768, 768)),
     'feature': ('assets/store/feature_graphic.jpg', (1024, 500)),
     'key_iphone': ('assets/store/key_art_iphone.jpg', (1290, 2796)),
     'key_ipad': ('assets/store/key_art_ipad.jpg', (2048, 2732)),

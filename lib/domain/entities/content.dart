@@ -191,7 +191,7 @@ class RealEventConfig {
 }
 
 /// Personaje recurrente con retrato. El retrato va en
-/// `assets/art/npcs/<id>.png`; sin archivo se dibuja la inicial.
+/// `assets/art/npcs/<id>.jpg`; sin archivo se dibuja la inicial.
 class NpcDef {
   final String id;
   final String name;

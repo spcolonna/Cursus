@@ -1,7 +1,7 @@
 // lib/data/npc_content.dart
 //
 // Personajes con retrato. El `id` es el nombre del archivo en
-// `assets/art/npcs/<id>.png` y lo que usan `RealEventConfig.npcId` y los
+// `assets/art/npcs/<id>.jpg` y lo que usan `RealEventConfig.npcId` y los
 // encargos semanales (por nombre, vía `NpcDef.idFromName`).
 // `look` alimenta el prompt del retrato en docs/ART_PROMPTS.md.
 
