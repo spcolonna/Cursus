@@ -44,10 +44,13 @@ class IapProducts {
       };
 }
 
+/// Por qué no se pudo abrir la compra. La UI lo traduce.
+enum IapPurchaseError { startFailed, noResponse, storeUnavailable }
+
 class IapPurchaseResult {
   final bool success;
   final String? productId;
-  final String? error;
+  final IapPurchaseError? error;
   final bool usedSandbox;
 
   const IapPurchaseResult({
@@ -165,13 +168,12 @@ class IapService {
         final ok = await _iap.buyConsumable(purchaseParam: param);
         if (!ok) {
           return const IapPurchaseResult(
-              success: false, error: 'No se pudo iniciar la compra.');
+              success: false, error: IapPurchaseError.startFailed);
         }
       } catch (e) {
         debugPrint('IAP buy failed: $e');
         return const IapPurchaseResult(
-            success: false,
-            error: 'La tienda no respondió. Probá de nuevo en un rato.');
+            success: false, error: IapPurchaseError.noResponse);
       }
       // El crédito llega por purchaseStream y se avisa por [updates].
       return IapPurchaseResult(success: true, productId: productId);
@@ -188,7 +190,7 @@ class IapService {
 
     return const IapPurchaseResult(
       success: false,
-      error: 'La tienda no está disponible ahora. Probá de nuevo en un rato.',
+      error: IapPurchaseError.storeUnavailable,
     );
   }
 

@@ -285,9 +285,10 @@ void main() {
       await tester.pump();
       expect(find.text('Tu partida se guarda en este teléfono.'),
           findsOneWidget);
-      await tester.tap(find.text('Borrar cuenta y datos'));
+      await tester.tap(find.text('Borrar partida'));
       await tester.pumpAndSettle();
       expect(find.text('¿Borrar todo?'), findsOneWidget);
+      expect(find.textContaining('de este teléfono'), findsOneWidget);
       await tester.tap(find.text('Cancelar'));
       await tester.pumpAndSettle();
       expect((await SharedPreferences.getInstance()).getString('user_name'),

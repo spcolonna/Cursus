@@ -328,6 +328,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cloudDeleteAccount => 'Delete account and data';
 
   @override
+  String get cloudDeleteLocal => 'Delete save';
+
+  @override
+  String get cloudDeleteLocalBody =>
+      'Your messengers, progress and coins on this phone will be deleted. This can\'t be undone.';
+
+  @override
   String get cloudStatusLocal => 'Your game is saved on this phone.';
 
   @override
@@ -1659,6 +1666,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shopCanceled => 'Purchase canceled.';
+
+  @override
+  String get shopStartFailed => 'The purchase couldn\'t be started.';
+
+  @override
+  String get shopNoResponse =>
+      'The store didn\'t respond. Try again in a while.';
+
+  @override
+  String get shopStoreUnavailable =>
+      'The store isn\'t available right now. Try again in a while.';
 
   @override
   String get shopFailed =>

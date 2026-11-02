@@ -65,9 +65,10 @@ final remoteFlagsSourceProvider = Provider<RemoteFlagsSource>((_) =>
 /// Los ajustes de esta sesión: se fijan al arrancar y no cambian en medio
 /// de una partida.
 // ─── Cuenta y guardado en la nube ─────────────────────────────────────────────
-/// Sin Firebase (tests, config rota) queda deshabilitado: todo sigue local.
+/// Sin Firebase (tests, config rota) o con la nube apagada
+/// ([kCloudSaveReady]) queda deshabilitado: todo sigue local.
 final cloudSyncProvider = Provider<CloudSyncService>((ref) {
-  final service = firebaseReady
+  final service = firebaseReady && kCloudSaveReady
       ? CloudSyncService(
           account: FirebaseCloudAccount(), remote: FirestoreSaveRemote())
       : CloudSyncService(account: null, remote: null);

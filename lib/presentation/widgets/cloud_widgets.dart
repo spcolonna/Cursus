@@ -175,7 +175,8 @@ class _AccountCardState extends ConsumerState<AccountCard> {
   Future<void> _delete() async {
     final ok = await showGameDialog<bool>(
       context,
-      builder: (_) => const _DeleteDialog(),
+      builder: (_) =>
+          _DeleteDialog(cloud: ref.read(cloudSyncProvider).available),
     );
     if (ok != true || !mounted) return;
     setState(() => _busy = true);
@@ -236,7 +237,7 @@ class _AccountCardState extends ConsumerState<AccountCard> {
         ],
         const SizedBox(height: AppSpacing.md),
         GameButton(
-          label: l.cloudDeleteAccount,
+          label: sync.available ? l.cloudDeleteAccount : l.cloudDeleteLocal,
           icon: Icons.delete_forever_outlined,
           fontSize: 14,
           variant: GameButtonVariant.ghost,
@@ -276,7 +277,9 @@ class _StatusLine extends StatelessWidget {
 }
 
 class _DeleteDialog extends StatelessWidget {
-  const _DeleteDialog();
+  /// Si hay cuenta en la nube que borrar, o solo la partida del teléfono.
+  final bool cloud;
+  const _DeleteDialog({required this.cloud});
 
   @override
   Widget build(BuildContext context) => GameDialog(
@@ -301,7 +304,9 @@ class _DeleteDialog extends StatelessWidget {
           ),
         ],
         child: Text(
-          AppLocalizations.of(context).cloudDeleteBody,
+          cloud
+              ? AppLocalizations.of(context).cloudDeleteBody
+              : AppLocalizations.of(context).cloudDeleteLocalBody,
           style: AppTextStyles.bodyMedium,
           textAlign: TextAlign.center,
         ),

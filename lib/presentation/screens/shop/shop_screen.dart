@@ -579,9 +579,14 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     if (!mounted) return;
 
     if (!result.success) {
-      showGameSnack(
-          context, result.error ?? AppLocalizations.of(context).shopCanceled,
-          isError: true);
+      final l = AppLocalizations.of(context);
+      final message = switch (result.error) {
+        IapPurchaseError.startFailed => l.shopStartFailed,
+        IapPurchaseError.noResponse => l.shopNoResponse,
+        IapPurchaseError.storeUnavailable => l.shopStoreUnavailable,
+        null => l.shopCanceled,
+      };
+      showGameSnack(context, message, isError: true);
       return;
     }
 

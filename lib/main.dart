@@ -12,6 +12,7 @@ import 'presentation/widgets/art_image.dart';
 import 'presentation/widgets/celebration_host.dart';
 import 'presentation/widgets/music_director.dart';
 import 'presentation/widgets/force_update_gate.dart';
+import 'presentation/widgets/widgets.dart' show TabletFrame;
 import 'infrastructure/firebase/firebase_setup.dart';
 import 'infrastructure/firebase/firebase_remote_flags.dart';
 import 'domain/entities/economy.dart';
@@ -168,11 +169,13 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
       // cielo (home, login) la cambian con su propio AnnotatedRegion.
       builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
-        child: MusicDirector(
-          router: appRouter,
-          child: ForceUpdateGate(
-            child: CelebrationHost(
-                router: appRouter, child: child ?? const SizedBox()),
+        child: TabletFrame(
+          child: MusicDirector(
+            router: appRouter,
+            child: ForceUpdateGate(
+              child: CelebrationHost(
+                  router: appRouter, child: child ?? const SizedBox()),
+            ),
           ),
         ),
       ),

@@ -533,3 +533,67 @@ class SectionHeader extends StatelessWidget {
     );
   }
 }
+// ─── TabletFrame — en iPad el juego se ve como una hoja apoyada en la mesa:
+// la UI se agranda un poco (se lee a la distancia del brazo) y el ancho se
+// limita para que las cards y los textos no se estiren de borde a borde.
+// En teléfonos no hace nada. Los avisos, diálogos y celebraciones caen
+// dentro de la hoja porque cuelgan del mismo Navigator.
+class TabletFrame extends StatelessWidget {
+  final Widget child;
+  const TabletFrame({super.key, required this.child});
+
+  /// Lado corto desde el que se considera tablet (iPad mini = 744).
+  static const tabletShortestSide = 700.0;
+
+  /// Cuánto se agranda la UI en tablet.
+  static const tabletScale = 1.2;
+
+  /// Ancho lógico máximo de la hoja (antes de agrandar).
+  static const maxPageWidth = 600.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    if (mq.size.shortestSide < tabletShortestSide) return child;
+
+    const s = tabletScale;
+    final logicalHeight = mq.size.height / s;
+    final logicalWidth = math.min(mq.size.width / s, maxPageWidth);
+    final page = MediaQuery(
+      data: mq.copyWith(
+        size: Size(logicalWidth, logicalHeight),
+        // Las imágenes se decodifican a la resolución agrandada: nítidas.
+        devicePixelRatio: mq.devicePixelRatio * s,
+        padding: mq.padding / s,
+        viewPadding: mq.viewPadding / s,
+        viewInsets: mq.viewInsets / s,
+        systemGestureInsets: mq.systemGestureInsets / s,
+      ),
+      child: child,
+    );
+
+    return ColoredBox(
+      color: AppColors.paperShade,
+      child: Center(
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            border: Border.symmetric(
+                vertical: BorderSide(color: AppColors.paperLine)),
+            boxShadow: [BoxShadow(color: AppColors.shadowSoft, blurRadius: 24)],
+          ),
+          child: SizedBox(
+            width: logicalWidth * s,
+            height: mq.size.height,
+            child: ClipRect(
+              child: FittedBox(
+                fit: BoxFit.fill,
+                child: SizedBox(
+                    width: logicalWidth, height: logicalHeight, child: page),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

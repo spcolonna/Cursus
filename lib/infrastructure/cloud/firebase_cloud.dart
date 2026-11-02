@@ -16,6 +16,12 @@ import '../../domain/repositories/repositories.dart';
 // bajados de nuevo; Apple, la cuenta de Apple Developer y el entitlement.
 // Mientras estén en false, la app no muestra esos botones.
 const kGoogleSignInReady = false;
+
+/// Guardado en la nube (cuenta anónima + Firestore). Apagado mientras el
+/// juego no tenga nada online: la partida vive solo en el teléfono y no se
+/// crea ninguna cuenta. Para prenderlo, habilitar el acceso anónimo en
+/// Firebase y desplegar firestore.rules (docs/CUENTAS.md).
+const kCloudSaveReady = false;
 const kAppleSignInReady = false;
 
 /// Proveedores que se pueden ofrecer en este dispositivo. En iOS, Apple

@@ -133,7 +133,8 @@ Implementado: cielo vivo según la hora real (home, splash, login, escenas, mapa
 También: avisos locales (eventos, entrega, ocioso, contratos; el tap abre la misión) y auto-resolución de eventos a los 60 min.
 
 Firebase (L1): cursus-dev en debug y cursus-prod en release; Crashlytics, Analytics y Remote Config (ver docs/ANALYTICS.md §7).
-Cuentas (L2): cuenta anónima, guardado en Firestore con elección de partida, borrar cuenta; Google/Apple listos en código, apagados hasta configurar la consola (docs/CUENTAS.md). Todo en plan Spark: nada de Cloud Functions.
+Cuentas (L2): cuenta anónima, guardado en Firestore con elección de partida, borrar cuenta; Google/Apple listos en código, apagados hasta configurar la consola (docs/CUENTAS.md). **La nube está apagada** (`kCloudSaveReady = false` en `firebase_cloud.dart`): mientras no haya nada online la partida vive solo en el teléfono y Ajustes ofrece "Borrar partida". Todo en plan Spark: nada de Cloud Functions.
+iPad: misma app, solo vertical y a pantalla completa; `TabletFrame` (`widgets/widgets.dart`) agranda la UI ×1,2 y la limita a una hoja de 600 de ancho centrada.
 Reloj confiable (L3): `GameClock` anclado a la hora del servidor (cabecera Date de HTTPS) y, sin red, al reloj monotónico del sistema.
 Contenido (L5): validador de todo el contenido (`test/content_validator_test.dart`: ids únicos, referencias, presupuesto de texto, nada muerto); el inglés irá como traducción encima, indexada por id (sin migrar la estructura a JSON).
 Idiomas (L6): español neutro en UI e inglés completo (UI, contenido, dominio, avisos); selector en Ajustes, por defecto el del teléfono.

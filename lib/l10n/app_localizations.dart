@@ -578,6 +578,18 @@ abstract class AppLocalizations {
   /// **'Borrar cuenta y datos'**
   String get cloudDeleteAccount;
 
+  /// No description provided for @cloudDeleteLocal.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar partida'**
+  String get cloudDeleteLocal;
+
+  /// No description provided for @cloudDeleteLocalBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se borran tus mensajeros, tu progreso y las monedas de este teléfono. No se puede deshacer.'**
+  String get cloudDeleteLocalBody;
+
   /// No description provided for @cloudStatusLocal.
   ///
   /// In es, this message translates to:
@@ -2773,6 +2785,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Compra cancelada.'**
   String get shopCanceled;
+
+  /// No description provided for @shopStartFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo iniciar la compra.'**
+  String get shopStartFailed;
+
+  /// No description provided for @shopNoResponse.
+  ///
+  /// In es, this message translates to:
+  /// **'La tienda no respondió. Prueba de nuevo en un rato.'**
+  String get shopNoResponse;
+
+  /// No description provided for @shopStoreUnavailable.
+  ///
+  /// In es, this message translates to:
+  /// **'La tienda no está disponible ahora. Prueba de nuevo en un rato.'**
+  String get shopStoreUnavailable;
 
   /// No description provided for @shopFailed.
   ///
