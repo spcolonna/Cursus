@@ -68,6 +68,7 @@ flutter:
     - assets/art/npcs/
     - assets/art/endings/
     - assets/art/scenes/
+    - assets/art/title/
     - assets/fonts/OFL-Marcellus.txt
     - assets/fonts/OFL-Figtree.txt
     - assets/fonts/OFL-Literata.txt

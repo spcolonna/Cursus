@@ -156,6 +156,20 @@ class AppGradients {
     end: Alignment.bottomCenter,
     colors: [AppColors.paperHigh, AppColors.paper],
   );
+  /// Portada: el arte se ve arriba y se oscurece hacia abajo, donde van la
+  /// marca y el botón (onSky ≥4.5:1 desde el 55% del alto).
+  static const titleScrim = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    stops: [0.0, 0.12, 0.38, 0.6, 0.88],
+    colors: [
+      AppColors.scrimSky,
+      AppColors.transparent,
+      AppColors.transparent,
+      AppColors.scrim,
+      AppColors.ink,
+    ],
+  );
   static const ochre = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
