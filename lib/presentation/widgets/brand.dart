@@ -1,6 +1,6 @@
 // lib/presentation/widgets/brand.dart
 //
-// La marca de Cursus: el sello de cera cinabrio con la V de *via* y el
+// La marca de Via Imperia: el sello de cera cinabrio con la V de *via* y el
 // wordmark en capitales romanas. Todo por código: el mismo pintor sirve
 // para la app, el splash y el ícono (tool/gen_icon_test.dart).
 
@@ -12,7 +12,7 @@ import '../theme/app_theme.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Nombre del juego tal como se muestra.
-const String kGameName = 'Cursus';
+const String kGameName = 'Via Imperia';
 
 
 /// El sello de la marca: cera cinabrio plana, contorno de tinta y una V
@@ -126,7 +126,7 @@ class BrandSeal extends StatelessWidget {
 /// texto (cuando el sello ya está en pantalla).
 enum BrandLayout { stacked, horizontal, wordmark }
 
-/// Sello + CURSUS (+ el subtítulo, si [tagline]).
+/// Sello + VIA IMPERIA (+ el subtítulo, si [tagline]).
 class BrandMark extends StatelessWidget {
   final BrandLayout layout;
   final double size; // alto del wordmark

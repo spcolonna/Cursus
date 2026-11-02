@@ -1,4 +1,4 @@
-# Cursus — guía para Claude
+# Via Imperia (ex Cursus) — guía para Claude
 
 Juego móvil Flutter. Mensajero en la Roma del 50 a.C.: las misiones corren en **tiempo real de reloj**, los eventos son decisiones de 2-3 opciones. Sesiones de 1-3 min, 3-4 por día.
 

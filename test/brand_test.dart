@@ -48,7 +48,7 @@ void main() {
           body: Center(child: BrandMark(layout: layout, tagline: true)),
         ),
       ));
-      expect(find.text('CURSUS'), findsOneWidget);
+      expect(find.text('VIA IMPERIA'), findsOneWidget);
       expect(find.byType(BrandSeal),
           layout == BrandLayout.wordmark ? findsNothing : findsOneWidget);
       expect(find.text('CARTAS DE ROMA'), findsOneWidget);

@@ -1,4 +1,4 @@
-# CURSUS — GDD Maestro v2.0
+# VIA IMPERIA — GDD Maestro v2.0
 
 **Documento vivo.** Describe (A) el juego que existe hoy en el código, y (B) la dirección aprobada hacia donde lo llevamos. Nada especulativo: lo que no está aprobado va al Apéndice como backlog. Reemplaza como guía de trabajo al `The_Messenger_GDD_v1.docx` (que queda como archivo histórico de la visión original).
 

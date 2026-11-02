@@ -4,7 +4,7 @@ Límites: título 30 caracteres; subtítulo de iOS 30; keywords de iOS 100, sepa
 
 ## Español
 
-**Título:** Cursus: Mensajero de Roma
+**Título:** Via Imperia: Mensajero de Roma
 
 **Subtítulo (iOS):** Decisiones en la Roma antigua
 
@@ -25,11 +25,11 @@ Eres un mensajero del Gremio de Varus. Elige una ruta, despacha a tu mensajero y
 • **Partidas cortas:** de 1 a 3 minutos, varias veces al día. Sin reflejos ni minijuegos: solo buenas decisiones.
 • **Haz crecer a tus mensajeros:** cinco caminos de habilidad, logros, títulos y encargos semanales.
 
-Juega sin conexión. Tu partida se guarda en la nube y puedes recuperarla en otro teléfono.
+Juega sin conexión. Tu partida se guarda en tu teléfono.
 
 ## English
 
-**Title:** Cursus: Messenger of Rome
+**Title:** Via Imperia: Messenger of Rome
 
 **Subtitle (iOS):** Choices in ancient Rome
 
@@ -50,7 +50,7 @@ You are a messenger of Varus's Guild. Pick a route, send your messenger off and 
 • **Short sessions:** 1 to 3 minutes, a few times a day. No reflexes, no minigames, just good decisions.
 • **Grow your messengers:** five skill paths, achievements, titles and weekly commissions.
 
-Play offline. Your game is saved to the cloud and you can recover it on another phone.
+Play offline. Your game is saved on your phone.
 
 ## Capturas (6, con copy)
 

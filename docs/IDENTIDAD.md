@@ -1,4 +1,4 @@
-# Identidad de Cursus
+# Identidad de Via Imperia
 
 Manual de marca. Cuando el código y este documento difieren, la fuente de los tokens es `lib/presentation/theme/app_theme.dart`.
 
@@ -6,7 +6,7 @@ Manual de marca. Cuando el código y este documento difieren, la fuente de los t
 
 **Un fresco pompeyano que se puede jugar.** Cal, pigmentos minerales y tinta. Roma, 50 a.C., contada como la contaría un mensajero: con calma, con ironía seca y con las decisiones pesando más que la acción.
 
-- **Nombre:** Cursus, por el *cursus publicus*, el correo del Estado romano. Va en versalitas espaciadas: C U R S U S.
+- **Nombre:** Via Imperia, "los caminos del imperio": la red de rutas que recorre el mensajero. Va en versalitas espaciadas: V I A  I M P E R I A. Antes se llamaba Cursus; el nombre quedó en lo interno (bundle `com.spcolonna.cursus`, proyectos de Firebase, canales y archivos), que el jugador no ve.
 - **Bajada:**
   - Español: "Imperio Romano, 50 a.C." en el splash; "Un mensajero en la Roma del 50 a.C." en tienda.
   - Inglés: "Roman Empire, 50 BC"; "A messenger in Rome, 50 BC".

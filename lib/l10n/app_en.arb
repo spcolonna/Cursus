@@ -27,7 +27,7 @@
   "currencySeals": "{count, plural, =1{Guild Seal} other{Seals}}",
   "gradeSemantics": "Grade {grade}",
   "updateTitle": "A new version is out",
-  "updateBody": "Update Cursus to keep making deliveries. Your game is saved.",
+  "updateBody": "Update Via Imperia to keep making deliveries. Your game is saved.",
   "updateButton": "Update",
   "achKindRoad": "The road",
   "achKindGrade": "Perfect deliveries",

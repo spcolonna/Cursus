@@ -213,12 +213,16 @@ class _TopBar extends StatelessWidget {
           AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.sm),
       child: Row(children: [
         Expanded(
-          child: Text(kGameName.toUpperCase(),
-              maxLines: 1,
-              overflow: TextOverflow.fade,
-              softWrap: false,
-              style: AppTextStyles.brandWordmark(22, sky.titleColor)
-                  .copyWith(shadows: sky.titleHalo)),
+          // Con muchas monedas, el nombre se achica en vez de cortarse.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(kGameName.toUpperCase(),
+                maxLines: 1,
+                softWrap: false,
+                style: AppTextStyles.brandWordmark(22, sky.titleColor)
+                    .copyWith(shadows: sky.titleHalo)),
+          ),
         ),
         if (m != null) ...[
           CurrencyChip(type: CurrencyType.denarios, value: m.denarios),

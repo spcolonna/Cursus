@@ -263,7 +263,7 @@ abstract class AppLocalizations {
   /// No description provided for @updateBody.
   ///
   /// In es, this message translates to:
-  /// **'Para seguir con tus entregas tienes que actualizar Cursus. Tu partida queda guardada.'**
+  /// **'Para seguir con tus entregas tienes que actualizar Via Imperia. Tu partida queda guardada.'**
   String get updateBody;
 
   /// No description provided for @updateButton.

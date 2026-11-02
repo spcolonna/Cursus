@@ -127,7 +127,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get updateBody =>
-      'Para seguir con tus entregas tienes que actualizar Cursus. Tu partida queda guardada.';
+      'Para seguir con tus entregas tienes que actualizar Via Imperia. Tu partida queda guardada.';
 
   @override
   String get updateButton => 'Actualizar';

@@ -151,7 +151,7 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Cursus',
+      title: 'Via Imperia',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       routerConfig: appRouter,

@@ -1,4 +1,4 @@
-# Cursus
+# Via Imperia
 
 Juego móvil (Flutter, iOS y Android) de decisiones en **tiempo real de reloj**. Sos un mensajero en la Roma del 50 a.C.: elegís una ruta (de 30 min a 72 h reales), en el camino aparecen eventos con 2-3 opciones y al llegar entregás y recibís una nota de S a F.
 

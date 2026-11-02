@@ -6,7 +6,7 @@
     <!-- Para reprogramar las notificaciones pendientes tras reiniciar. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
-        android:label="Cursus"
+        android:label="Via Imperia"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

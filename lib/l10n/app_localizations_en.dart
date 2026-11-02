@@ -127,7 +127,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateBody =>
-      'Update Cursus to keep making deliveries. Your game is saved.';
+      'Update Via Imperia to keep making deliveries. Your game is saved.';
 
   @override
   String get updateButton => 'Update';
