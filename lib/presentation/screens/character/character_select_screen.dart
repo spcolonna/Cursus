@@ -45,6 +45,9 @@ class _CharacterSelectScreenState
     setState(() { _saving = true; _error = null; });
     await ref.read(authProvider.notifier).markOnboardingDone();
     await ref.read(messengerRepositoryProvider).createDefaultWithGender(name, _gender);
+    // El home pudo quedar cacheado sin mensajero (p. ej. tras reiniciar la
+    // partida): sin esto vuelve a mandar acá.
+    ref.invalidate(homeProvider);
     if (mounted) context.go('/home');
   }
 
