@@ -221,6 +221,15 @@ class _MissionResultScreenState extends ConsumerState<MissionResultScreen> {
                   const SizedBox(height: 16),
                 ],
 
+                // Prueba de Varus: él nombra lo que acaba de enseñar.
+                if (mission.isTutorial) ...[
+                  _VarusLessonCard(index: mission.tutorialIndex)
+                      .animate(delay: at(450))
+                      .fadeIn(duration: d(300))
+                      .slideY(begin: 0.08),
+                  const SizedBox(height: 16),
+                ],
+
                 _ScoreCard(
                   timeScore: timeScore,
                   packageScore: packageScore,
@@ -308,6 +317,41 @@ class _EpilogueCard extends StatelessWidget {
         ]),
         const SizedBox(height: 10),
         Text(text, style: AppTextStyles.prose(size: 15)),
+      ]),
+    );
+  }
+}
+
+// ── Lección de Varus (pruebas del tutorial) ─────────────────────────────────
+class _VarusLessonCard extends StatelessWidget {
+  final int index;
+  const _VarusLessonCard({required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final lessons = [
+      l.resultVarusLesson0,
+      l.resultVarusLesson1,
+      l.resultVarusLesson2,
+      l.resultVarusLesson3,
+    ];
+    return GameCard(
+      gradient: AppGradients.ochreTint,
+      borderColor: AppColors.sienna,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Icon(Icons.record_voice_over, color: AppColors.sienna, size: 16),
+          const SizedBox(width: 8),
+          Text(l.resultVarusTitle,
+              style: AppTextStyles.ui(12,
+                  color: AppColors.ink,
+                  weight: FontWeight.bold,
+                  letterSpacing: 1.5)),
+        ]),
+        const SizedBox(height: 10),
+        Text(lessons[index.clamp(0, lessons.length - 1)],
+            style: AppTextStyles.proseItalic(size: 15)),
       ]),
     );
   }

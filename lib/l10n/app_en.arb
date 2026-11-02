@@ -504,5 +504,11 @@
   "achSeeEndings": "See the endings",
   "storyReplayTag": "Replay",
   "resultEndingNew": "New ending",
-  "resultSeeEndings": "See the endings"
+  "resultSeeEndings": "See the endings",
+  "resultVarusTitle": "VARUS SAYS",
+  "resultVarusLesson0": "You made it, and that's something. Something always happens on the road, and every choice has a deadline: hesitate too long and the road decides for you.",
+  "resultVarusLesson1": "You saw that some options are only open to those with the craft. Every problem you solve teaches you: your skills grow with use and open new roads.",
+  "resultVarusLesson2": "Look closely at that seal. Arriving isn't enough: your time, the state of the package and your choices on the road all count. A high grade pays more.",
+  "resultVarusLesson3": "You're one of us now. The road wears you down: fatigue and wounds make you fail more, so rest between jobs. The Guild has contracts for you every day.",
+  "missionDebugAdvance": "Debug: advance to the next event"
 }

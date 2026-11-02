@@ -3127,6 +3127,42 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ver los finales'**
   String get resultSeeEndings;
+
+  /// No description provided for @resultVarusTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'VARUS TE DICE'**
+  String get resultVarusTitle;
+
+  /// No description provided for @resultVarusLesson0.
+  ///
+  /// In es, this message translates to:
+  /// **'Llegaste, y eso ya es algo. En el camino siempre pasa algo, y cada decisión tiene su plazo: si dudas demasiado, el camino decide por ti.'**
+  String get resultVarusLesson0;
+
+  /// No description provided for @resultVarusLesson1.
+  ///
+  /// In es, this message translates to:
+  /// **'Viste que algunas opciones solo están para quien tiene oficio. Cada problema que resuelves te enseña algo: tus habilidades crecen con el uso y abren caminos nuevos.'**
+  String get resultVarusLesson1;
+
+  /// No description provided for @resultVarusLesson2.
+  ///
+  /// In es, this message translates to:
+  /// **'Mira bien ese sello. No me basta con que llegues: cuenta lo que tardas, cómo llega el paquete y lo que decides en el camino. Una nota alta paga más.'**
+  String get resultVarusLesson2;
+
+  /// No description provided for @resultVarusLesson3.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya eres uno de los nuestros. El viaje cansa: con fatiga o heridas fallarás más, así que descansa entre encargos. El Gremio tiene contratos para ti cada día.'**
+  String get resultVarusLesson3;
+
+  /// No description provided for @missionDebugAdvance.
+  ///
+  /// In es, this message translates to:
+  /// **'Debug: avanzar hasta el próximo evento'**
+  String get missionDebugAdvance;
 }
 
 class _AppLocalizationsDelegate

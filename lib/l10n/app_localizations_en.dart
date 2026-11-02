@@ -1863,4 +1863,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resultSeeEndings => 'See the endings';
+
+  @override
+  String get resultVarusTitle => 'VARUS SAYS';
+
+  @override
+  String get resultVarusLesson0 =>
+      'You made it, and that\'s something. Something always happens on the road, and every choice has a deadline: hesitate too long and the road decides for you.';
+
+  @override
+  String get resultVarusLesson1 =>
+      'You saw that some options are only open to those with the craft. Every problem you solve teaches you: your skills grow with use and open new roads.';
+
+  @override
+  String get resultVarusLesson2 =>
+      'Look closely at that seal. Arriving isn\'t enough: your time, the state of the package and your choices on the road all count. A high grade pays more.';
+
+  @override
+  String get resultVarusLesson3 =>
+      'You\'re one of us now. The road wears you down: fatigue and wounds make you fail more, so rest between jobs. The Guild has contracts for you every day.';
+
+  @override
+  String get missionDebugAdvance => 'Debug: advance to the next event';
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -333,6 +334,18 @@ class _TravelView extends ConsumerWidget {
           // ── Rewarded ad: −30 min de viaje (cap 4/día)
           const SizedBox(height: 10),
           _TravelAdButton(mission: mission),
+          // QA: probar el ritmo sin esperar el viaje real.
+          if (kDebugMode) ...[
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(foregroundColor: AppColors.ink),
+              icon: const Icon(Icons.fast_forward, size: 18),
+              label: Text(AppLocalizations.of(context).missionDebugAdvance),
+              onPressed: () => ref
+                  .read(homeProvider.notifier)
+                  .advanceMissionMinutes(mission.messengerId, 24 * 60),
+            ),
+          ],
         ],
 
         // ── Historial de eventos resueltos

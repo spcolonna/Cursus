@@ -17,7 +17,8 @@ export '../domain/entities/content.dart';
 // PHASE 0 — Tutorial encubierto
 // El jugador no sabe que es un tutorial. Es su líder Varus
 // poniéndolo a prueba antes de confiarle mensajes reales.
-// Duración total: ~25 minutos
+// Duración total: ~27 minutos (1 + 3 + 8 + 15). Cada prueba enseña una
+// cosa; Varus la nombra al cierre (ver resultVarusLesson* en los ARB).
 // ═══════════════════════════════════════════════════════════════
 
 const List<TutorialMission> tutorialMissions = [
@@ -39,7 +40,7 @@ const List<TutorialMission> tutorialMissions = [
   TutorialMission(
     id: 'tut_02',
     phase: 0,
-    durationMinutes: 5,
+    durationMinutes: 3,
     origin: 'Cuartel de Varus',
     destination: 'Taberna del Buey',
     packageDescription: 'Mensaje cifrado para el tabernero Lucius',
@@ -53,7 +54,7 @@ const List<TutorialMission> tutorialMissions = [
   TutorialMission(
     id: 'tut_03',
     phase: 0,
-    durationMinutes: 15,
+    durationMinutes: 8,
     origin: 'Roma — Foro',
     destination: 'Villa del Senador Claudius',
     packageDescription: 'Correspondencia urgente y confidencial',
@@ -67,7 +68,7 @@ const List<TutorialMission> tutorialMissions = [
   TutorialMission(
     id: 'tut_04',
     phase: 0,
-    durationMinutes: 30,
+    durationMinutes: 15,
     origin: 'Roma',
     destination: 'Campamento Legionario',
     packageDescription: 'Órdenes militares selladas — máxima prioridad',

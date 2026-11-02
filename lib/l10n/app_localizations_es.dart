@@ -1870,4 +1870,26 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get resultSeeEndings => 'Ver los finales';
+
+  @override
+  String get resultVarusTitle => 'VARUS TE DICE';
+
+  @override
+  String get resultVarusLesson0 =>
+      'Llegaste, y eso ya es algo. En el camino siempre pasa algo, y cada decisión tiene su plazo: si dudas demasiado, el camino decide por ti.';
+
+  @override
+  String get resultVarusLesson1 =>
+      'Viste que algunas opciones solo están para quien tiene oficio. Cada problema que resuelves te enseña algo: tus habilidades crecen con el uso y abren caminos nuevos.';
+
+  @override
+  String get resultVarusLesson2 =>
+      'Mira bien ese sello. No me basta con que llegues: cuenta lo que tardas, cómo llega el paquete y lo que decides en el camino. Una nota alta paga más.';
+
+  @override
+  String get resultVarusLesson3 =>
+      'Ya eres uno de los nuestros. El viaje cansa: con fatiga o heridas fallarás más, así que descansa entre encargos. El Gremio tiene contratos para ti cada día.';
+
+  @override
+  String get missionDebugAdvance => 'Debug: avanzar hasta el próximo evento';
 }
