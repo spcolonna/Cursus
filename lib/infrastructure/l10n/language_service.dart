@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/localized_content.dart';
 import '../../domain/entities/content_l10n.dart';
 
 /// Idiomas del juego. El español es la fuente; el resto se superpone.
@@ -21,7 +22,8 @@ String resolveLanguage(String? chosen, Locale device) {
 Future<void> applyLanguage(String lang) async {
   Intl.defaultLocale = lang;
   if (lang == 'es') {
-    ContentL10n.use('es', const {});
+    // La fuente por clave: retraduce al español lo guardado en otro idioma.
+    ContentL10n.use('es', contentKeys());
     return;
   }
   try {

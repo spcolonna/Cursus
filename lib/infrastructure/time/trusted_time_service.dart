@@ -16,23 +16,41 @@ class ClockAnchor {
   const ClockAnchor(this.gameTime, this.elapsedMs);
 }
 
+/// Cuánto se le cree al reloj del teléfono, sin red, sobre el mínimo
+/// seguro después de un reinicio. Lo que pase de esto lo pone el servidor
+/// al volver la red (corregir hacia adelante no rompe nada).
+const kMaxUnverifiedRebootGap = Duration(hours: 6);
+
 /// Estima la hora del juego sin red.
 /// - Mismo encendido del teléfono: ancla + tiempo monotónico transcurrido.
-///   Cambiar la hora del teléfono no mueve nada.
-/// - Si se reinició (el monotónico volvió a cero) o no hay monotónico: hora
-///   del dispositivo + la última diferencia con el servidor, y nunca antes
-///   del ancla.
+///   Cambiar la hora del teléfono no mueve nada. (Si se reinició y el
+///   monotónico ya superó al del ancla, se lo toma como mismo encendido: la
+///   hora queda atrasada hasta la red, nunca adelantada.)
+/// - Si se reinició (el monotónico es menor que el del ancla): todo el
+///   encendido actual pasó después del ancla, así que el mínimo es ancla +
+///   monotónico. Sobre eso se usa la hora del teléfono + la última
+///   diferencia con el servidor, hasta [kMaxUnverifiedRebootGap]: reiniciar
+///   y adelantar el reloj sin red no termina misiones de días.
+/// - Sin monotónico o sin ancla: hora del teléfono + la diferencia, nunca
+///   antes del ancla.
 DateTime estimateGameTime({
   required DateTime deviceNow,
   required Duration lastSkew,
   ClockAnchor? anchor,
   int? elapsedMs,
 }) {
-  if (anchor != null && elapsedMs != null && elapsedMs >= anchor.elapsedMs) {
-    return anchor.gameTime
-        .add(Duration(milliseconds: elapsedMs - anchor.elapsedMs));
-  }
   final guess = deviceNow.add(lastSkew);
+  if (anchor != null && elapsedMs != null) {
+    if (elapsedMs >= anchor.elapsedMs) {
+      return anchor.gameTime
+          .add(Duration(milliseconds: elapsedMs - anchor.elapsedMs));
+    }
+    final floor = anchor.gameTime.add(Duration(milliseconds: elapsedMs));
+    final ceiling = floor.add(kMaxUnverifiedRebootGap);
+    if (guess.isBefore(floor)) return floor;
+    if (guess.isAfter(ceiling)) return ceiling;
+    return guess;
+  }
   if (anchor != null && guess.isBefore(anchor.gameTime)) return anchor.gameTime;
   return guess;
 }

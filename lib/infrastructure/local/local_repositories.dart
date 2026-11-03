@@ -613,6 +613,7 @@ class LocalMissionRepository implements MissionRepository {
     'messengerId': m.messengerId,
     'origin': m.origin, 'destination': m.destination,
     'packageDescription': m.packageDescription, 'lore': m.lore,
+    'packageKey': _packageKeyOf(m),
     'narrativeIntro': m.narrativeIntro, 'isTutorial': m.isTutorial,
     'tutorialIndex': m.tutorialIndex,
     'startedAt': m.startedAt.toIso8601String(),
@@ -628,13 +629,33 @@ class LocalMissionRepository implements MissionRepository {
     'payFactor': m.payFactor,
   };
 
-  Mission _missionFromJson(Map<String, dynamic> j) => Mission(
-    id: j['id'] as String, routeId: j['routeId'] as String,
+  /// La clave de contenido del paquete. Las rutas comunes eligen uno de
+  /// varios al azar: se busca cuál es entre los del idioma actual.
+  String? _packageKeyOf(Mission m) {
+    if (m.isTutorial || m.arcId != null) return '${m.routeId}.package';
+    final cfg = lRealMissions.where((c) => c.id == m.routeId).firstOrNull;
+    final i = cfg?.packageOptions.indexOf(m.packageDescription) ?? -1;
+    return i < 0 ? null : '${m.routeId}.package.$i';
+  }
+
+  // Igual que los eventos: los textos de la misión se muestran en el idioma
+  // actual aunque se haya aceptado en otro.
+  Mission _missionFromJson(Map<String, dynamic> j) {
+    final routeId = j['routeId'] as String;
+    String tr(String field, String stored) =>
+        ContentL10n.t('$routeId.$field', stored);
+    final storedPackage = j['packageDescription'] as String;
+    final packageKey = j['packageKey'] as String?;
+    return Mission(
+    id: j['id'] as String, routeId: routeId,
     messengerId: j['messengerId'] as String? ?? '',
     origin: j['origin'] as String, destination: j['destination'] as String,
-    packageDescription: j['packageDescription'] as String,
-    lore: j['lore'] as String? ?? '',
-    narrativeIntro: j['narrativeIntro'] as String?,
+    packageDescription: packageKey == null
+        ? storedPackage
+        : ContentL10n.t(packageKey, storedPackage),
+    lore: tr('lore', j['lore'] as String? ?? ''),
+    narrativeIntro:
+        ContentL10n.tn('$routeId.intro', j['narrativeIntro'] as String?),
     isTutorial: j['isTutorial'] as bool? ?? false,
     tutorialIndex: j['tutorialIndex'] as int? ?? -1,
     startedAt: DateTime.parse(j['startedAt'] as String),
@@ -651,10 +672,11 @@ class LocalMissionRepository implements MissionRepository {
     revealEvents: j['revealEvents'] as bool? ?? false,
     arcId: j['arcId'] as String?,
     arcStage: j['arcStage'] as int? ?? 0,
-    epilogue: j['epilogue'] as String?,
+    epilogue: ContentL10n.tn('$routeId.epilogue', j['epilogue'] as String?),
     // Misiones guardadas antes de la paga por ruta: factor neutro.
     payFactor: (j['payFactor'] as num?)?.toDouble() ?? 1.0,
   );
+  }
 
   Map<String, dynamic> _eventToJson(MissionEvent e) => {
     'id': e.id, 'title': e.title, 'description': e.description,
@@ -762,9 +784,11 @@ class LocalMissionRepository implements MissionRepository {
                     in (om['minReputation'] as Map<String, dynamic>).entries)
                   Faction.values[int.parse(e.key)]: e.value as int
               },
-        lockedHint: om['lockedHint'] as String?,
+        lockedHint:
+            ContentL10n.tn('${om['id']}.locked', om['lockedHint'] as String?),
         followUpEventId: om['followUpEventId'] as String?,
-        journalNote: om['journalNote'] as String?,
+        journalNote:
+            ContentL10n.tn('${om['id']}.journal', om['journalNote'] as String?),
       );
     }).toList(),
     outcome: j['outcome'] == null ? null : () {

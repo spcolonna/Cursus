@@ -263,6 +263,16 @@ class LocalNotificationService implements NotificationScheduler {
   }
 
   @override
+  Future<void> keepOnlyMissions(Set<String> activeMissionIds) async {
+    await init();
+    final stale =
+        _registry.keys.where((id) => !activeMissionIds.contains(id)).toList();
+    for (final id in stale) {
+      await cancelMission(id);
+    }
+  }
+
+  @override
   Future<void> syncReminders(
       {String? idleMessengerName, required bool contractsPending}) async {
     await init();

@@ -46,4 +46,10 @@ void main() {
     ContentL10n.use('es', const {});
     expect(catalog.eventById('evt_patrol')!.title, es);
   });
+
+  test('lo guardado en inglés vuelve al español con la tabla de fuentes', () {
+    ContentL10n.use('es', keys);
+    expect(ContentL10n.t('evt_patrol.title', en['evt_patrol.title']!),
+        keys['evt_patrol.title']);
+  });
 }

@@ -95,6 +95,10 @@ abstract class NotificationScheduler {
 
   Future<void> cancelMission(String missionId);
 
+  /// Cancela los avisos de toda misión que ya no esté en [activeMissionIds]
+  /// (entregada, abandonada o de una partida anterior).
+  Future<void> keepOnlyMissions(Set<String> activeMissionIds);
+
   /// Recordatorios fuera de misión: mensajero ocioso ([idleMessengerName]
   /// null si todos están en ruta) y contratos del gremio sin cobrar.
   Future<void> syncReminders(

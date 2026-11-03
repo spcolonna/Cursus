@@ -111,12 +111,19 @@ String transactionIdOf(PurchaseDetails p) {
 class IapService {
   /// Acredita una compra confirmada por la tienda. Se llama ANTES de cerrar
   /// la transacción: si falla, la tienda la vuelve a entregar al reabrir.
+  /// Solo el crédito: lo demás va en [onCredited], así un error ahí no
+  /// deja la compra fuera del registro (y acreditada otra vez al reabrir).
   final Future<void> Function(String productId)? onPurchased;
+
+  /// Efectos después de anotar la compra (analytics, tareas, refrescar).
+  /// Sus errores se ignoran: la compra ya está acreditada.
+  final Future<void> Function(String productId)? onCredited;
   final PurchaseLedger ledger;
   final Future<void> Function(PurchaseDetails)? _complete;
 
   IapService({
     this.onPurchased,
+    this.onCredited,
     PurchaseLedger? ledger,
     Future<void> Function(PurchaseDetails)? complete,
   })  : ledger = ledger ?? PurchaseLedger(),
@@ -243,6 +250,11 @@ class IapService {
               debugPrint('IAP credit failed for $id: $e');
               _updates.add(IapUpdate(IapUpdateKind.failed, id));
               continue;
+            }
+            try {
+              await onCredited?.call(id);
+            } catch (e) {
+              debugPrint('IAP post-credit failed for $id: $e');
             }
             _updates.add(IapUpdate(IapUpdateKind.credited, id));
           }

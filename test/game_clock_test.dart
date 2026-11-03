@@ -52,14 +52,26 @@ void main() {
       expect(game, t0.add(const Duration(hours: 2, minutes: -5)));
     });
 
-    test('reinicio con el reloj atrasado: nunca antes del ancla', () {
+    test('reinicio con el reloj atrasado: nunca antes de ancla + encendido',
+        () {
       final game = estimateGameTime(
         deviceNow: t0.subtract(const Duration(days: 2)),
         lastSkew: Duration.zero,
         anchor: ClockAnchor(t0, anchor),
         elapsedMs: 1000,
       );
-      expect(game, t0);
+      expect(game, t0.add(const Duration(seconds: 1)));
+    });
+
+    test('reinicio con el reloj adelantado sin red: tope sobre el mínimo', () {
+      final game = estimateGameTime(
+        deviceNow: t0.add(const Duration(days: 3)),
+        lastSkew: Duration.zero,
+        anchor: ClockAnchor(t0, anchor),
+        elapsedMs: 1000, // un segundo desde que prendió
+      );
+      expect(game,
+          t0.add(const Duration(seconds: 1)).add(kMaxUnverifiedRebootGap));
     });
 
     test('sin monotónico ni ancla: hora del teléfono', () {

@@ -90,6 +90,18 @@ void main() {
       expect(await failing.ledger.contains('tx1'), isFalse);
     });
 
+    test('un error después del crédito no lo repite', () async {
+      final iap2 = IapService(
+        onPurchased: (id) async => credited.add(id),
+        onCredited: (_) async => throw StateError('tarea'),
+        complete: (p) async => completed.add(p.purchaseID!),
+      );
+      await iap2.handlePurchases([_purchase(PurchaseStatus.purchased, id: 'x')]);
+      await iap2.handlePurchases([_purchase(PurchaseStatus.purchased, id: 'x')]);
+      expect(credited, [IapProducts.aureos50]);
+      expect(completed, ['x', 'x']);
+    });
+
     test('el registro de compras viaja con la partida', () {
       expect(kCloudSaveKeys, contains(PurchaseLedger.kKey));
     });

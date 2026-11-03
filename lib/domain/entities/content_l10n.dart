@@ -1,7 +1,9 @@
 // ═════════════════════════════════════════════════════════════════════════════
 // ContentL10n: el idioma del contenido. El español vive en el código (es la
 // fuente); los otros idiomas son una tabla clave → texto que se superpone.
-// Una clave que falta cae al español, así nunca queda un texto vacío.
+// Una clave que falta cae al texto guardado, así nunca queda un texto vacío.
+// El español también tiene su tabla (las mismas fuentes por clave): sin ella,
+// lo que se guardó en inglés quedaría en inglés al volver al español.
 //
 // Claves: `<id>.<campo>` del contenido (evt_x.title, opt_y.success…), y
 // `ui.<algo>` para los textos que arma el dominio. La lista completa sale de
@@ -23,11 +25,12 @@ class ContentL10n {
 
   static void use(String lang, Map<String, String> table) {
     _lang = lang;
-    _table = lang == 'es' ? const {} : table;
+    _table = table;
     _revision++;
   }
 
-  /// El texto de [key] en el idioma actual, o [es] si no hay traducción.
+  /// El texto de [key] en el idioma actual, o [es] (el texto guardado) si no
+  /// hay traducción.
   static String t(String key, String es) => _table[key] ?? es;
 
   /// Lo mismo para un campo opcional.

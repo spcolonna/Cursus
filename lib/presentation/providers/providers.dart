@@ -116,6 +116,10 @@ final iapServiceProvider = Provider<IapService>((ref) => IapService(
         // Sin mensajero no hay a quién acreditar: queda sin cerrar y la
         // tienda la vuelve a entregar.
         if (credited == null) throw StateError('no messenger for $itemId');
+      },
+      onCredited: (productId) async {
+        final itemId = IapProducts.shopItemIdForProduct(productId);
+        if (itemId == null) return;
         ref.read(analyticsProvider).track(AnalyticsEvent.iapCredited(itemId));
         ref.invalidate(homeProvider);
         await ref
@@ -450,6 +454,12 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     final scheduler = ref.read(notificationSchedulerProvider);
     final current = state.valueOrNull;
     if (current == null) return;
+    // Las misiones entregadas no pasan por acá: sin esto sus avisos de
+    // entrega y de eventos quedaban programados.
+    await scheduler.keepOnlyMissions({
+      for (final slot in current.slots)
+        if (slot.activeMission != null) slot.activeMission!.id,
+    });
     for (final slot in current.slots) {
       final mission = slot.activeMission;
       if (mission == null) continue;
