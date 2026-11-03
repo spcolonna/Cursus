@@ -163,6 +163,8 @@ class CloudSyncService {
   /// Apple y Google para cualquier app con cuentas.
   Future<void> deleteEverything() async {
     _timer?.cancel();
+    // Una subida en vuelo reescribiría la partida después de borrarla.
+    await _running;
     final uid = account?.uid;
     if (available && uid != null) {
       await remote!.delete(uid);

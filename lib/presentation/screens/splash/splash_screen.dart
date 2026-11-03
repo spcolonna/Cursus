@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../feedback/feedback.dart';
+import '../../../domain/entities/entities.dart' show User;
 import '../../../infrastructure/cloud/cloud_sync_service.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_theme.dart';
@@ -46,7 +47,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     // Si la sesión todavía está cargando, se la espera: mandar al login a
     // un jugador que ya tiene partida es peor que un splash un poco más largo.
-    Object? user;
+    User? user;
     try {
       user = await ref
           .read(authProvider.future)
@@ -55,7 +56,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       user = null;
     }
     if (!mounted) return;
-    context.go(user != null ? '/home' : '/login');
+    // Si se cerró la app en la intro, se retoma ahí y no en el home.
+    context.go(user == null
+        ? '/login'
+        : user.isFirstLogin
+            ? '/onboarding'
+            : '/home');
   }
 
   @override

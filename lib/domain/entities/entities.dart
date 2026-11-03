@@ -363,6 +363,22 @@ class Mission {
     );
   }
 
+  /// El viaje estuvo detenido desde que llegó [blocking] hasta [resolvedAt]:
+  /// la llegada y los eventos siguientes se corren ese tiempo, así nadie
+  /// pierde la ventana de un evento que estaba tapado por otro.
+  Mission frozenBy(MissionEvent blocking, DateTime resolvedAt) {
+    final frozen = resolvedAt.difference(blocking.triggersAt);
+    if (frozen <= Duration.zero) return this;
+    return copyWith(
+      deadlineAt: deadlineAt.add(frozen),
+      events: events.map((e) {
+        if (e.id == blocking.id || !e.isUnresolved) return e;
+        if (e.triggersAt.isBefore(blocking.triggersAt)) return e;
+        return e.shiftBy(frozen);
+      }).toList(),
+    );
+  }
+
   /// La misión pierde [minutes]: la llegada se demora y los eventos que
   /// todavía no ocurrieron se corren lo mismo.
   Mission delayedBy(int minutes) {

@@ -184,6 +184,12 @@ const dailyPaySchedule = <DailyPayReward>[
 String dateKey(DateTime d) =>
     '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
+/// [day] ya pasó respecto de [last] (claves de [dateKey], que ordenan bien
+/// como texto). Se compara con orden y no con "distinto": cambiar la zona
+/// horaria hacia atrás y adelante no puede volver a abrir un día.
+bool isLaterDay(String day, String? last) =>
+    last == null || day.compareTo(last) > 0;
+
 class GuildState {
   final String contractsDate;          // yyyy-MM-dd del tablón actual
   final List<DailyContract> contracts;
@@ -199,12 +205,15 @@ class GuildState {
     this.rerollUsed = false,
   });
 
-  bool get canClaimDailyPay => lastPayDate != dateKey(GameClock.now());
+  bool get canClaimDailyPay =>
+      isLaterDay(dateKey(GameClock.now()), lastPayDate);
 
   /// Día de racha que corresponde cobrar hoy (1-7, cíclico).
   int get nextPayDay {
     final today = GameClock.now();
-    final yesterday = dateKey(today.subtract(const Duration(days: 1)));
+    // Por calendario y no restando 24 h: el día del cambio de horario dura 23.
+    final yesterday =
+        dateKey(DateTime(today.year, today.month, today.day - 1));
     if (lastPayDate == yesterday) return (streakDay % 7) + 1;
     return 1; // se cortó la racha (o primer día)
   }

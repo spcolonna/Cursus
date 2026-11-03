@@ -57,7 +57,7 @@ class HomeScreen extends ConsumerWidget {
       data: (state) {
         if (state.messenger == null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            context.go('/character');
+            if (context.mounted) context.go('/character');
           });
           return const _LoadingHome();
         }
@@ -86,7 +86,6 @@ class _HomeScaffold extends ConsumerStatefulWidget {
 }
 
 class _HomeScaffoldState extends ConsumerState<_HomeScaffold> {
-  static bool _payDialogShownThisSession = false;
 
   HomeState get state => widget.state;
 
@@ -114,6 +113,10 @@ class _HomeScaffoldState extends ConsumerState<_HomeScaffold> {
     if (route == null || !mounted) return false;
     pending.state = null;
     if (route == '/home') return false;
+    // Ya se está viendo esa pantalla: no se apila otra igual.
+    final here =
+        GoRouter.of(context).routeInformationProvider.value.uri.toString();
+    if (here == route) return true;
     context.push(route);
     return true;
   }
@@ -133,12 +136,12 @@ class _HomeScaffoldState extends ConsumerState<_HomeScaffold> {
   }
 
   Future<void> _maybeShowDailyPay() async {
-    if (_payDialogShownThisSession || !mounted) return;
+    if (payDialogShownThisSession || !mounted) return;
     // Recién tiene sentido cuando ya pasó el onboarding inicial.
     if (state.messenger == null) return;
     final guild = await ref.read(guildProvider.future);
     if (!mounted || !guild.canClaimDailyPay) return;
-    _payDialogShownThisSession = true;
+    payDialogShownThisSession = true;
     await showGameDialog(
       context,
       barrierDismissible: false,

@@ -5,6 +5,8 @@
 // en lo mecánico — nunca quitan skills, monedas ni mensajeros.
 
 import 'domain_strings.dart';
+import 'game_clock.dart';
+import 'guild.dart' show isLaterDay;
 
 enum Faction { guild, legions, underworld, patricians }
 
@@ -296,7 +298,9 @@ class WorldState {
   ({WorldState world, int gained}) applyPatronDelivery(
       Faction patron, String grade, String day) {
     final gain = patronRepFor(grade);
-    if (gain == 0 || patronDays[patron] == day) return (world: this, gained: 0);
+    if (gain == 0 || !isLaterDay(day, patronDays[patron])) {
+      return (world: this, gained: 0);
+    }
     final next = applyRepDeltas({patron: gain})
         .copyWith(patronDays: {...patronDays, patron: day});
     return (world: next, gained: gain);
@@ -330,7 +334,7 @@ class WorldState {
 
   /// Agrega una entrada al diario (se guardan las últimas 40).
   WorldState addJournal(String text) {
-    final next = [...journal, JournalEntry(date: DateTime.now(), text: text)];
+    final next = [...journal, JournalEntry(date: GameClock.now(), text: text)];
     if (next.length > 40) next.removeRange(0, next.length - 40);
     return copyWith(journal: next);
   }

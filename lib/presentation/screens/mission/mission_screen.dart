@@ -49,10 +49,32 @@ class _MissionScreenState extends ConsumerState<MissionScreen> {
     });
   }
 
+  bool _leaving = false;
+
+  /// Sin misión (p. ej. se abrió un aviso de una ya entregada): tras un
+  /// momento, si nadie navegó a otro lado, vuelve al home. Esperar evita
+  /// pisar el salto a la pantalla de resultado al entregar.
+  void _leaveIfStillEmpty() {
+    if (_leaving) return;
+    _leaving = true;
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      final mission = ref
+          .read(homeProvider)
+          .valueOrNull
+          ?.slotFor(widget.messengerId)
+          ?.activeMission;
+      _leaving = false;
+      if (mission == null && (ModalRoute.of(context)?.isCurrent ?? false)) {
+        context.go('/home');
+      }
+    });
+  }
+
   @override
   void dispose() {
     // Parar el timer ANTES de dispose para evitar setState sobre widget muerto
-    _progressNotifier?.stop();
+    _progressNotifier?.stopFor(widget.messengerId);
     _progressNotifier = null;
     super.dispose();
   }
@@ -82,7 +104,20 @@ class _MissionScreenState extends ConsumerState<MissionScreen> {
         final mission = slot?.activeMission;
         // Si no hay misión activa, el usuario ya navegó a mission-result o home.
         // NO auto-navegar desde acá — eso causa el flash.
-        if (slot == null || mission == null) return const _Loading();
+        if (slot == null || mission == null) {
+          _leaveIfStillEmpty();
+          return const _Loading();
+        }
+        // Volvimos de la misión de otro mensajero (p. ej. por un aviso):
+        // el progreso se retoma con la nuestra.
+        final notifier = _progressNotifier;
+        if (notifier != null && notifier.runningFor != mission.messengerId) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && notifier.runningFor != mission.messengerId) {
+              notifier.start(mission);
+            }
+          });
+        }
 
         final blocked = blockedId == null
             ? null

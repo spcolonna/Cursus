@@ -91,6 +91,8 @@ const Map<String, String> kDomainStrings = {
       'Tu mensajero está herido. Cúralo en la tienda antes de salir.',
   'ui.error.chapter_rank': 'Este capítulo pide rango {rank}.',
   'ui.error.primary_busy': 'Tu mensajero principal está ocupado.',
+  'ui.error.messenger_busy': 'Ese mensajero ya está de viaje.',
+  'ui.error.event_gone': 'Ese evento ya se resolvió.',
   'ui.error.replay_unavailable':
       'Para volver a recorrer un arco, termínalo y espera a que no haya un capítulo en viaje.',
   'ui.error.replay_in_progress':

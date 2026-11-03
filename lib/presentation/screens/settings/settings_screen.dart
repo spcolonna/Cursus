@@ -436,6 +436,7 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
           onChanged: (v) async {
             await progress.setSfxEnabled(v);
             ref.read(sfxServiceProvider).setEnabled(v);
+            if (!mounted) return;
             setState(() => _sfx = v);
             if (v) AppFeedback.toggle();
           },
@@ -447,6 +448,7 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
           onChanged: (v) async {
             await progress.setHapticsEnabled(v);
             AppFeedback.hapticsEnabled = v;
+            if (!mounted) return;
             setState(() => _haptics = v);
             if (v) AppFeedback.toggle();
           },
@@ -458,6 +460,7 @@ class _SfxToggleCardState extends ConsumerState<_SfxToggleCard> {
           onChanged: (v) async {
             await progress.setReduceMotion(v);
             AppMotion.userPrefersReduced.value = v;
+            if (!mounted) return;
             setState(() => _reduceMotion = v);
           },
         ),
@@ -529,6 +532,7 @@ class _UsageDataCardState extends ConsumerState<_UsageDataCard> {
           onChanged: (v) async {
             await ref.read(playerProgressProvider).setAnalyticsEnabled(v);
             ref.read(analyticsProvider).enabled = v;
+            if (!mounted) return;
             setState(() => _enabled = v);
           },
         ),

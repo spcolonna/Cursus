@@ -398,7 +398,9 @@ class AutoResolveExpiredEventsUseCase {
         return e;
       }).toList();
 
+      // El instinto actúa al vencer la ventana: hasta ahí estuvo detenido.
       current = current
+          .frozenBy(expired, expired.deadlineAt)
           .copyWith(events: updatedEvents)
           .delayedBy(outcome.timeDeltaMinutes);
       changed = true;
@@ -451,6 +453,11 @@ class AcceptTutorialUseCase {
     if (messenger.status == MessengerStatus.injured || messenger.health <= 0) {
       throw Exception(ds('ui.error.injured'));
     }
+    // Un doble toque no puede dejar dos misiones para el mismo mensajero.
+    if (messenger.status != MessengerStatus.idle ||
+        await _mission.getActiveMissionFor(messenger.id) != null) {
+      throw Exception(ds('ui.error.messenger_busy'));
+    }
     final mission = await _mission.createTutorialMission(tutorialIndex, messenger.id);
     await _messenger.saveMessenger(messenger.copyWith(status: MessengerStatus.onMission));
     return mission;
@@ -479,6 +486,10 @@ class AcceptMissionUseCase {
         : messengers.first;
     if (messenger.status == MessengerStatus.injured || messenger.health <= 0) {
       throw Exception(ds('ui.error.injured'));
+    }
+    if (messenger.status != MessengerStatus.idle ||
+        await _mission.getActiveMissionFor(messenger.id) != null) {
+      throw Exception(ds('ui.error.messenger_busy'));
     }
 
     // Consumir boosts comprados en la tienda para esta misión.
@@ -985,6 +996,9 @@ class CompleteMissionUseCase {
     final allMissions = await _mission.getAllActiveMissions();
     final mission = allMissions.where((m) => m.messengerId == messengerId).firstOrNull;
     if (mission == null) return null;
+    // La pantalla puede mostrar "Entregar" con un estado viejo: el dominio
+    // no entrega antes de la llegada.
+    if (!mission.readyToDeliverAt(GameClock.now())) return null;
 
     final messengers = await _messenger.getAllMessengers();
     final messenger = messengers.where((m) => m.id == messengerId).firstOrNull;
@@ -1236,6 +1250,20 @@ class ResolveEventUseCase {
     required MissionEvent event,
     required EventOption option,
   }) async {
+    // La pantalla pudo quedar vieja (p. ej. el evento se auto-resolvió
+    // mientras tanto): manda lo guardado.
+    final stored = await _mission.getActiveMissionFor(mission.messengerId);
+    if (stored != null && stored.id == mission.id) {
+      final current = stored.events.where((e) => e.id == event.id).firstOrNull;
+      if (current == null || !current.isUnresolved) {
+        throw Exception(ds('ui.error.event_gone'));
+      }
+      mission = stored;
+      event = current;
+    }
+    // El viaje estuvo detenido mientras el evento esperaba respuesta.
+    mission = mission.frozenBy(event, GameClock.now());
+
     final messengers = await _messenger.getAllMessengers();
     final messenger = messengers
         .where((m) => m.id == mission.messengerId)

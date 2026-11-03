@@ -39,6 +39,7 @@ const _kLegacyGameKeys = <String>[
 /// Lee y escribe la partida del dispositivo como un [SaveSnapshot], y
 /// recuerda qué se sincronizó (eso no viaja).
 class LocalSaveStore {
+  static const _kUserId = 'user_id';
   static const _kDevice = 'cloud_device_id_v1';
   static const _kRevision = 'cloud_synced_revision_v1';
   static const _kHash = 'cloud_synced_hash_v1';
@@ -58,7 +59,11 @@ class LocalSaveStore {
   /// Reemplaza la partida local por [snapshot].
   Future<void> restore(SaveSnapshot snapshot) async {
     final p = await SharedPreferences.getInstance();
+    // La sesión local no viaja: se conserva (o se crea, si se restaura desde
+    // el login) para que el splash no vuelva a mandar al login.
+    final userId = p.getString(_kUserId) ?? const Uuid().v4();
     await _removeGameKeys(p);
+    await p.setString(_kUserId, userId);
     for (final e in snapshot.data.entries) {
       if (!kCloudSaveKeys.contains(e.key)) continue;
       final v = e.value;

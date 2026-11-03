@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/analytics.dart';
+import '../../domain/entities/domain_strings.dart';
 import '../../domain/entities/entities.dart';
 import '../../domain/entities/guild.dart';
 import '../../domain/entities/notifications.dart';
@@ -217,7 +218,8 @@ class LocalMessengerRepository implements MessengerRepository {
   }) async {
     final cost = messengerSlotCosts[slotIndex] ?? 999;
     if (payer.aureos < cost) {
-      throw Exception('Aureos insuficientes (necesitas $cost, tienes ${payer.aureos})');
+      throw Exception(
+          ds('ui.error.no_aureos', {'cost': cost, 'have': payer.aureos}));
     }
     // Descontar Aureos del mensajero que paga
     final updatedPayer = payer.copyWith(aureos: payer.aureos - cost);
@@ -827,7 +829,7 @@ class LocalGuildRepository implements GuildRepository {
     }
 
     // Cambió el día → tablón nuevo, conservando la racha de paga
-    if (state.contractsDate != dateKey(now)) {
+    if (isLaterDay(dateKey(now), state.contractsDate)) {
       state = GuildState.freshFor(now,
           streakDay: state.streakDay, lastPayDate: state.lastPayDate);
       await saveState(state);

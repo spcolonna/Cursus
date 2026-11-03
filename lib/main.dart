@@ -138,8 +138,19 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
   /// cambiar de hora) y las misiones se recalculan con ella.
   Future<void> _resyncClock() async {
     await _clock.restore();
-    if (mounted) ref.invalidate(homeProvider);
-    if (await _clock.syncWithServer() && mounted) ref.invalidate(homeProvider);
+    if (mounted) _reloadTimeDependent();
+    if (await _clock.syncWithServer() && mounted) _reloadTimeDependent();
+  }
+
+  // Pudo pasar la medianoche o el lunes: el tablón y los semanales cambian.
+  void _reloadTimeDependent() {
+    ref.invalidate(homeProvider);
+    ref.invalidate(guildProvider);
+    ref.invalidate(weeklyProvider);
+    // La hora del teléfono que corresponde a cada aviso cambió con el reloj.
+    ref.read(homeProvider.future).then(
+        (_) => ref.read(homeProvider.notifier).syncAllNotifications(),
+        onError: (_) {});
   }
 
   @override

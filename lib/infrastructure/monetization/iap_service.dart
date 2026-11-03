@@ -96,8 +96,15 @@ class PurchaseLedger {
 
 /// Id único de una transacción (purchaseID; si la tienda no lo da, producto
 /// y fecha).
-String transactionIdOf(PurchaseDetails p) =>
-    p.purchaseID ?? '${p.productID}@${p.transactionDate ?? ''}';
+String transactionIdOf(PurchaseDetails p) {
+  // En Play, los códigos promocionales pueden traer purchaseID vacío: ahí
+  // el token de compra es lo único que distingue una de otra.
+  final id = p.purchaseID;
+  if (id != null && id.isNotEmpty) return id;
+  final token = p.verificationData.serverVerificationData;
+  if (token.isNotEmpty) return token;
+  return '${p.productID}@${p.transactionDate ?? ''}';
+}
 
 /// Integra `in_app_purchase`. Si la tienda no está disponible (sim/dev sin
 /// productos), en debug acredita vía sandbox para poder playtestear la economía.
@@ -199,8 +206,18 @@ class IapService {
     await _iap.restorePurchases();
   }
 
+  // Las entregas de la tienda se procesan de a una: dos emisiones con la
+  // misma transacción no pueden pasar las dos el chequeo del registro.
+  Future<void> _handling = Future.value();
+
   /// Procesa lo que entrega la tienda. Público para los tests.
-  Future<void> handlePurchases(List<PurchaseDetails> purchases) async {
+  Future<void> handlePurchases(List<PurchaseDetails> purchases) {
+    final next = _handling.then((_) => _handlePurchases(purchases));
+    _handling = next.then((_) {}, onError: (_) {});
+    return next;
+  }
+
+  Future<void> _handlePurchases(List<PurchaseDetails> purchases) async {
     for (final purchase in purchases) {
       final id = purchase.productID;
       switch (purchase.status) {

@@ -46,10 +46,24 @@ class SaveSnapshot {
       (data['completed_missions'] as List?)?.isNotEmpty != true;
 
   SaveSummary get summary => SaveSummary(
-        name: (data['user_name'] as String?) ?? ds('ui.messenger.default_name'),
+        name: _messengerName ??
+            (data['user_name'] as String?) ??
+            ds('ui.messenger.default_name'),
         completedMissions: (data['completed_missions'] as List?)?.length ?? 0,
         savedAt: savedAt,
       );
+
+  // El nombre del mensajero principal: `user_name` es siempre el genérico
+  // y en un conflicto las dos partidas se verían iguales.
+  String? get _messengerName {
+    try {
+      final list = jsonDecode(data['messengers_v2'] as String? ?? '[]');
+      final name = list is List && list.isNotEmpty ? list.first['name'] : null;
+      return name is String && name.isNotEmpty ? name : null;
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Huella del contenido: si no cambió, no se vuelve a subir.
   String get contentHash {

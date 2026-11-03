@@ -521,6 +521,9 @@ class _Missions extends Fake implements MissionRepository {
   @override
   Future<List<Mission>> getAllActiveMissions() async => active;
   @override
+  Future<Mission?> getActiveMissionFor(String messengerId) async =>
+      active.where((m) => m.messengerId == messengerId).firstOrNull;
+  @override
   Future<void> completeMission(String missionId, MissionResult result) async =>
       active.removeWhere((m) => m.id == missionId);
   @override

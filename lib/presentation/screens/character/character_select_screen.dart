@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../feedback/feedback.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/components.dart';
 import '../../widgets/messenger_avatar.dart';
 import '../../providers/providers.dart';
 import '../../../domain/entities/entities.dart';
@@ -43,11 +44,24 @@ class _CharacterSelectScreenState
       return;
     }
     setState(() { _saving = true; _error = null; });
-    await ref.read(authProvider.notifier).markOnboardingDone();
-    await ref.read(messengerRepositoryProvider).createDefaultWithGender(name, _gender);
+    try {
+      await ref.read(authProvider.notifier).markOnboardingDone();
+      final repo = ref.read(messengerRepositoryProvider);
+      // Si ya hay mensajero (se volvió acá por error), no se crea otro.
+      if ((await repo.getAllMessengers()).isEmpty) {
+        await repo.createDefaultWithGender(name, _gender);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _saving = false);
+        showErrorSnack(context, e);
+      }
+      return;
+    }
     // El home pudo quedar cacheado sin mensajero (p. ej. tras reiniciar la
     // partida): sin esto vuelve a mandar acá.
     ref.invalidate(homeProvider);
+    ref.read(cloudSyncProvider).markDirty();
     if (mounted) context.go('/home');
   }
 

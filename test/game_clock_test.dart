@@ -184,7 +184,6 @@ void main() {
     // propósito; toda regla de juego usa GameClock.now().
     const allowed = {
       'analytics_usecases.dart': 2,
-      'world.dart': 1,
       'usecases.dart': 2,
     };
     final counts = <String, int>{};

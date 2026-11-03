@@ -2251,6 +2251,8 @@
  "ui.error.option_locked": "Your messenger can't take that option yet.",
  "ui.error.pay_claimed": "You've already collected today's pay",
  "ui.error.primary_busy": "Your main messenger is busy.",
+ "ui.error.messenger_busy": "That messenger is already on the road.",
+ "ui.error.event_gone": "That event was already resolved.",
  "ui.error.replay_in_progress": "A chapter of this replay is on the road: wait for it to arrive.",
  "ui.error.replay_unavailable": "To replay an arc, finish it first and wait until no chapter is on the road.",
  "ui.error.skill_pick_maxed": "That skill is already at level {level}. Choose another.",

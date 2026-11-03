@@ -441,7 +441,20 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     return manualPriceFor(target.skillLevel(skill));
   }
 
+  // Un doble toque no cobra dos veces.
+  bool _buying = false;
+
   Future<void> _buy(ShopItem item, Messenger? target) async {
+    if (_buying) return;
+    _buying = true;
+    try {
+      await _buyNow(item, target);
+    } finally {
+      _buying = false;
+    }
+  }
+
+  Future<void> _buyNow(ShopItem item, Messenger? target) async {
     final messenger = ref.read(homeProvider).valueOrNull?.messenger;
     if (messenger == null || target == null) return;
 
@@ -504,6 +517,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     }
     AppFeedback.reward();
     ref.invalidate(homeProvider);
+    ref.read(cloudSyncProvider).markDirty();
     if (manualSkillFor(item.id) != null) {
       await ref
           .read(primerosPasosProvider.notifier)
@@ -530,6 +544,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
       _showEffectApplied(item);
     }
 
+    if (!mounted) return;
     setState(() => _purchasedId = item.id);
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) setState(() => _purchasedId = null);
@@ -882,7 +897,8 @@ class _ShopCard extends StatelessWidget {
             // Reward preview for aureo packs
             if (item.aureosReward != null || item.dinariosReward != null) ...[
               const SizedBox(height: 5),
-              Row(children: [
+              // Wrap: en inglés y a 360 dp los dos premios no entran en fila.
+              Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
                 if (item.aureosReward != null) ...[
                   const Icon(Icons.monetization_on,
                       size: 12, color: AppColors.ochreDeep),

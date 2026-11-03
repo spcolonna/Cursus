@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/entities/game_clock.dart';
+import '../../domain/entities/guild.dart';
 
 /// Preferencias de onboarding / engagement (checklist + tooltips + cosmética).
 class PlayerProgress {
@@ -79,16 +80,14 @@ class PlayerProgress {
   /// (`RemoteFlags.travelAdsPerDay`, GDD §6.4).
   Future<int> travelAdsUsedToday() async {
     final p = await SharedPreferences.getInstance();
-    final today = _dayKey();
-    if (p.getString(_kAdsTravelToday) != today) return 0;
+    if (!_isToday(p.getString(_kAdsTravelToday))) return 0;
     return p.getInt(_kAdsTravelCount) ?? 0;
   }
 
   Future<void> recordTravelAd() async {
     final p = await SharedPreferences.getInstance();
-    final today = _dayKey();
-    if (p.getString(_kAdsTravelToday) != today) {
-      await p.setString(_kAdsTravelToday, today);
+    if (!_isToday(p.getString(_kAdsTravelToday))) {
+      await p.setString(_kAdsTravelToday, _dayKey());
       await p.setInt(_kAdsTravelCount, 1);
     } else {
       await p.setInt(_kAdsTravelCount, (p.getInt(_kAdsTravelCount) ?? 0) + 1);
@@ -97,7 +96,7 @@ class PlayerProgress {
 
   Future<bool> doublePayUsedToday() async {
     final p = await SharedPreferences.getInstance();
-    return p.getString(_kAdsDoublePayDay) == _dayKey();
+    return _isToday(p.getString(_kAdsDoublePayDay));
   }
 
   Future<void> markDoublePayUsed() async {
@@ -182,8 +181,12 @@ class PlayerProgress {
     await p.setBool(_kAnalytics, enabled);
   }
 
-  String _dayKey() {
-    final n = GameClock.now();
-    return '${n.year}-${n.month}-${n.day}';
-  }
+  String _dayKey() => dateKey(GameClock.now());
+
+  /// El día guardado es hoy o "posterior" (la zona horaria se movió hacia
+  /// atrás): el tope sigue usado. Las claves viejas sin ceros no cuentan.
+  bool _isToday(String? stored) =>
+      stored != null &&
+      stored.length == 10 &&
+      !isLaterDay(_dayKey(), stored);
 }

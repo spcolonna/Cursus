@@ -82,11 +82,23 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/mission-result',
+      // Sin datos (p. ej. al restaurar la app) no hay resultado que mostrar.
+      redirect: (_, state) =>
+          state.extra is Map<String, dynamic> ? null : '/home',
       pageBuilder: (_, state) {
         final extra = state.extra as Map<String, dynamic>;
-        return _fullScalePage(state, MissionResultScreen(
-          mission: extra['mission'] as Mission,
-          completion: extra['completion'] as MissionCompletion?,
+        // Llega con go(): el atrás de Android cerraría la app.
+        return _fullScalePage(state, Builder(
+          builder: (context) => PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, _) {
+              if (!didPop) context.go('/home');
+            },
+            child: MissionResultScreen(
+              mission: extra['mission'] as Mission,
+              completion: extra['completion'] as MissionCompletion?,
+            ),
+          ),
         ));
       },
     ),

@@ -8,6 +8,7 @@ import 'package:the_messenger/data/static_game_content.dart';
 import 'package:the_messenger/data/story_content.dart';
 import 'package:the_messenger/domain/entities/economy.dart';
 import 'package:the_messenger/domain/entities/entities.dart';
+import 'package:the_messenger/domain/entities/guild.dart';
 import 'package:the_messenger/domain/entities/remote_flags.dart';
 import 'package:the_messenger/domain/entities/notifications.dart';
 import 'package:the_messenger/domain/entities/world.dart';
@@ -716,5 +717,49 @@ void main() {
     final src = File('lib/data/game_content.dart').readAsStringSync();
     expect(RegExp(r"outcome(Success|Partial|Fail): '[~*#]").hasMatch(src),
         isFalse);
+  });
+
+  group('Caza de bugs (2026-11)', () {
+    test('el tiempo detenido por un evento corre la llegada y los siguientes',
+        () {
+      final start = DateTime(2026, 1, 1, 10);
+      final e1 = _event('e1', start.add(const Duration(minutes: 10)));
+      final e2 = _event('e2', start.add(const Duration(minutes: 15)));
+      final m = _mission(
+          startedAt: start,
+          deadlineAt: start.add(const Duration(hours: 2)),
+          events: [e1, e2]);
+      // E1 se resuelve a los 69 min: estuvo 59 min detenido.
+      final frozen = m.frozenBy(e1, start.add(const Duration(minutes: 69)));
+      expect(frozen.deadlineAt, start.add(const Duration(minutes: 179)));
+      final e2After = frozen.events.firstWhere((e) => e.id == 'e2');
+      expect(e2After.triggersAt, start.add(const Duration(minutes: 74)));
+      // E2 conserva su ventana entera: no vence sin que el jugador lo vea.
+      expect(e2After.deadlineAt.difference(e2After.triggersAt),
+          const Duration(minutes: 60));
+      // El evento resuelto no se mueve.
+      expect(frozen.events.firstWhere((e) => e.id == 'e1').triggersAt,
+          e1.triggersAt);
+    });
+
+    test('los días se comparan con orden: volver atrás no reabre el día', () {
+      expect(isLaterDay('2026-11-04', '2026-11-03'), isTrue);
+      expect(isLaterDay('2026-11-03', '2026-11-04'), isFalse);
+      expect(isLaterDay('2026-11-03', '2026-11-03'), isFalse);
+      expect(isLaterDay('2026-11-03', null), isTrue);
+      expect(isLaterDay('2027-01-01', '2026-12-31'), isTrue);
+    });
+
+    test('no se acepta una segunda misión para un mensajero en viaje',
+        () async {
+      final messengers = _MessengerRepo([
+        _messenger().copyWith(status: MessengerStatus.onMission),
+      ]);
+      final missions = _MissionRepo();
+      expect(
+        () => AcceptTutorialUseCase(missions, messengers).execute(0),
+        throwsException,
+      );
+    });
   });
 }

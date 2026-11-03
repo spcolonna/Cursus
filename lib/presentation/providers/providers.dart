@@ -76,11 +76,18 @@ final cloudSyncProvider = Provider<CloudSyncService>((ref) {
   return service;
 });
 
+/// El diálogo de paga del gremio se muestra una vez por sesión de app (y
+/// de nuevo si se empieza otra partida).
+bool payDialogShownThisSession = false;
+
 /// Recarga todo el estado de juego desde el dispositivo (tras restaurar o
 /// borrar una partida). Después hay que volver a '/' para que el splash
 /// decida a dónde ir.
 void reloadGameState(WidgetRef ref) {
   ref.read(celebrationQueueProvider.notifier).clear();
+  // Los avisos programados son de la partida anterior.
+  ref.read(notificationSchedulerProvider).cancelAll();
+  payDialogShownThisSession = false;
   for (final p in <ProviderOrFamily>[
     authProvider,
     homeProvider,
@@ -104,7 +111,11 @@ final iapServiceProvider = Provider<IapService>((ref) => IapService(
       onPurchased: (productId) async {
         final itemId = IapProducts.shopItemIdForProduct(productId);
         if (itemId == null) return;
-        await ref.read(creditPurchaseUseCaseProvider).execute(itemId);
+        final credited =
+            await ref.read(creditPurchaseUseCaseProvider).execute(itemId);
+        // Sin mensajero no hay a quién acreditar: queda sin cerrar y la
+        // tienda la vuelve a entregar.
+        if (credited == null) throw StateError('no messenger for $itemId');
         ref.read(analyticsProvider).track(AnalyticsEvent.iapCredited(itemId));
         ref.invalidate(homeProvider);
         await ref
@@ -358,14 +369,34 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
   @override
   Future<HomeState> build() => _load();
 
+  // Las cargas escriben (auto-resuelven eventos): van de a una, nunca en
+  // paralelo, o un evento vencido se resolvería dos veces.
+  static Future<void> _loading = Future.value();
+  // Un doble toque en "Aceptar" no dispara dos aceptaciones.
+  bool _accepting = false;
+
   Future<void> refresh() async {
     // No usar AsyncLoading — evita flashes en UI y re-triggers innecesarios
     state = AsyncData(await _load());
     ref.read(cloudSyncProvider).markDirty();
   }
 
+  Future<HomeState> _load() {
+    final next = _loading.then((_) => _loadNow());
+    _loading = next.then((_) {}, onError: (_) {});
+    // La auto-resolución corrió llegadas y eventos: los avisos viejos
+    // sonarían antes de tiempo. Se reprograma cuando el estado ya está.
+    next.then((home) {
+      if (home.autoResolved.isNotEmpty) {
+        // El notifier pudo haberse reemplazado mientras tanto.
+        Future(syncAllNotifications).catchError((_) {});
+      }
+    }, onError: (_) {});
+    return next;
+  }
+
   /// Primero repara arcos y auto-resuelve eventos vencidos (escribe), después lee.
-  Future<HomeState> _load() async {
+  Future<HomeState> _loadNow() async {
     await ref.read(repairArcStateUseCaseProvider).execute();
     // Crea (o migra) la progresión antes de que cualquier acción la registre.
     await ref.read(getProgressionUseCaseProvider).execute();
@@ -437,8 +468,15 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
   }
 
   Future<Mission?> acceptTutorialMission(int index, {String? messengerId}) async {
-    final mission = await ref.read(acceptTutorialMissionUseCaseProvider)
-        .execute(index, messengerId: messengerId);
+    if (_accepting) return null;
+    _accepting = true;
+    final Mission mission;
+    try {
+      mission = await ref.read(acceptTutorialMissionUseCaseProvider)
+          .execute(index, messengerId: messengerId);
+    } finally {
+      _accepting = false;
+    }
     await refresh();
     _track(AnalyticsEvent.tutorialStep(index));
     _trackAccept(mission, 'tutorial');
@@ -447,8 +485,15 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
   }
 
   Future<Mission?> acceptMission(GameRoute route, {String? messengerId}) async {
-    final mission = await ref.read(acceptMissionUseCaseProvider)
-        .execute(route, messengerId: messengerId);
+    if (_accepting) return null;
+    _accepting = true;
+    final Mission mission;
+    try {
+      mission = await ref.read(acceptMissionUseCaseProvider)
+          .execute(route, messengerId: messengerId);
+    } finally {
+      _accepting = false;
+    }
     await refresh();
     _trackAccept(mission, 'real');
     await syncAllNotifications();
@@ -805,10 +850,17 @@ class MissionProgressNotifier extends Notifier<MissionProgressState> {
     return const MissionProgressState(progress: 0.0);
   }
 
+  // El estado es uno para toda la app: se recuerda de qué mensajero es para
+  // que una pantalla tapada por otra misión lo retome al volver.
+  String? _messengerId;
+  String? get runningFor => _messengerId;
+
   void start(Mission mission) {
     _timer?.cancel();
     _timer = null;
+    _messengerId = mission.messengerId;
     _notifiedEvents.clear(); // resetear para la nueva misión
+    _expiredEvents.clear();
     if (_disposed) return;
     _tick(mission);
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -834,10 +886,19 @@ class MissionProgressNotifier extends Notifier<MissionProgressState> {
   void stop() {
     _timer?.cancel();
     _timer = null;
+    _messengerId = null;
+  }
+
+  /// Para solo si sigue corriendo la misión de [messengerId]: otra pantalla
+  /// pudo haberlo tomado.
+  void stopFor(String? messengerId) {
+    if (messengerId == null || messengerId == _messengerId) stop();
   }
 
   // Rastreamos eventos ya notificados para no invalidar en cada tick
   final Set<String> _notifiedEvents = {};
+  // Y los que vencieron con la pantalla abierta: la recarga los auto-resuelve.
+  final Set<String> _expiredEvents = {};
 
   void _tick(Mission mission) {
     if (_disposed) return;
@@ -849,6 +910,13 @@ class MissionProgressNotifier extends Notifier<MissionProgressState> {
           !now.isBefore(e.triggersAt) &&
           !_notifiedEvents.contains(e.id)) {
         _notifiedEvents.add(e.id);
+        ref.invalidate(homeProvider);
+        break;
+      }
+      if (e.isUnresolved &&
+          !mission.isTutorial &&
+          now.isAfter(e.deadlineAt) &&
+          _expiredEvents.add(e.id)) {
         ref.invalidate(homeProvider);
         break;
       }
@@ -1020,16 +1088,26 @@ class PrimerosPasosNotifier extends AsyncNotifier<PrimerosPasosState> {
     ref.invalidateSelf();
   }
 
+  bool _claiming = false;
+
   Future<void> claimReward() async {
     final current = state.valueOrNull;
-    if (current == null || current.claimed) return;
+    if (_claiming || current == null || current.claimed) return;
     if (!PlayerProgress.allTasks.every(current.completed.contains)) return;
 
-    final credited =
-        await ref.read(claimChecklistRewardUseCaseProvider).execute();
-    if (!credited) return;
-    await ref.read(playerProgressProvider).markChecklistClaimed();
+    _claiming = true;
+    try {
+      final progress = ref.read(playerProgressProvider);
+      if (await progress.isChecklistClaimed()) return;
+      final credited =
+          await ref.read(claimChecklistRewardUseCaseProvider).execute();
+      if (!credited) return;
+      await progress.markChecklistClaimed();
+    } finally {
+      _claiming = false;
+    }
     ref.invalidate(homeProvider);
+    ref.read(cloudSyncProvider).markDirty();
     ref.invalidateSelf();
   }
 
