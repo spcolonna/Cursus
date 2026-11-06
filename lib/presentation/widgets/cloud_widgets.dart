@@ -25,8 +25,8 @@ Future<void> resolveSaveConflict(
   if (keepRemote == null) return;
   await ref.read(cloudSyncProvider).resolve(conflict, keepRemote: keepRemote);
   if (keepRemote && context.mounted) {
-    reloadGameState(ref);
-    context.go('/');
+    await reloadGameState(ref);
+    if (context.mounted) context.go('/');
   }
 }
 
@@ -158,8 +158,8 @@ class _AccountCardState extends ConsumerState<AccountCard> {
         await resolveSaveConflict(context, ref, conflict);
       } else if (outcome == LinkOutcome.switchedAccount) {
         // Se bajó la partida de esa cuenta.
-        reloadGameState(ref);
-        context.go('/');
+        await reloadGameState(ref);
+        if (mounted) context.go('/');
       } else if (outcome == LinkOutcome.linked) {
         showGameSnack(context, AppLocalizations.of(context).cloudLinked);
       }
@@ -184,7 +184,8 @@ class _AccountCardState extends ConsumerState<AccountCard> {
       await ref.read(cloudSyncProvider).deleteEverything();
       await ref.read(authProvider.notifier).signOut();
       if (!mounted) return;
-      reloadGameState(ref);
+      await reloadGameState(ref);
+      if (!mounted) return;
       context.go('/login');
     } catch (e) {
       if (mounted) {

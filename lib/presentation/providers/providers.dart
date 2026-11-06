@@ -83,10 +83,11 @@ bool payDialogShownThisSession = false;
 /// Recarga todo el estado de juego desde el dispositivo (tras restaurar o
 /// borrar una partida). Después hay que volver a '/' para que el splash
 /// decida a dónde ir.
-void reloadGameState(WidgetRef ref) {
+Future<void> reloadGameState(WidgetRef ref) async {
   ref.read(celebrationQueueProvider.notifier).clear();
-  // Los avisos programados son de la partida anterior.
-  ref.read(notificationSchedulerProvider).cancelAll();
+  // Los avisos programados son de la partida anterior. Se espera la
+  // cancelación: si no, podría borrar los que reprograma la partida nueva.
+  await ref.read(notificationSchedulerProvider).cancelAll();
   payDialogShownThisSession = false;
   for (final p in <ProviderOrFamily>[
     authProvider,

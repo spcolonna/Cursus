@@ -364,18 +364,17 @@ class Mission {
   }
 
   /// El viaje estuvo detenido desde que llegó [blocking] hasta [resolvedAt]:
-  /// la llegada y los eventos siguientes se corren ese tiempo, así nadie
-  /// pierde la ventana de un evento que estaba tapado por otro.
+  /// toda la línea de tiempo (salida, llegada y eventos) se corre ese tiempo.
+  /// Así nadie pierde la ventana de un evento tapado por otro, la barra de
+  /// progreso no salta y la duración del viaje (paga, XP, nota de tiempo) no
+  /// crece por esperar.
   Mission frozenBy(MissionEvent blocking, DateTime resolvedAt) {
     final frozen = resolvedAt.difference(blocking.triggersAt);
     if (frozen <= Duration.zero) return this;
     return copyWith(
+      startedAt: startedAt.add(frozen),
       deadlineAt: deadlineAt.add(frozen),
-      events: events.map((e) {
-        if (e.id == blocking.id || !e.isUnresolved) return e;
-        if (e.triggersAt.isBefore(blocking.triggersAt)) return e;
-        return e.shiftBy(frozen);
-      }).toList(),
+      events: events.map((e) => e.shiftBy(frozen)).toList(),
     );
   }
 

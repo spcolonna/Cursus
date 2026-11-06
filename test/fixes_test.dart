@@ -737,9 +737,75 @@ void main() {
       // E2 conserva su ventana entera: no vence sin que el jugador lo vea.
       expect(e2After.deadlineAt.difference(e2After.triggersAt),
           const Duration(minutes: 60));
-      // El evento resuelto no se mueve.
-      expect(frozen.events.firstWhere((e) => e.id == 'e1').triggersAt,
-          e1.triggersAt);
+      // Toda la línea de tiempo se corre: la duración del viaje no crece
+      // por esperar y la barra no salta al resolver.
+      expect(frozen.startedAt, start.add(const Duration(minutes: 59)));
+      expect(frozen.deadlineAt.difference(frozen.startedAt),
+          m.deadlineAt.difference(m.startedAt));
+      final at = start.add(const Duration(minutes: 69));
+      expect(frozen.progressAt(at), closeTo(m.progressAt(at), 0.001));
+    });
+
+    test('el instinto con eventos seguidos solo resuelve el que venció',
+        () async {
+      // E1 a la hora, E2 a la hora y media; se vuelve 3h10 después de salir.
+      final start = now.subtract(const Duration(minutes: 190));
+      final mission = _mission(
+        startedAt: start,
+        deadlineAt: start.add(const Duration(hours: 5)),
+        events: [
+          _event('e1', start.add(const Duration(minutes: 60))),
+          _event('e2', start.add(const Duration(minutes: 90))),
+        ],
+      );
+      final repo = _MissionRepo(mission);
+      final report = await AutoResolveExpiredEventsUseCase(
+              _MessengerRepo([_messenger()]), repo, _WorldRepo())
+          .execute(now: now);
+      expect(report.map((r) => r.eventTitle).length, 1);
+      final saved = repo.saved!;
+      expect(saved.events.firstWhere((e) => e.id == 'e1').status,
+          EventStatus.resolved);
+      final e2 = saved.events.firstWhere((e) => e.id == 'e2');
+      // E2 estuvo tapado por E1 (60 min): conserva su ventana.
+      expect(e2.isUnresolved, isTrue);
+      expect(e2.deadlineAt.isAfter(now), isTrue);
+    });
+
+    test('responder tarde no congela más allá de la ventana del evento',
+        () async {
+      final ev = _event('e1', now.subtract(const Duration(hours: 5)));
+      final mission = _mission(
+        startedAt: now.subtract(const Duration(hours: 6)),
+        deadlineAt: now.add(const Duration(hours: 1)),
+        events: [ev],
+      );
+      final repo = _MissionRepo(mission);
+      await ResolveEventUseCase(repo, _MessengerRepo([_messenger()]),
+              _WorldRepo(), kContent)
+          .execute(mission: mission, event: ev, option: ev.options.first);
+      // Como mucho 60 min de congelamiento (más el costo de la opción).
+      final extra = repo.saved!.deadlineAt.difference(mission.deadlineAt) -
+          Duration(minutes: ev.options.first.timeCostMinutes);
+      expect(extra, lessThanOrEqualTo(const Duration(minutes: 60)));
+    });
+
+    test('un evento de una misión que ya no está activa no se resuelve',
+        () async {
+      final ev = _event('e1', now.subtract(const Duration(minutes: 5)));
+      final mission = _mission(
+        startedAt: now.subtract(const Duration(hours: 1)),
+        deadlineAt: now.add(const Duration(hours: 1)),
+        events: [ev],
+      );
+      final repo = _MissionRepo(); // ya entregada: no hay activa
+      expect(
+        () => ResolveEventUseCase(repo, _MessengerRepo([_messenger()]),
+                _WorldRepo(), kContent)
+            .execute(mission: mission, event: ev, option: ev.options.first),
+        throwsException,
+      );
+      expect(repo.saved, isNull);
     });
 
     test('los días se comparan con orden: volver atrás no reabre el día', () {

@@ -391,17 +391,20 @@ class AutoResolveExpiredEventsUseCase {
         chosenOptionText: ds('ui.instinct.option', {'option': option.text}),
       );
 
-      final updatedEvents = current.events.map((e) {
-        if (e.id == expired.id) {
-          return e.copyWith(status: EventStatus.resolved, outcome: outcome);
-        }
-        return e;
-      }).toList();
-
       // El instinto actúa al vencer la ventana: hasta ahí estuvo detenido.
-      current = current
-          .frozenBy(expired, expired.deadlineAt)
-          .copyWith(events: updatedEvents)
+      // Primero se congela (corre los eventos siguientes) y recién después
+      // se marca resuelto, sobre la lista ya corrida.
+      final frozen = current.frozenBy(expired, expired.deadlineAt);
+      current = frozen
+          .copyWith(
+            events: frozen.events.map((e) {
+              if (e.id == expired.id) {
+                return e.copyWith(
+                    status: EventStatus.resolved, outcome: outcome);
+              }
+              return e;
+            }).toList(),
+          )
           .delayedBy(outcome.timeDeltaMinutes);
       changed = true;
       report?.add(AutoResolvedEvent(
@@ -1252,17 +1255,23 @@ class ResolveEventUseCase {
   }) async {
     // La pantalla pudo quedar vieja (p. ej. el evento se auto-resolvió
     // mientras tanto): manda lo guardado.
+    // Si la misión ya no está activa (entregada, cancelada), tampoco el
+    // evento: seguir con la copia vieja la resucitaría.
     final stored = await _mission.getActiveMissionFor(mission.messengerId);
-    if (stored != null && stored.id == mission.id) {
-      final current = stored.events.where((e) => e.id == event.id).firstOrNull;
-      if (current == null || !current.isUnresolved) {
-        throw Exception(ds('ui.error.event_gone'));
-      }
-      mission = stored;
-      event = current;
+    if (stored == null || stored.id != mission.id) {
+      throw Exception(ds('ui.error.event_gone'));
     }
-    // El viaje estuvo detenido mientras el evento esperaba respuesta.
-    mission = mission.frozenBy(event, GameClock.now());
+    final current = stored.events.where((e) => e.id == event.id).firstOrNull;
+    if (current == null || !current.isUnresolved) {
+      throw Exception(ds('ui.error.event_gone'));
+    }
+    mission = stored;
+    event = current;
+    // El viaje estuvo detenido mientras el evento esperaba respuesta, como
+    // mucho hasta que vence su ventana (lo mismo que cuenta el instinto).
+    final now = GameClock.now();
+    mission = mission.frozenBy(
+        event, now.isBefore(event.deadlineAt) ? now : event.deadlineAt);
 
     final messengers = await _messenger.getAllMessengers();
     final messenger = messengers

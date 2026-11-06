@@ -66,7 +66,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
       if (conflict != null) await resolveSaveConflict(context, ref, conflict);
       if (!mounted) return;
-      reloadGameState(ref);
+      await reloadGameState(ref);
+      if (!mounted) return;
       context.go('/');
     } catch (e) {
       if (mounted) {

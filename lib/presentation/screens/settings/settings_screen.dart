@@ -605,7 +605,7 @@ class _LanguageCardState extends ConsumerState<_LanguageCard> {
     await applyLanguage(effective);
     ref.read(languageProvider.notifier).state = effective;
     // Lo que ya estaba cargado se vuelve a leer en el idioma nuevo.
-    reloadGameState(ref);
+    await reloadGameState(ref);
   }
 
   @override

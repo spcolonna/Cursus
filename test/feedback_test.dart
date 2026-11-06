@@ -184,7 +184,7 @@ void main() {
           final event = _event(option);
           final mission = _mission(event);
           final useCase = ResolveEventUseCase(
-            _FakeMissionRepo(),
+            _FakeMissionRepo()..saved = _mission(event),
             _FakeMessengerRepo([caso.m]),
             _FakeWorldRepo(),
             kContent,
@@ -204,7 +204,7 @@ void main() {
         final option = _option(risk: 3, skills: {SkillType.stealth: 2});
         final event = _event(option);
         final useCase = ResolveEventUseCase(
-          _FakeMissionRepo(),
+          _FakeMissionRepo()..saved = _mission(event),
           _FakeMessengerRepo([
             _messenger(skills: {SkillType.stealth: 3})
           ]),
@@ -227,7 +227,7 @@ void main() {
       final option = _option(risk: 2, skills: {SkillType.survival: 1});
       final event = _event(option);
       final useCase = ResolveEventUseCase(
-        _FakeMissionRepo(),
+        _FakeMissionRepo()..saved = _mission(event),
         _FakeMessengerRepo([_messenger()]),
         _FakeWorldRepo(),
         kContent,
@@ -242,7 +242,7 @@ void main() {
       final option = _option(risk: 1);
       final event = _event(option);
       final useCase = ResolveEventUseCase(
-        _FakeMissionRepo(),
+        _FakeMissionRepo()..saved = _mission(event),
         _FakeMessengerRepo([_messenger()]),
         _FakeWorldRepo(),
         kContent,
@@ -264,7 +264,7 @@ void main() {
       for (var i = 0; i < 60; i++) {
         final event = _event(option);
         final useCase = ResolveEventUseCase(
-          _FakeMissionRepo(),
+          _FakeMissionRepo()..saved = _mission(event),
           _FakeMessengerRepo([
             _messenger(skills: {SkillType.combat: 3}, fatigue: 50)
           ]),
