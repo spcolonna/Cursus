@@ -66,8 +66,8 @@ class CloudSyncService {
       final action = decideSync(
         local: local,
         remote: cloud,
-        deviceId: local.deviceId,
         lastSyncedRevision: await store.syncedRevision(),
+        syncedHash: await store.syncedHash(),
       );
       switch (action) {
         case SyncAction.upload:

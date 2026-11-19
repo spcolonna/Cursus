@@ -333,6 +333,23 @@ class Mission {
   bool readyToDeliverAt(DateTime now) =>
       !now.isBefore(deadlineAt) && blockingEventAt(now) == null;
 
+  /// La llegada más tardía posible si nadie abre la app: cada evento sin
+  /// resolver congela el viaje toda su ventana y se auto-resuelve con una
+  /// opción que cuesta, como mucho, la más lenta. Si no quedan eventos es
+  /// la llegada exacta. Sirve para no avisar "lista" antes de tiempo: al
+  /// resolver un evento se reprograma con el valor nuevo.
+  DateTime latestArrival() {
+    var at = deadlineAt;
+    for (final e in events.where((e) => e.isUnresolved)) {
+      final slowest = e.options.fold<int>(
+          0, (m, o) => o.timeCostMinutes > m ? o.timeCostMinutes : m);
+      at = at
+          .add(e.deadlineAt.difference(e.triggersAt))
+          .add(Duration(minutes: slowest));
+    }
+    return at;
+  }
+
   /// Minutos que se ahorran adelantando hasta el próximo evento (o hasta la
   /// llegada si no quedan eventos). 0 si no hay nada que adelantar.
   int minutesToNextStopAt(DateTime now) {

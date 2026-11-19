@@ -149,20 +149,27 @@ enum SyncAction {
 }
 
 /// Decide qué partida queda. [lastSyncedRevision] es la última revisión de
-/// la nube que este dispositivo subió o bajó.
+/// la nube que este dispositivo subió o bajó, y [syncedHash] el contenido
+/// de la partida local en ese momento.
+///
+/// No se confía en el `deviceId` de la nube: la copia de seguridad de
+/// Android puede clonarlo en otro teléfono, y subir por "es mío" pisaría
+/// progreso. Manda la revisión.
 SyncAction decideSync({
   required SaveSnapshot local,
   required SaveSnapshot? remote,
-  required String deviceId,
   required int lastSyncedRevision,
+  String? syncedHash,
 }) {
   if (remote == null) return SyncAction.upload;
   if (remote.contentHash == local.contentHash) return SyncAction.none;
   if (local.isFresh) return remote.isFresh ? SyncAction.upload : SyncAction.restore;
   if (remote.isFresh) return SyncAction.upload;
   // Nadie más tocó la nube desde la última vez que la vimos.
-  if (remote.deviceId == deviceId || remote.revision <= lastSyncedRevision) {
-    return SyncAction.upload;
+  if (remote.revision <= lastSyncedRevision) return SyncAction.upload;
+  // La nube avanzó pero acá no se jugó desde entonces: solo hay un progreso.
+  if (syncedHash != null && syncedHash == local.contentHash) {
+    return SyncAction.restore;
   }
   return SyncAction.askUser;
 }

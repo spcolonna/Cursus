@@ -231,12 +231,14 @@ class LocalNotificationService implements NotificationScheduler {
       }
     }
 
-    // La entrega: cuando el viaje termina y falta apretar el botón.
-    if (prefs.allows(NotificationKind.delivery) &&
-        mission.deadlineAt.isAfter(now)) {
+    // La entrega: cuando el viaje termina y falta apretar el botón. Con
+    // eventos pendientes, a la llegada más tardía (nunca antes de poder
+    // entregar); al resolverlos se reprograma.
+    final arrival = mission.latestArrival();
+    if (prefs.allows(NotificationKind.delivery) && arrival.isAfter(now)) {
       final id = await _schedule(
         kind: NotificationKind.delivery,
-        when: mission.deadlineAt,
+        when: arrival,
         title: _l.notifDeliveryTitle,
         body: _l.notifDeliveryBody(
             messengerName, ContentL10n.place(mission.destination)),
@@ -426,7 +428,8 @@ class LocalNotificationService implements NotificationScheduler {
     return count;
   }
 
-  /// Id estable de 31 bits a partir del payload y el horario.
+  /// Id de 31 bits a partir del payload y el horario. Object.hash no es
+  /// estable entre arranques: los ids se recuerdan en el registro persistido.
   int _idFor(String payload, DateTime at) =>
       Object.hash(payload, at.millisecondsSinceEpoch).abs() % 0x7FFFFFFF;
 
@@ -436,7 +439,7 @@ class LocalNotificationService implements NotificationScheduler {
   }
 
   static NotificationKind _kindFromPayload(String? payload) {
-    final head = payload?.split(':').first ?? '';
+    final head = payload?.split(RegExp('[:|]')).first ?? '';
     return switch (head) {
       'delivery' => NotificationKind.delivery,
       'idle' => NotificationKind.idle,

@@ -11,8 +11,8 @@ Fase L2 del plan de lanzamiento. Todo entra en el plan gratis (Spark) de Firebas
 
   Si la partida no cambió (misma huella), no sube.
 - **Al arrancar**, el splash compara la partida local con la de la nube (`decideSync`):
-  - **Subir:** cuando la nube está vacía o la última subida fue de este teléfono.
-  - **Restaurar sola:** cuando el teléfono es nuevo y la nube tiene progreso.
+  - **Subir:** cuando la nube está vacía o nadie la tocó desde la última sincronización de este teléfono (manda la revisión, no el id del teléfono: el backup de Android puede clonarlo).
+  - **Restaurar sola:** cuando el teléfono es nuevo y la nube tiene progreso, o cuando la nube avanzó y en este teléfono no se jugó desde la última sincronización.
   - **Preguntar:** cuando hay progreso distinto en los dos lados. El jugador elige "Usar la de la nube" o "Usar la de este teléfono".
 - **Vincular** (Ajustes → Cuenta, con Google o Apple) convierte la cuenta anónima en permanente. Si esa cuenta de Google o Apple ya tenía partida, se entra en ella y aplica la misma decisión.
 - **"Ya tengo partida"** en la bienvenida entra con la cuenta vinculada y baja la partida.

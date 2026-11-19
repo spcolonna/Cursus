@@ -105,7 +105,7 @@ void main() {
     final local = _played('Local', device: 'yo');
     SyncAction decide(SaveSnapshot l, SaveSnapshot? r, {int synced = 0}) =>
         decideSync(
-            local: l, remote: r, deviceId: 'yo', lastSyncedRevision: synced);
+            local: l, remote: r, lastSyncedRevision: synced);
 
     test('sin nube: se sube', () {
       expect(decide(local, null), SyncAction.upload);
@@ -122,9 +122,7 @@ void main() {
       expect(decide(local, const SaveSnapshot(data: {'x': 1}, deviceId: 'otro', revision: 5)),
           SyncAction.upload);
     });
-    test('la última subida fue mía: se sube', () {
-      expect(decide(local, _played('Vieja', device: 'yo', revision: 7)),
-          SyncAction.upload);
+    test('nadie subió desde la última vez: se sube', () {
       expect(decide(local, _played('Vieja', revision: 3), synced: 3),
           SyncAction.upload);
     });
