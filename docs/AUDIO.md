@@ -1,4 +1,4 @@
-# Cursus — audio
+# Via Imperia — audio
 
 Hoja de cues para reemplazar el audio provisorio **archivo por archivo, sin tocar código**: mismo nombre, mismo formato, mismo lugar. Todo lo que hoy suena sale de dos scripts con síntesis de stdlib:
 
@@ -13,7 +13,7 @@ Si reemplazás un archivo a mano, **no vuelvas a correr el script** (lo pisa), o
 
 - **Instrumentos:** lira (cuerda pulsada), aulos (doble flauta de caña: un tubo hace el bordón, el otro la melodía), tambor de marco con sonajas, bucina (metal) para los momentos de rango. Para los efectos, materiales del oficio: papel, pergamino, tablilla de madera, cuero, cera, bronce.
 - **Modos:** dórico como casa; frigio para la intriga política (Claudius), mixolidio para la taberna (Lucius), eólico para el atardecer.
-- **El motivo:** tres notas de lira que suben por quintas, **D – A – E** (un camino que se abre). Es la firma de Cursus: suena en el splash, en la entrega con nota S y en cada aviso. Todos los temas abren con el motivo transportado a su tono; la música final debería conservarlo.
+- **El motivo:** tres notas de lira que suben por quintas, **D – A – E** (un camino que se abre). Es la firma de Via Imperia: suena en el splash, en la entrega con nota S y en cada aviso. Todos los temas abren con el motivo transportado a su tono; la música final debería conservarlo.
 - **Qué no:** sintes modernos, épica orquestal de tráiler, percusión de guerra. Es un juego de cartas y caminos, no de batallas.
 
 ## Niveles

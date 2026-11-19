@@ -1,6 +1,6 @@
 ---
 name: balance
-description: Ajustar números y economía de Cursus — fórmula de resolución de eventos, notas y paga de misiones, XP y niveles de skill, perks del árbol, Sellos del Gremio, fatiga, precios de tienda, contratos diarios y paga de racha. Usar antes de tocar usecases.dart, skill_tree.dart, guild.dart o cualquier constante numérica de gameplay.
+description: Ajustar números y economía de Via Imperia — fórmula de resolución de eventos, notas y paga de misiones, XP y niveles de skill, perks del árbol, Sellos del Gremio, fatiga, precios de tienda, contratos diarios y paga de racha. Usar antes de tocar usecases.dart, skill_tree.dart, guild.dart o cualquier constante numérica de gameplay.
 ---
 
 # Balance y economía
@@ -70,7 +70,7 @@ Catálogo y precios: `shopCatalogue` en `lib/presentation/screens/shop/shop_scre
 
 - Mínimo **1 evento cada 8 h** de duración: una misión de 72 h con pocos eventos se siente muerta.
 - Ningún evento debe exigir más de ~90 segundos de atención.
-- Los eventos congelan el progreso hasta que se resuelvan; a los 60 min se auto-resuelven con la opción prudente y aplican sus efectos narrativos (flags, reputación, diario).
+- Los eventos congelan el progreso hasta que se resuelvan; a los 60 min se auto-resuelven con la opción prudente y aplican sus efectos narrativos (flags, reputación, diario). La espera corre toda la misión en el tiempo (`Mission.frozenBy`): no suma duración, paga, XP ni minutos semanales.
 
 ## Logros
 

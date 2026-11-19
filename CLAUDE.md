@@ -87,7 +87,7 @@ lib/
     ├── widgets/event_scene.dart          EventBackdrop / EventScene: escenario del evento por categoría
     ├── widgets/living_sky.dart           LivingSkyBackground: paisaje de la hora (home, splash, login)
     ├── widgets/insignia.dart             WaxSeal, FactionCrest
-    ├── widgets/brand.dart                marca Cursus: BrandSealPainter (también genera el ícono), BrandMark
+    ├── widgets/brand.dart                marca Via Imperia: BrandSealPainter (también genera el ícono), BrandMark
     ├── widgets/skill_tree_board.dart     árbol de caminos visual (5 columnas, sellos 6-10)
     ├── widgets/celebration_host.dart     logros, rangos y escalones de facción sobre toda la app
     ├── widgets/music_director.dart       qué tema suena según ruta, hora y arco (musicTrackFor)

@@ -8,7 +8,7 @@
 
 ## 1. Visión y pilares
 
-**Cursus es el juego que vive en tu día.** Encarnás a un mensajero en la Roma del 50 a.C. Tus misiones transcurren en **tiempo real de reloj**: aceptás una entrega de 2 horas y tu mensajero viaja esas 2 horas, aunque cierres la app. En el camino pasan cosas — patrullas, tormentas, bandidos — y cada una te pide una decisión de 1 minuto que puede salvar o arruinar la entrega.
+**Via Imperia es el juego que vive en tu día.** Encarnás a un mensajero en la Roma del 50 a.C. Tus misiones transcurren en **tiempo real de reloj**: aceptás una entrega de 2 horas y tu mensajero viaja esas 2 horas, aunque cierres la app. En el camino pasan cosas — patrullas, tormentas, bandidos — y cada una te pide una decisión de 1 minuto que puede salvar o arruinar la entrega.
 
 No competimos por horas de atención: competimos por **momentos**. El jugador ideal abre el juego 3-4 veces al día, 1-3 minutos por vez, y entre sesiones el juego sigue "pasando" — eso genera anticipación, no ansiedad.
 
@@ -37,7 +37,7 @@ Flutter, arquitectura limpia (`domain/` → `infrastructure/` → `presentation/
 
 1. En el Home elegís una ruta disponible según tu rank y la aceptás.
 2. Corre un **timer real** (`MissionProgressNotifier`, tick de 1s). El progreso es `tiempo transcurrido / duración`.
-3. Los eventos se distribuyen en slots a lo largo de la duración. Cuando un evento llega, **el progreso se congela** hasta que lo resuelvas. No hay auto-resolución: si no abrís la app, la misión queda frenada indefinidamente.
+3. Los eventos se distribuyen en slots a lo largo de la duración. Cuando un evento llega, **el progreso se congela** hasta que lo resuelvas. Si no lo resolvés en 60 minutos, el mensajero actúa por instinto: elige la opción más segura que puede usar, con resultado parcial (−5 de salud) y el costo de tiempo de esa opción. El tiempo detenido nunca supera esa ventana, y toda la misión se corre en el tiempo, así que esperar no infla la duración ni la paga.
 4. Cada evento ofrece 2-3 opciones con `riskLevel` (1-5), `timeCostMinutes` y `requiredSkills` (gating: sin el nivel de skill, la opción no está disponible).
 5. **Fórmula de resolución** (`ResolveEventUseCase._calculateOutcome` en `lib/domain/usecases/usecases.dart:439`):
    `score = 40 base + (nivel de skill usada × 15) − (riesgo × 8) − fatiga (−10 si ≥40, −20 si ≥70) + azar`

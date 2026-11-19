@@ -1,4 +1,4 @@
-# Ilustraciones de Cursus: prompts y dónde va cada archivo
+# Ilustraciones de Via Imperia: prompts y dónde va cada archivo
 
 > **Para generar con Gemini usá [GEMINI_ASSETS.md](GEMINI_ASSETS.md):** es la especificación completa y vigente de cada pieza. Este archivo queda como referencia de estilo.
 

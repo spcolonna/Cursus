@@ -6,7 +6,7 @@
 
 ## 0. What the game is (context for every image)
 
-**Cursus** is a narrative mobile game set in **Rome and Italy, 50 BC**, the year before Julius Caesar crosses the Rubicon. The player is a **civilian messenger** working for a courier guild run by an old man called **Varus**. Gameplay is choosing between 2–3 options in short text events ("a patrol blocks the road", "a storm on the Apennines"). The tone is **quiet, dry, slightly mysterious, adult storybook — never grim, never gory, never heroic-epic**.
+**Via Imperia** is a narrative mobile game set in **Rome and Italy, 50 BC**, the year before Julius Caesar crosses the Rubicon. The player is a **civilian messenger** working for a courier guild run by an old man called **Varus**. Gameplay is choosing between 2–3 options in short text events ("a patrol blocks the road", "a storm on the Apennines"). The tone is **quiet, dry, slightly mysterious, adult storybook — never grim, never gory, never heroic-epic**.
 
 The images are **illustrations behind the text** and **portraits of recurring characters**. They must look like they belong to one single painted world.
 

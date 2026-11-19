@@ -64,7 +64,7 @@ Materiales (cera, papel, cuero, piedra) y el motivo **D-A-E**: splash, nota S y 
 - **Glosario y detalles:** [LOCALIZACION.md](LOCALIZACION.md).
 - **Íconos y emojis:** nunca emojis; íconos Material del set ya usado.
 
-## Qué no es Cursus
+## Qué no es Via Imperia
 
 - No es un juego de reflejos: todo se resuelve eligiendo entre 2 y 3 opciones.
 - No usa oscuridad gratuita: el tono es de "cuento para adultos", no grim.

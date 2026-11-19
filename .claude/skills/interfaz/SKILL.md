@@ -1,9 +1,9 @@
 ---
 name: interfaz
-description: Diseñar o modificar UI de Cursus — pantallas, widgets, colores, tipografía, layout, animaciones, diálogos, estados vacíos y de carga. Usar siempre que se toque lib/presentation/ (theme, widgets, screens) o cuando se pida "una pantalla nueva", "que se vea mejor", "arreglar el contraste", "un botón/card/chip".
+description: Diseñar o modificar UI de Via Imperia — pantallas, widgets, colores, tipografía, layout, animaciones, diálogos, estados vacíos y de carga. Usar siempre que se toque lib/presentation/ (theme, widgets, screens) o cuando se pida "una pantalla nueva", "que se vea mejor", "arreglar el contraste", "un botón/card/chip".
 ---
 
-# Interfaz de Cursus
+# Interfaz de Via Imperia
 
 Identidad **"Fresco al atardecer"**: papel y tinta sobre un cielo que sigue la hora real. La interfaz es papel (`paper`/`paperDeep`) con texto en tinta, así el contraste no depende de la hora; lo que cambia con el reloj es el cielo. Marcellus (títulos) · Figtree (interfaz) · Literata (prosa narrativa). Botones de estampa: relleno plano, contorno de tinta y sombra dura corta.
 

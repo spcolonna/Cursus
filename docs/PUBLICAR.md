@@ -1,4 +1,4 @@
-# Publicar Cursus
+# Publicar Via Imperia
 
 Fase L8 del plan de lanzamiento. Lo que ya está en el código y lo que tenés que hacer vos, en orden.
 
