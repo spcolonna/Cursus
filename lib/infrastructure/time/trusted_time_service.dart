@@ -13,7 +13,11 @@ import '../../domain/entities/game_clock.dart';
 class ClockAnchor {
   final DateTime gameTime;
   final int elapsedMs;
-  const ClockAnchor(this.gameTime, this.elapsedMs);
+
+  /// Identificador del encendido del teléfono en que se tomó el ancla
+  /// (null si el sistema no lo da).
+  final String? bootId;
+  const ClockAnchor(this.gameTime, this.elapsedMs, {this.bootId});
 }
 
 /// Cuánto se le cree al reloj del teléfono, sin red, sobre el mínimo
@@ -23,10 +27,13 @@ const kMaxUnverifiedRebootGap = Duration(hours: 6);
 
 /// Estima la hora del juego sin red.
 /// - Mismo encendido del teléfono: ancla + tiempo monotónico transcurrido.
-///   Cambiar la hora del teléfono no mueve nada. (Si se reinició y el
-///   monotónico ya superó al del ancla, se lo toma como mismo encendido: la
-///   hora queda atrasada hasta la red, nunca adelantada.)
-/// - Si se reinició (el monotónico es menor que el del ancla): todo el
+///   Cambiar la hora del teléfono no mueve nada.
+/// - Se sabe que hubo reinicio si cambió el identificador de encendido
+///   ([bootId]) o, cuando el sistema no lo da, si el monotónico es menor
+///   que el del ancla. (Sin identificador, un reinicio con el monotónico ya
+///   por encima del ancla se toma como mismo encendido: la hora queda
+///   atrasada hasta la red, nunca adelantada.)
+/// - Si se reinició: todo el
 ///   encendido actual pasó después del ancla, así que el mínimo es ancla +
 ///   monotónico. Sobre eso se usa la hora del teléfono + la última
 ///   diferencia con el servidor, hasta [kMaxUnverifiedRebootGap]: reiniciar
@@ -38,10 +45,15 @@ DateTime estimateGameTime({
   required Duration lastSkew,
   ClockAnchor? anchor,
   int? elapsedMs,
+  String? bootId,
 }) {
   final guess = deviceNow.add(lastSkew);
   if (anchor != null && elapsedMs != null) {
-    if (elapsedMs >= anchor.elapsedMs) {
+    final knownBoot = bootId != null && anchor.bootId != null;
+    final sameBoot = knownBoot
+        ? bootId == anchor.bootId && elapsedMs >= anchor.elapsedMs
+        : elapsedMs >= anchor.elapsedMs;
+    if (sameBoot) {
       return anchor.gameTime
           .add(Duration(milliseconds: elapsedMs - anchor.elapsedMs));
     }
@@ -61,18 +73,22 @@ DateTime estimateGameTime({
 class TrustedTimeService {
   static const _kAnchorGame = 'clock_anchor_game_ms_v1';
   static const _kAnchorElapsed = 'clock_anchor_elapsed_ms_v1';
+  static const _kAnchorBoot = 'clock_anchor_boot_v1';
   static const _kSkew = 'clock_skew_ms_v1';
   static const _channel = MethodChannel('cursus/clock');
 
   final Future<int?> Function() elapsedMs;
+  final Future<String?> Function() bootId;
   final Future<DateTime?> Function() serverTime;
   final DateTime Function() deviceNow;
 
   TrustedTimeService({
     Future<int?> Function()? elapsedMs,
+    Future<String?> Function()? bootId,
     Future<DateTime?> Function()? serverTime,
     DateTime Function()? deviceNow,
   })  : elapsedMs = elapsedMs ?? _nativeElapsed,
+        bootId = bootId ?? _nativeBootId,
         serverTime = serverTime ?? fetchServerTime,
         deviceNow = deviceNow ?? DateTime.now;
 
@@ -80,14 +96,16 @@ class TrustedTimeService {
   Future<void> restore() async {
     final p = await SharedPreferences.getInstance();
     final elapsed = await elapsedMs();
+    final boot = await bootId();
     final game = estimateGameTime(
       deviceNow: deviceNow(),
       lastSkew: Duration(milliseconds: p.getInt(_kSkew) ?? 0),
       anchor: _readAnchor(p),
       elapsedMs: elapsed,
+      bootId: boot,
     );
     GameClock.setBase(game);
-    await _save(p, game, elapsed);
+    await _save(p, game, elapsed, boot);
   }
 
   /// Corrige con el servidor. Sin red no hace nada (queda la estimación).
@@ -96,7 +114,7 @@ class TrustedTimeService {
     if (server == null) return false;
     final p = await SharedPreferences.getInstance();
     GameClock.setBase(server);
-    await _save(p, server, await elapsedMs());
+    await _save(p, server, await elapsedMs(), await bootId());
     return true;
   }
 
@@ -106,19 +124,26 @@ class TrustedTimeService {
     unawaited(syncWithServer());
   }
 
-  Future<void> _save(SharedPreferences p, DateTime game, int? elapsed) async {
+  Future<void> _save(
+      SharedPreferences p, DateTime game, int? elapsed, String? boot) async {
     await p.setInt(
         _kSkew, game.difference(deviceNow()).inMilliseconds);
     if (elapsed == null) return;
     await p.setInt(_kAnchorGame, game.millisecondsSinceEpoch);
     await p.setInt(_kAnchorElapsed, elapsed);
+    if (boot == null) {
+      await p.remove(_kAnchorBoot);
+    } else {
+      await p.setString(_kAnchorBoot, boot);
+    }
   }
 
   ClockAnchor? _readAnchor(SharedPreferences p) {
     final game = p.getInt(_kAnchorGame);
     final elapsed = p.getInt(_kAnchorElapsed);
     if (game == null || elapsed == null) return null;
-    return ClockAnchor(DateTime.fromMillisecondsSinceEpoch(game), elapsed);
+    return ClockAnchor(DateTime.fromMillisecondsSinceEpoch(game), elapsed,
+        bootId: p.getString(_kAnchorBoot));
   }
 
   static Future<int?> _nativeElapsed() async {
@@ -126,6 +151,14 @@ class TrustedTimeService {
       return await _channel.invokeMethod<int>('elapsedRealtime');
     } catch (_) {
       return null; // tests o plataforma sin el canal
+    }
+  }
+
+  static Future<String?> _nativeBootId() async {
+    try {
+      return await _channel.invokeMethod<String>('bootId');
+    } catch (_) {
+      return null;
     }
   }
 

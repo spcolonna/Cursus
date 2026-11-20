@@ -28,10 +28,24 @@ import UserNotifications
       channel.setMethodCallHandler { call, result in
         if call.method == "elapsedRealtime" {
           result(Int(clock_gettime_nsec_np(CLOCK_MONOTONIC) / 1_000_000))
+        } else if call.method == "bootId" {
+          result(AppDelegate.bootSessionId())
         } else {
           result(FlutterMethodNotImplemented)
         }
       }
     }
+  }
+
+  /// Identificador único de este encendido del teléfono (cambia al
+  /// reiniciar, no al cambiar la hora). nil si el sistema no lo da.
+  static func bootSessionId() -> String? {
+    var size = 0
+    guard sysctlbyname("kern.bootsessionuuid", nil, &size, nil, 0) == 0, size > 0
+    else { return nil }
+    var buffer = [CChar](repeating: 0, count: size)
+    guard sysctlbyname("kern.bootsessionuuid", &buffer, &size, nil, 0) == 0
+    else { return nil }
+    return String(cString: buffer)
   }
 }

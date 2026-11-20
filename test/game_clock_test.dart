@@ -74,6 +74,41 @@ void main() {
           t0.add(const Duration(seconds: 1)).add(kMaxUnverifiedRebootGap));
     });
 
+    test('reinicio largo detectado por el id de encendido', () {
+      // El teléfono se reinició y ya lleva más encendido que el ancla:
+      // sin el id se tomaría como mismo encendido y quedaría atrasado.
+      final game = estimateGameTime(
+        deviceNow: t0.add(const Duration(hours: 3)),
+        lastSkew: Duration.zero,
+        anchor: ClockAnchor(t0, anchor, bootId: '7'),
+        elapsedMs: anchor + 60 * 60 * 1000,
+        bootId: '8',
+      );
+      expect(game, t0.add(const Duration(hours: 3)));
+    });
+
+    test('mismo id de encendido: cambiar la hora no mueve nada', () {
+      final game = estimateGameTime(
+        deviceNow: t0.add(const Duration(days: 3)),
+        lastSkew: Duration.zero,
+        anchor: ClockAnchor(t0, anchor, bootId: '7'),
+        elapsedMs: anchor + 60000,
+        bootId: '7',
+      );
+      expect(game, t0.add(const Duration(minutes: 1)));
+    });
+
+    test('ancla vieja sin id: decide por el monotónico', () {
+      final game = estimateGameTime(
+        deviceNow: t0.add(const Duration(days: 3)),
+        lastSkew: Duration.zero,
+        anchor: ClockAnchor(t0, anchor),
+        elapsedMs: anchor + 60000,
+        bootId: '7',
+      );
+      expect(game, t0.add(const Duration(minutes: 1)));
+    });
+
     test('sin monotónico ni ancla: hora del teléfono', () {
       expect(
         estimateGameTime(deviceNow: t0, lastSkew: Duration.zero),
@@ -89,8 +124,11 @@ void main() {
     late int elapsed;
     DateTime? server;
 
+    String? boot;
+
     TrustedTimeService service() => TrustedTimeService(
           elapsedMs: () async => elapsed,
+          bootId: () async => boot,
           serverTime: () async => server,
           deviceNow: () => device,
         );
@@ -99,6 +137,24 @@ void main() {
       device = t0;
       elapsed = 100000;
       server = null;
+      boot = null;
+    });
+
+    test('reinicio sin red: el id de encendido evita quedar atrasado',
+        () async {
+      boot = '1';
+      server = t0;
+      await service().syncWithServer(); // ancla: t0, monotónico 100000
+      server = null;
+
+      // Reinicia y abre 4 h después, con más encendido que el ancla.
+      boot = '2';
+      device = t0.add(const Duration(hours: 4));
+      elapsed = 100000 + 60 * 60 * 1000;
+      GameClock.debugReset();
+      await service().restore();
+      final drift = GameClock.now().difference(device);
+      expect(drift.inSeconds.abs(), lessThan(2));
     });
 
     test('el servidor corrige un teléfono adelantado', () async {
