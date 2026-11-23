@@ -986,5 +986,14 @@ void main() {
       expect(healed.health, 50);
       expect(healed.status, MessengerStatus.idle);
     });
+
+    test('el aviso calcula cuánto descanso le falta al herido', () {
+      final m = _messenger().copyWith(
+          status: MessengerStatus.injured, health: 20, restingSince: t0);
+      // Faltan 30 puntos = 6 h; ya pasaron 90 min.
+      expect(m.injuryRestLeft(t0.add(const Duration(minutes: 90))),
+          const Duration(minutes: 270));
+      expect(_messenger().injuryRestLeft(t0), isNull);
+    });
   });
 }

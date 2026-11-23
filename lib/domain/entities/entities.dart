@@ -89,6 +89,20 @@ class Messenger {
   /// herido vuelve a estar libre al llegar a [kInjuryRecoveredHealth]. El
   /// ancla avanza solo lo consumido, así que los minutos sueltos no se pierden
   /// entre cargas. En misión se borra el ancla.
+  /// Cuánto descanso le falta a un herido para volver a salir solo, o null
+  /// si no está herido.
+  Duration? injuryRestLeft(DateTime now) {
+    if (status != MessengerStatus.injured) return null;
+    final need = kInjuryRecoveredHealth - health;
+    if (need <= 0) return Duration.zero;
+    const minutesPerPoint = 60 ~/ kRestRecoveryPerHour;
+    final since = restingSince;
+    final elapsed = since == null || now.isBefore(since)
+        ? 0
+        : now.difference(since).inMinutes;
+    return Duration(minutes: max(0, need * minutesPerPoint - elapsed));
+  }
+
   Messenger recoverWhileResting(DateTime now) {
     if (status == MessengerStatus.onMission) {
       return restingSince == null ? this : copyWith(clearRestingSince: true);

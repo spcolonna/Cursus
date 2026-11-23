@@ -545,6 +545,8 @@
   "slotSeeAllRoutes": "VER LAS {count} RUTAS",
   "slotRoutesFor": "Rutas para {name}",
   "slotInjuredHeal": "Herido: descansa o cúrate en la tienda",
+  "slotInjuredRest": "Herido: descansa ~{hours} h o cúrate",
+  "@slotInjuredRest": {"placeholders": {"hours": {"type": "int"}}},
   "slotBusy": "Mensajero ocupado",
   "slotPay": "Paga ~{amount}",
   "@slotPay": {

@@ -923,6 +923,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get slotInjuredHeal => 'Injured: rest or heal at the shop';
 
   @override
+  String slotInjuredRest(int hours) {
+    return 'Injured: rest ~$hours h or heal';
+  }
+
+  @override
   String get slotBusy => 'Messenger busy';
 
   @override

@@ -1544,6 +1544,12 @@ abstract class AppLocalizations {
   /// **'Herido: descansa o cúrate en la tienda'**
   String get slotInjuredHeal;
 
+  /// No description provided for @slotInjuredRest.
+  ///
+  /// In es, this message translates to:
+  /// **'Herido: descansa ~{hours} h o cúrate'**
+  String slotInjuredRest(int hours);
+
   /// No description provided for @slotBusy.
   ///
   /// In es, this message translates to:

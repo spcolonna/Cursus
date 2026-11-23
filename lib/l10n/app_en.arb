@@ -241,6 +241,8 @@
   "slotSeeAllRoutes": "SEE ALL {count} ROUTES",
   "slotRoutesFor": "Routes for {name}",
   "slotInjuredHeal": "Injured: rest or heal at the shop",
+  "slotInjuredRest": "Injured: rest ~{hours} h or heal",
+  "@slotInjuredRest": {"placeholders": {"hours": {"type": "int"}}},
   "slotBusy": "Messenger busy",
   "slotPay": "Pays ~{amount}",
   "slotAcceptMission": "ACCEPT DELIVERY!",

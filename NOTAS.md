@@ -10,4 +10,4 @@ Punto de partida para un chat nuevo. Los números de diseño viven en `docs/GDD_
 
 ## Pendientes
 
-- La recuperación pasiva no se muestra en la UI (solo cambian los números): falta un aviso tipo "descansando: vuelve a salir en ~X h" para el herido.
+- El botón de ruta del herido muestra "Herido: descansa ~X h o cúrate" (`Messenger.injuryRestLeft`). La recuperación de fatiga/salud del libre no tiene aviso propio (solo cambian las barras).

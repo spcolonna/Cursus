@@ -451,7 +451,12 @@ class _RouteCard extends ConsumerWidget {
         messenger.status == MessengerStatus.injured || messenger.health <= 0;
     final canAccept = messenger.status == MessengerStatus.idle && !isInjured;
     final l = AppLocalizations.of(context);
-    final busyLabel = isInjured ? l.slotInjuredHeal : l.slotBusy;
+    final restLeft = messenger.injuryRestLeft(GameClock.now());
+    final busyLabel = !isInjured
+        ? l.slotBusy
+        : restLeft == null || restLeft == Duration.zero
+            ? l.slotInjuredHeal
+            : l.slotInjuredRest((restLeft.inMinutes / 60).ceil());
 
     return GameCard(
       padding: const EdgeInsets.all(14),

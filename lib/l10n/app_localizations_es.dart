@@ -925,6 +925,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get slotInjuredHeal => 'Herido: descansa o cúrate en la tienda';
 
   @override
+  String slotInjuredRest(int hours) {
+    return 'Herido: descansa ~$hours h o cúrate';
+  }
+
+  @override
   String get slotBusy => 'Mensajero ocupado';
 
   @override
