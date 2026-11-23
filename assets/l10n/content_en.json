@@ -2245,7 +2245,7 @@
  "ui.error.contract_incomplete": "Contract not completed",
  "ui.error.contract_missing": "That contract does not exist",
  "ui.error.contract_no_reroll": "You can't swap this contract today",
- "ui.error.injured": "Your messenger is injured. Heal them at the shop before setting out.",
+ "ui.error.injured": "Your messenger is injured. Let them rest or heal them at the shop before setting out.",
  "ui.error.manual_maxed": "{name} already has {skill} at level {level}. A manual has nothing new to teach.",
  "ui.error.messenger_gone": "That messenger is no longer available",
  "ui.error.no_aureos": "Not enough aurei (you need {cost}, you have {have})",

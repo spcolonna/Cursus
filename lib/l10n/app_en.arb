@@ -240,7 +240,7 @@
   "slotRoutesHeader": "AVAILABLE ROUTES",
   "slotSeeAllRoutes": "SEE ALL {count} ROUTES",
   "slotRoutesFor": "Routes for {name}",
-  "slotInjuredHeal": "Injured: heal at the shop",
+  "slotInjuredHeal": "Injured: rest or heal at the shop",
   "slotBusy": "Messenger busy",
   "slotPay": "Pays ~{amount}",
   "slotAcceptMission": "ACCEPT DELIVERY!",

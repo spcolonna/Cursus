@@ -863,17 +863,20 @@ bool adEarnsAureo(int adsToday) =>
     adsToday ~/ kAdsPerAureo <= kMaxAdAureosPerDay;
 
 /// Acredita el Aureo del anuncio en la billetera común (el principal).
-/// Aplica la recuperación pasiva de fatiga a los mensajeros sin misión.
+/// Aplica la recuperación pasiva (fatiga y salud) a los mensajeros sin misión.
 /// Solo escribe a los que cambiaron.
-class RecoverIdleFatigueUseCase {
+class RecoverRestingUseCase {
   final MessengerRepository _messenger;
-  RecoverIdleFatigueUseCase(this._messenger);
+  RecoverRestingUseCase(this._messenger);
 
   Future<void> execute({DateTime? now}) async {
     final at = now ?? GameClock.now();
     for (final m in await _messenger.getAllMessengers()) {
-      final r = m.recoverIdleFatigue(at);
-      if (r.fatigue != m.fatigue || r.restingSince != m.restingSince) {
+      final r = m.recoverWhileResting(at);
+      if (r.fatigue != m.fatigue ||
+          r.health != m.health ||
+          r.status != m.status ||
+          r.restingSince != m.restingSince) {
         await _messenger.saveMessenger(r);
       }
     }

@@ -1541,7 +1541,7 @@ abstract class AppLocalizations {
   /// No description provided for @slotInjuredHeal.
   ///
   /// In es, this message translates to:
-  /// **'Herido: cúrate en la tienda'**
+  /// **'Herido: descansa o cúrate en la tienda'**
   String get slotInjuredHeal;
 
   /// No description provided for @slotBusy.

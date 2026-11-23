@@ -917,16 +917,16 @@ void main() {
 
     test('sin misión baja 5 por hora y guarda los minutos sueltos', () {
       final m = idle().copyWith(fatigue: 60, restingSince: t0);
-      final r = m.recoverIdleFatigue(t0.add(const Duration(minutes: 130)));
+      final r = m.recoverWhileResting(t0.add(const Duration(minutes: 130)));
       expect(r.fatigue, 50); // 10 puntos completos (120 min)
       expect(r.restingSince, t0.add(const Duration(minutes: 120)));
-      final r2 = r.recoverIdleFatigue(t0.add(const Duration(minutes: 132)));
+      final r2 = r.recoverWhileResting(t0.add(const Duration(minutes: 132)));
       expect(r2.fatigue, 49); // los 10 min sueltos más 2 completan un punto
     });
 
     test('una noche de 8 h saca 40 y no baja de 0', () {
       final m = idle().copyWith(fatigue: 30, restingSince: t0);
-      final r = m.recoverIdleFatigue(t0.add(const Duration(hours: 8)));
+      final r = m.recoverWhileResting(t0.add(const Duration(hours: 8)));
       expect(r.fatigue, 0);
       expect(r.restingSince, t0.add(const Duration(hours: 8)));
     });
@@ -934,14 +934,14 @@ void main() {
     test('en misión no recupera y borra el ancla', () {
       final m = _messenger().copyWith(
           fatigue: 50, status: MessengerStatus.onMission, restingSince: t0);
-      final r = m.recoverIdleFatigue(t0.add(const Duration(hours: 5)));
+      final r = m.recoverWhileResting(t0.add(const Duration(hours: 5)));
       expect(r.fatigue, 50);
       expect(r.restingSince, isNull);
     });
 
     test('sin ancla, la primera carga ancla sin recuperar', () {
       final m = idle().copyWith(fatigue: 50);
-      final r = m.recoverIdleFatigue(t0);
+      final r = m.recoverWhileResting(t0);
       expect(r.fatigue, 50);
       expect(r.restingSince, t0);
     });
@@ -952,10 +952,39 @@ void main() {
         _messenger(id: 'm2').copyWith(
             fatigue: 40, status: MessengerStatus.onMission),
       ]);
-      await RecoverIdleFatigueUseCase(repo)
+      await RecoverRestingUseCase(repo)
           .execute(now: t0.add(const Duration(hours: 2)));
       expect(repo.messengers[0].fatigue, 30);
       expect(repo.messengers[1].fatigue, 40);
+    });
+  });
+
+  group('Recuperación pasiva de salud', () {
+    final t0 = DateTime(2026, 11, 23, 8);
+
+    test('sin misión sube 5 de salud por hora junto con la fatiga', () {
+      final m = _messenger().copyWith(
+          status: MessengerStatus.idle, health: 60, fatigue: 10,
+          restingSince: t0);
+      final r = m.recoverWhileResting(t0.add(const Duration(hours: 4)));
+      expect(r.health, 80);
+      expect(r.fatigue, 0);
+      // Falta salud: el ancla sigue corriendo, no se reinicia.
+      expect(r.restingSince, t0.add(const Duration(hours: 4)));
+      expect(r.recoverWhileResting(t0.add(const Duration(hours: 8))).health,
+          100);
+    });
+
+    test('el herido sigue herido hasta llegar a 50', () {
+      final m = _messenger().copyWith(
+          status: MessengerStatus.injured, health: 0, restingSince: t0);
+      final early = m.recoverWhileResting(t0.add(const Duration(hours: 9)));
+      expect(early.health, 45);
+      expect(early.status, MessengerStatus.injured);
+      final healed =
+          early.recoverWhileResting(t0.add(const Duration(hours: 10)));
+      expect(healed.health, 50);
+      expect(healed.status, MessengerStatus.idle);
     });
   });
 }

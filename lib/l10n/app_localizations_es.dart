@@ -922,7 +922,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get slotInjuredHeal => 'Herido: cúrate en la tienda';
+  String get slotInjuredHeal => 'Herido: descansa o cúrate en la tienda';
 
   @override
   String get slotBusy => 'Mensajero ocupado';

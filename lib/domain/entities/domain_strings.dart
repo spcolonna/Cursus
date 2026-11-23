@@ -93,7 +93,7 @@ const Map<String, String> kDomainStrings = {
   'ui.risk.high': 'alto',
   'ui.risk.extreme': 'extremo',
   'ui.error.injured':
-      'Tu mensajero está herido. Cúralo en la tienda antes de salir.',
+      'Tu mensajero está herido. Descansa o cúralo en la tienda antes de salir.',
   'ui.error.chapter_rank': 'Este capítulo pide rango {rank}.',
   'ui.error.primary_busy': 'Tu mensajero principal está ocupado.',
   'ui.error.messenger_busy': 'Ese mensajero ya está de viaje.',

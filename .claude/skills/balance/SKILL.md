@@ -24,7 +24,7 @@ score ≥ 55 → éxito   ·   ≥ 30 → parcial   ·   < 30 → fallo
 + tiradas críticas: Imprevisto 5%/10% en riesgo 4/5, Golpe de suerte 5%
 ```
 
-Consecuencias: +8 fatiga y +25 XP a la skill usada por evento resuelto (la fatiga baja −10 al entregar y −5 por hora sin misión, `kFatigueRecoveryPerHour`). Fallo: −20 salud (−10 en tutorial) y paquete a `wetMinor`. Parcial: −5 salud. Costo de tiempo topado en ¼ de la ruta (el fallo cuesta el doble). El instinto (evento vencido) tira con la opción más segura, sin XP.
+Consecuencias: +8 fatiga y +25 XP a la skill usada por evento resuelto (la fatiga baja −10 al entregar y −5 por hora sin misión; la salud sube +5 por hora sin misión y el herido vuelve a salir con 50, `kRestRecoveryPerHour`). Fallo: −20 salud (−10 en tutorial) y paquete a `wetMinor`. Parcial: −5 salud. Costo de tiempo topado en ¼ de la ruta (el fallo cuesta el doble). El instinto (evento vencido) tira con la opción más segura, sin XP.
 
 Casos borde de referencia (opción que pide 3, riesgo 5): nivel 3 → 5/41/54 · nivel 5 → 32/42/25 · nivel 10 → 49/41/10 · Combate 10 → 66/24/10. Antes de cambiar cualquier constante, recalculá estos casos y el de nivel 1 / riesgo 5 (≈95% fallo).
 

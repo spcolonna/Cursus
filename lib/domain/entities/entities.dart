@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'domain_strings.dart';
 import 'world.dart';
 import 'game_clock.dart';
@@ -9,8 +10,10 @@ const int kXpPerSkillLevel = 100;
 /// Nivel máximo alcanzable con XP/manuales. Los niveles 6-10 se ascienden
 /// con Sellos del Gremio en los Caminos del Mensajero (ver skill_tree.dart).
 const int kMaxSkillLevel = 5;
-/// Fatiga que recupera por hora un mensajero sin misión (debe dividir 60).
-const int kFatigueRecoveryPerHour = 5;
+/// Fatiga que baja y salud que sube por hora sin misión (debe dividir 60).
+const int kRestRecoveryPerHour = 5;
+/// Salud con la que un herido vuelve a salir solo descansando.
+const int kInjuryRecoveredHealth = 50;
 
 /// Nombre de cada rango (índice 1-5), en el idioma actual.
 List<String> get kRankTitles =>
@@ -81,24 +84,32 @@ class Messenger {
   String get rankTitle => kRankTitles[rank];
   int skillLevel(SkillType t) => skills[t] ?? 1;
 
-  /// Recuperación pasiva: fuera de misión baja [kFatigueRecoveryPerHour] de
-  /// fatiga por hora. El ancla avanza solo lo consumido, así que los minutos
-  /// sueltos no se pierden entre cargas. En misión se borra el ancla.
-  Messenger recoverIdleFatigue(DateTime now) {
+  /// Recuperación pasiva: fuera de misión (libre o herido) baja
+  /// [kRestRecoveryPerHour] de fatiga y sube lo mismo de salud por hora. El
+  /// herido vuelve a estar libre al llegar a [kInjuryRecoveredHealth]. El
+  /// ancla avanza solo lo consumido, así que los minutos sueltos no se pierden
+  /// entre cargas. En misión se borra el ancla.
+  Messenger recoverWhileResting(DateTime now) {
     if (status == MessengerStatus.onMission) {
       return restingSince == null ? this : copyWith(clearRestingSince: true);
     }
     final since = restingSince;
-    if (since == null || fatigue == 0 || now.isBefore(since)) {
+    // Puntos que faltan para quedar entero: lo que más tarde en recuperarse.
+    final missing = max(fatigue, 100 - health);
+    if (since == null || missing <= 0 || now.isBefore(since)) {
       return copyWith(restingSince: now);
     }
-    const minutesPerPoint = 60 ~/ kFatigueRecoveryPerHour;
+    const minutesPerPoint = 60 ~/ kRestRecoveryPerHour;
     final points = now.difference(since).inMinutes ~/ minutesPerPoint;
     if (points == 0) return this;
-    final recovered = points.clamp(0, fatigue);
+    final newHealth = (health + points).clamp(0, 100);
+    final healed = status == MessengerStatus.injured &&
+        newHealth >= kInjuryRecoveredHealth;
     return copyWith(
-      fatigue: fatigue - recovered,
-      restingSince: recovered == fatigue
+      fatigue: (fatigue - points).clamp(0, 100),
+      health: newHealth,
+      status: healed ? MessengerStatus.idle : null,
+      restingSince: points >= missing
           ? now
           : since.add(Duration(minutes: points * minutesPerPoint)),
     );

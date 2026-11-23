@@ -233,8 +233,8 @@ final autoResolveExpiredEventsUseCaseProvider =
   ref.read(missionRepositoryProvider),
   ref.read(worldRepositoryProvider),
 ));
-final recoverIdleFatigueUseCaseProvider = Provider((ref) =>
-    RecoverIdleFatigueUseCase(ref.read(messengerRepositoryProvider)));
+final recoverRestingUseCaseProvider = Provider((ref) =>
+    RecoverRestingUseCase(ref.read(messengerRepositoryProvider)));
 final grantAdAureoUseCaseProvider = Provider((ref) => GrantAdAureoUseCase(
   ref.read(messengerRepositoryProvider),
 ));
@@ -415,7 +415,7 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     if (autoResolved.isNotEmpty) {
       _track(AnalyticsEvent.eventsAutoResolved(autoResolved.length));
     }
-    await ref.read(recoverIdleFatigueUseCaseProvider).execute();
+    await ref.read(recoverRestingUseCaseProvider).execute();
     final home = await ref
         .read(getHomeStateUseCaseProvider)
         .execute(autoResolved: autoResolved);

@@ -920,7 +920,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get slotInjuredHeal => 'Injured: heal at the shop';
+  String get slotInjuredHeal => 'Injured: rest or heal at the shop';
 
   @override
   String get slotBusy => 'Messenger busy';
