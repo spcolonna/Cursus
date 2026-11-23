@@ -63,7 +63,7 @@ Flutter, arquitectura limpia (`domain/` → `infrastructure/` → `presentation/
 
 - **Skills:** 5 ramas (Velocidad, Sigilo, Combate, Supervivencia, Contactos), niveles 1-5, XP creciente (100/125/175/250). Sin nombres de habilidad ni perks: son solo un número que gatea opciones y suma al score.
 - **Rank:** derivado de la suma de niveles de skill → títulos Correo / Mensajero / Courier / Maestro / Leyenda. Gatea rutas.
-- **Fatiga:** 0-100. +8 por evento, −10 por entrega, se limpia con item de tienda. Penaliza el score de eventos (−7 desde 40, −15 desde 70).
+- **Fatiga:** 0-100. +8 por evento, −10 por entrega, **−5 por hora sin misión** (una noche de 8 h saca 40; `kFatigueRecoveryPerHour`, `Messenger.recoverIdleFatigue`), y el descanso de tienda (80) la limpia al instante. Penaliza el score de eventos (−7 desde 40, −15 desde 70).
 - **Multi-mensajero:** hasta 4 mensajeros con misiones paralelas. Slots 2/3/4 cuestan **20/50/100 Aureos** (requiere tutorial completo).
 - **Economía:** se arranca con **200 Denarios y 5 Aureos**. Tienda (`shop_screen.dart`, catálogo `shopCatalogue`): pociones (50/120 Denarios), descanso (80), manuales de skill (200/500/1.200/2.500 según el nivel; no se venden en nivel 5), Sandalias de Mercurio −20% tiempo (3 Aureos), Mapa del explorador revela evento (5 Aureos). "Adelantar" la misión cuesta 2 Denarios/minuto (clamp 10-1.200).
 - **Perfil:** skills con barras de XP + historial de últimas 10 misiones con nota.

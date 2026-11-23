@@ -262,6 +262,8 @@ class LocalMessengerRepository implements MessengerRepository {
     'seals': m.seals,
     'slotIndex': m.slotIndex,
     'activeBoosts': m.activeBoosts.toList(),
+    if (m.restingSince != null)
+      'restingSince': m.restingSince!.millisecondsSinceEpoch,
   };
 
   Messenger _fromJson(Map<String, dynamic> j) => Messenger(
@@ -290,6 +292,9 @@ class LocalMessengerRepository implements MessengerRepository {
     activeBoosts: ((j['activeBoosts'] as List?) ?? const [])
         .map((e) => e as String)
         .toSet(),
+    restingSince: j['restingSince'] is int
+        ? DateTime.fromMillisecondsSinceEpoch(j['restingSince'] as int)
+        : null,
   );
 }
 

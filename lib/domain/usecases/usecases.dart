@@ -477,7 +477,8 @@ class AcceptTutorialUseCase {
       throw Exception(ds('ui.error.messenger_busy'));
     }
     final mission = await _mission.createTutorialMission(tutorialIndex, messenger.id);
-    await _messenger.saveMessenger(messenger.copyWith(status: MessengerStatus.onMission));
+    await _messenger.saveMessenger(messenger.copyWith(
+        status: MessengerStatus.onMission, clearRestingSince: true));
     return mission;
   }
 }
@@ -556,6 +557,7 @@ class AcceptMissionUseCase {
     await _messenger.saveMessenger(messenger.copyWith(
       status: MessengerStatus.onMission,
       activeBoosts: boosts,
+      clearRestingSince: true,
     ));
     return mission;
   }
@@ -589,7 +591,8 @@ class AcceptStoryMissionUseCase {
     final mission =
         await _mission.createStoryMission(config, messenger.id, events);
     await _messenger
-        .saveMessenger(messenger.copyWith(status: MessengerStatus.onMission));
+        .saveMessenger(messenger.copyWith(
+        status: MessengerStatus.onMission, clearRestingSince: true));
     return mission;
   }
 }
@@ -860,6 +863,23 @@ bool adEarnsAureo(int adsToday) =>
     adsToday ~/ kAdsPerAureo <= kMaxAdAureosPerDay;
 
 /// Acredita el Aureo del anuncio en la billetera común (el principal).
+/// Aplica la recuperación pasiva de fatiga a los mensajeros sin misión.
+/// Solo escribe a los que cambiaron.
+class RecoverIdleFatigueUseCase {
+  final MessengerRepository _messenger;
+  RecoverIdleFatigueUseCase(this._messenger);
+
+  Future<void> execute({DateTime? now}) async {
+    final at = now ?? GameClock.now();
+    for (final m in await _messenger.getAllMessengers()) {
+      final r = m.recoverIdleFatigue(at);
+      if (r.fatigue != m.fatigue || r.restingSince != m.restingSince) {
+        await _messenger.saveMessenger(r);
+      }
+    }
+  }
+}
+
 class GrantAdAureoUseCase {
   final MessengerRepository _messenger;
   GrantAdAureoUseCase(this._messenger);
@@ -1222,6 +1242,7 @@ class CompleteMissionUseCase {
       await _messenger.saveMessenger(messenger.copyWith(
         status: newStatus,
         fatigue: newFatigue,
+        restingSince: GameClock.now(),
         completedMissionIds: completedIds,
         tutorialMissionIndex: nextTutIdx,
         tutorialComplete: tutComplete,

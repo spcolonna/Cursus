@@ -9,6 +9,8 @@ const int kXpPerSkillLevel = 100;
 /// Nivel máximo alcanzable con XP/manuales. Los niveles 6-10 se ascienden
 /// con Sellos del Gremio en los Caminos del Mensajero (ver skill_tree.dart).
 const int kMaxSkillLevel = 5;
+/// Fatiga que recupera por hora un mensajero sin misión (debe dividir 60).
+const int kFatigueRecoveryPerHour = 5;
 
 /// Nombre de cada rango (índice 1-5), en el idioma actual.
 List<String> get kRankTitles =>
@@ -47,6 +49,9 @@ class Messenger {
   // Boosts comprados en la tienda, pendientes de consumir en la próxima misión.
   // Ej: 'boost_speed' (Sandalias), 'boost_events' (Mapa del explorador).
   final Set<String> activeBoosts;
+  // Desde cuándo descansa sin misión: ancla de la recuperación pasiva de
+  // fatiga. Null mientras está en misión (o si nunca se ancló).
+  final DateTime? restingSince;
 
   const Messenger({
     required this.id,
@@ -66,6 +71,7 @@ class Messenger {
     this.seals = 0,
     this.slotIndex = 0,
     this.activeBoosts = const {},
+    this.restingSince,
   });
 
   int get totalSkillLevel => skills.values.fold(0, (a, b) => a + b);
@@ -74,6 +80,29 @@ class Messenger {
   };
   String get rankTitle => kRankTitles[rank];
   int skillLevel(SkillType t) => skills[t] ?? 1;
+
+  /// Recuperación pasiva: fuera de misión baja [kFatigueRecoveryPerHour] de
+  /// fatiga por hora. El ancla avanza solo lo consumido, así que los minutos
+  /// sueltos no se pierden entre cargas. En misión se borra el ancla.
+  Messenger recoverIdleFatigue(DateTime now) {
+    if (status == MessengerStatus.onMission) {
+      return restingSince == null ? this : copyWith(clearRestingSince: true);
+    }
+    final since = restingSince;
+    if (since == null || fatigue == 0 || now.isBefore(since)) {
+      return copyWith(restingSince: now);
+    }
+    const minutesPerPoint = 60 ~/ kFatigueRecoveryPerHour;
+    final points = now.difference(since).inMinutes ~/ minutesPerPoint;
+    if (points == 0) return this;
+    final recovered = points.clamp(0, fatigue);
+    return copyWith(
+      fatigue: fatigue - recovered,
+      restingSince: recovered == fatigue
+          ? now
+          : since.add(Duration(minutes: points * minutesPerPoint)),
+    );
+  }
 
   /// Suma XP a una skill y sube de nivel cada vez que cruza [kXpPerSkillLevel].
   /// El XP restante se conserva como progreso hacia el siguiente nivel (0–99).
@@ -133,6 +162,8 @@ class Messenger {
     int? seals,
     int? slotIndex,
     Set<String>? activeBoosts,
+    DateTime? restingSince,
+    bool clearRestingSince = false,
   }) => Messenger(
     id: id,
     name: name ?? this.name,
@@ -151,6 +182,8 @@ class Messenger {
     seals: seals ?? this.seals,
     slotIndex: slotIndex ?? this.slotIndex,
     activeBoosts: activeBoosts ?? this.activeBoosts,
+    restingSince:
+        clearRestingSince ? null : (restingSince ?? this.restingSince),
   );
 }
 
