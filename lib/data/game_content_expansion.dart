@@ -243,7 +243,8 @@ const List<RealMissionConfig> expansionMissions = [
       'Correspondencia diplomática de largo alcance',
     ],
     eventPoolIds: ['evt_storm', 'evt_bandits', 'evt_ghost_road', 'evt_wolf', 'evt_landslide', 'evt_oracle', 'evt_merchant_offer', 'evt_old_soldier', 'evt_letter_bribe', 'evt_deserter', 'evt_hostage_escort', 'evt_fallen_milestone', 'evt_charcoal_burners'],
-    minEvents: 5,
+    // 48 h: con 5 eventos el hueco llegaba justo a 8 h.
+    minEvents: 6,
     maxEvents: 7,
   ),
 ];

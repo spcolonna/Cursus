@@ -422,8 +422,9 @@ const List<RealMissionConfig> phase1Missions = [
       'Correspondencia militar confidencial',
     ],
     eventPoolIds: ['evt_patrol', 'evt_storm', 'evt_bandits', 'evt_bridge', 'evt_injured', 'evt_wounded_traveler', 'evt_rival_messenger', 'evt_old_soldier', 'evt_merchant_offer', 'evt_letter_bribe', 'evt_omen', 'evt_hostage_escort', 'evt_fallen_milestone', 'evt_horse_sick'],
-    minEvents: 4,
-    maxEvents: 6,
+    // 72 h: 9-10 eventos para no pasar más de 8 h sin noticias.
+    minEvents: 9,
+    maxEvents: 10,
   ),
   // Ruta exclusiva del final "El que sabe demasiado" (Arco 1, final C).
   RealMissionConfig(

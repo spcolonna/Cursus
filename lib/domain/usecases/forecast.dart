@@ -39,9 +39,9 @@ class OptionForecast {
   });
 }
 
-// El azar del camino: _rng.nextInt(30) - 10 → uniforme en [-10, 19].
-const int _luckMin = -10;
-const int _luckMax = 19;
+// El azar del camino: uniforme en [kLuckMin, kLuckMax] (skill_tree.dart).
+const int _luckMin = kLuckMin;
+const int _luckMax = kLuckMax;
 const int _successThreshold = 55;
 const int _partialThreshold = 30;
 
@@ -78,6 +78,7 @@ double _chanceAtLeast(int baseScore, int threshold) {
 /// Debe reflejar exactamente los sumandos de `_calculateOutcome`.
 OptionForecast forecastFor(EventOption option, Messenger? messenger) {
   var score = 40;
+  if (option.requiredSkills.isEmpty) score += kNoSkillBonus;
 
   // Habilidades exigidas por la opción.
   var lowestSkillLevel = 99;
@@ -86,7 +87,7 @@ OptionForecast forecastFor(EventOption option, Messenger? messenger) {
   var highestSkillLevel = 0;
   for (final entry in option.requiredSkills.entries) {
     final level = messenger?.skillLevel(entry.key) ?? 1;
-    score += level * 15;
+    score += skillScore(level, entry.value);
     if (level < lowestSkillLevel) {
       lowestSkillLevel = level;
       weakestSkill = entry.key;
@@ -108,7 +109,7 @@ OptionForecast forecastFor(EventOption option, Messenger? messenger) {
       ? option.riskLevel
       : (option.riskLevel - SkillPerks.riskReduction(usedSkill, messenger))
           .clamp(0, 5);
-  score -= effectiveRisk * 8;
+  score -= riskPenalty(effectiveRisk);
 
   final fatigue = messenger?.fatigue ?? 0;
   final fatigueFactor =

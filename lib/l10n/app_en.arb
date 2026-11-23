@@ -295,6 +295,7 @@
   "missionWatchAd": "Watch ad · −30 min ({count} today)",
   "adsUnavailable": "No ads available right now. Try again in a while.",
   "missionAdSkipped": "You skipped 30 minutes of road",
+  "missionAdSkippedAureo": "You skipped 30 minutes and earned 1 aureus",
   "missionYouChose": "You chose: {choice}",
   "eventChip": "EVENT",
   "missionPaused": "Progress paused",

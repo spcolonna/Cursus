@@ -329,13 +329,16 @@ class AbandonArcReplayUseCase {
 
 // ─── Auto-resolución ─────────────────────────────────────────────────────────
 // Eventos cuya ventana de decisión venció se resuelven solos con la opción más
-// segura, a resultado parcial. Evita misiones congeladas para siempre si el
+// segura, tirando los dados como si el jugador la hubiera elegido. Evita misiones congeladas para siempre si el
 // jugador no abre la app. Escribe en disco: se corre antes de leer el Home.
 class AutoResolveExpiredEventsUseCase {
   final MessengerRepository _messenger;
   final MissionRepository _mission;
   final WorldRepository _world;
-  AutoResolveExpiredEventsUseCase(this._messenger, this._mission, this._world);
+  final OutcomeRoller _roller;
+  AutoResolveExpiredEventsUseCase(this._messenger, this._mission, this._world,
+      {Random? rng})
+      : _roller = OutcomeRoller(rng ?? Random());
 
   Future<List<AutoResolvedEvent>> execute({DateTime? now}) async {
     final report = <AutoResolvedEvent>[];
@@ -381,22 +384,34 @@ class AutoResolveExpiredEventsUseCase {
         ..sort((a, b) => a.riskLevel.compareTo(b.riskLevel));
       final option = usable.isNotEmpty ? usable.first : expired.options.first;
 
+      // El instinto tira los mismos dados que el jugador (sin XP): ignorar
+      // un evento no puede convenir más que contestarlo.
+      final frozenAt = current.frozenBy(expired, expired.deadlineAt);
+      final raw = _roller
+          .roll(option, messenger, false,
+              routeMinutes: plannedRouteMinutes(frozenAt))
+          .outcome;
       final outcome = EventOutcome(
-        type: OutcomeType.partial,
-        narrative: ds('ui.instinct.narrative',
+        type: raw.type,
+        narrative: ds('ui.instinct.narrative.${raw.type.name}',
             {'option': option.text.toLowerCase()}),
-        healthDelta: -5,
-        timeDeltaMinutes: option.timeCostMinutes,
-        packageState: current.packageState,
+        healthDelta: raw.healthDelta,
+        timeDeltaMinutes: raw.timeDeltaMinutes,
+        packageState: raw.packageState,
         chosenOptionText: ds('ui.instinct.option', {'option': option.text}),
       );
 
       // El instinto actúa al vencer la ventana: hasta ahí estuvo detenido.
       // Primero se congela (corre los eventos siguientes) y recién después
       // se marca resuelto, sobre la lista ya corrida.
-      final frozen = current.frozenBy(expired, expired.deadlineAt);
+      final frozen = frozenAt;
+      final worstPackage =
+          outcome.packageState.index > frozen.packageState.index
+              ? outcome.packageState
+              : frozen.packageState;
       current = frozen
           .copyWith(
+            packageState: worstPackage,
             events: frozen.events.map((e) {
               if (e.id == expired.id) {
                 return e.copyWith(
@@ -497,7 +512,7 @@ class AcceptMissionUseCase {
 
     // Consumir boosts comprados en la tienda para esta misión.
     final boosts = Set<String>.from(messenger.activeBoosts);
-    // Sandalias de Mercurio (-20%) + perk de Velocidad 6-10 (hasta -12%).
+    // Sandalias de Mercurio (-20%) + perk de Velocidad 6-10 (hasta -8%).
     var durationFactor = SkillPerks.missionDurationFactor(messenger);
     if (boosts.remove('boost_speed')) durationFactor *= 0.8;
     var effectiveRoute = route;
@@ -832,6 +847,34 @@ class ClaimChecklistRewardUseCase {
   }
 }
 
+// ─── Aureo por anuncios ──────────────────────────────────────────────────────
+// 1 Aureo cada 2 anuncios vistos en el día, con tope de 1 por día (GDD §6.4).
+// Es la canilla gratuita de Aureos que acerca el presupuesto a ~1,5 por día.
+const int kAdsPerAureo = 2;
+const int kMaxAdAureosPerDay = 1;
+
+/// El anuncio número [adsToday] del día da un Aureo.
+bool adEarnsAureo(int adsToday) =>
+    adsToday > 0 &&
+    adsToday % kAdsPerAureo == 0 &&
+    adsToday ~/ kAdsPerAureo <= kMaxAdAureosPerDay;
+
+/// Acredita el Aureo del anuncio en la billetera común (el principal).
+class GrantAdAureoUseCase {
+  final MessengerRepository _messenger;
+  GrantAdAureoUseCase(this._messenger);
+
+  /// Devuelve si se acreditó el Aureo.
+  Future<bool> execute(int adsToday) async {
+    if (!adEarnsAureo(adsToday)) return false;
+    final messengers = await _messenger.getAllMessengers();
+    if (messengers.isEmpty) return false;
+    final m = messengers.first;
+    await _messenger.saveMessenger(m.copyWith(aureos: m.aureos + 1));
+    return true;
+  }
+}
+
 // ─── Skip to next event ───────────────────────────────────────────────────────
 // Cuesta denarios. El costo escala con el tiempo que se ahorra.
 class SkipToNextEventUseCase {
@@ -846,9 +889,10 @@ class SkipToNextEventUseCase {
     // Sin eventos por delante y ya en destino: no hay nada que cobrar.
     if (minutesAhead <= 0 && mission.nextUpcomingEventAt(at) == null) return 0;
     // Denarios por minuto adelantado (ajustable en remoto), mínimo 10,
-    // máximo 400: barato no, para no reemplazar los anuncios ni los Aureos.
+    // máximo 1200: los tramos largos no pueden salir más baratos que los
+    // anuncios ni los Aureos.
     return (minutesAhead * EconomyTuning.current.skipDenariosPerMinute)
-        .clamp(10, 400);
+        .clamp(10, 1200);
   }
 
   Future<({Mission mission, int cost})> execute({
@@ -973,13 +1017,20 @@ class MissionCompletion {
 /// costaron al viaje. Cuánto tarda el jugador en tocar ENTREGAR no cuenta:
 /// el juego es casual y nadie debería tener que mirar el reloj.
 /// Sin retraso → 100 · 25% de retraso → 50 · piso 20.
+/// Minutos que ya perdió la misión por eventos resueltos.
+int _eventDelayMinutes(Mission mission) => mission.events
+    .where((e) => e.status == EventStatus.resolved)
+    .fold<int>(0, (sum, e) => sum + (e.outcome?.timeDeltaMinutes ?? 0));
+
+/// Duración de la ruta sin contar lo que demoraron los eventos.
+int plannedRouteMinutes(Mission mission) =>
+    mission.deadlineAt.difference(mission.startedAt).inMinutes -
+    _eventDelayMinutes(mission);
+
 double timeScoreFor(Mission mission) {
-  final delay = mission.events
-      .where((e) => e.status == EventStatus.resolved)
-      .fold<int>(0, (sum, e) => sum + (e.outcome?.timeDeltaMinutes ?? 0));
+  final delay = _eventDelayMinutes(mission);
   if (delay <= 0) return 100;
-  final base =
-      mission.deadlineAt.difference(mission.startedAt).inMinutes - delay;
+  final base = plannedRouteMinutes(mission);
   if (base <= 0) return 20;
   return (100 - delay / base * 200).clamp(20.0, 100.0);
 }
@@ -1244,6 +1295,7 @@ class ResolveEventUseCase {
   final MessengerRepository _messenger;
   final WorldRepository _world;
   final _rng = Random();
+  late final _roller = OutcomeRoller(_rng);
   final GameContentCatalog _content;
   ResolveEventUseCase(
       this._mission, this._messenger, this._world, this._content);
@@ -1285,7 +1337,8 @@ class ResolveEventUseCase {
       throw Exception(ds('ui.error.option_locked'));
     }
 
-    final roll = _calculateOutcome(option, messenger, mission.isTutorial);
+    final roll = _roller.roll(option, messenger, mission.isTutorial,
+        routeMinutes: plannedRouteMinutes(mission));
     final raw = roll.outcome;
     final usedSkill = option.requiredSkills.keys.firstOrNull;
     const xpPerEvent = 25;
@@ -1403,10 +1456,18 @@ class ResolveEventUseCase {
       options: cfg.options.map((o) => o.toEventOption()).toList(),
     );
   }
+}
+
+// ─── Tirada de un evento ─────────────────────────────────────────────────────
+// La comparten la resolución del jugador y el instinto (auto-resolución): un
+// evento ignorado tira los mismos dados que uno contestado.
+class OutcomeRoller {
+  final Random _rng;
+  OutcomeRoller(this._rng);
 
   ({EventOutcome outcome, int score, int effectiveRisk, List<ScoreFactor> factors})
-      _calculateOutcome(
-          EventOption option, Messenger? messenger, bool isTutorial) {
+      roll(EventOption option, Messenger? messenger, bool isTutorial,
+          {int? routeMinutes}) {
     // Habilidad principal de la opción: define perks y XP.
     final usedSkill = option.requiredSkills.keys.firstOrNull;
     // Cada sumando queda registrado: el jugador tiene derecho a saber
@@ -1416,13 +1477,19 @@ class ResolveEventUseCase {
     ];
 
     int score = 40;
+    if (option.requiredSkills.isEmpty) {
+      score += kNoSkillBonus;
+      factors.add(ScoreFactor(
+          label: ds('ui.factor.common_sense'), value: kNoSkillBonus));
+    }
     for (final entry in option.requiredSkills.entries) {
       final level = messenger?.skillLevel(entry.key) ?? 1;
-      score += level * 15;
+      final add = skillScore(level, entry.value);
+      score += add;
       factors.add(ScoreFactor(
           label: ds('ui.factor.skill',
               {'skill': entry.key.label, 'level': level}),
-          value: level * 15));
+          value: add));
     }
     // Perks de Sigilo/Combate: bonus plano y reducción de riesgo.
     if (messenger != null) {
@@ -1440,10 +1507,10 @@ class ResolveEventUseCase {
         ? option.riskLevel
         : (option.riskLevel - SkillPerks.riskReduction(usedSkill, messenger))
             .clamp(0, 5);
-    score -= effectiveRisk * 8;
+    score -= riskPenalty(effectiveRisk);
     factors.add(ScoreFactor(
         label: ds('ui.factor.risk', {'level': _riskLabel(effectiveRisk)}),
-        value: -effectiveRisk * 8));
+        value: -riskPenalty(effectiveRisk)));
     // La fatiga alta deteriora el desempeño (Supervivencia 9/10 la atenúa).
     final fatigue = messenger?.fatigue ?? 0;
     final fatigueFactor =
@@ -1460,7 +1527,7 @@ class ResolveEventUseCase {
           ScoreFactor(label: ds('ui.factor.fatigue', {'value': fatigue}),
               value: -fatiguePenalty));
     }
-    final luck = _rng.nextInt(30) - 10;
+    final luck = _rng.nextInt(kLuckMax - kLuckMin + 1) + kLuckMin;
     score += luck;
     factors.add(ScoreFactor(label: ds('ui.factor.road'), value: luck));
 
@@ -1502,6 +1569,13 @@ class ResolveEventUseCase {
         ? PackageState.intact
         : PackageState.wetMinor;
 
+    // El costo de tiempo escala con la ruta: un rodeo de 6 h no puede
+    // hundir la nota de un trayecto de 45 min. Tope: un cuarto de la ruta
+    // (el fallo cuesta el doble, así que como mucho la mitad).
+    final timeCost = routeMinutes == null || routeMinutes <= 0
+        ? option.timeCostMinutes
+        : option.timeCostMinutes.clamp(0, (routeMinutes ~/ 4).clamp(1, 1 << 30));
+
     final outcome = switch (type) {
       OutcomeType.success => EventOutcome(
         type: type, narrative: narrative,
@@ -1509,13 +1583,13 @@ class ResolveEventUseCase {
       ),
       OutcomeType.partial => EventOutcome(
         type: type, narrative: narrative,
-        healthDelta: partialHealth, timeDeltaMinutes: option.timeCostMinutes,
+        healthDelta: partialHealth, timeDeltaMinutes: timeCost,
         packageState: PackageState.intact,
       ),
       OutcomeType.fail => EventOutcome(
         type: type, narrative: narrative,
         healthDelta: failHealth,
-        timeDeltaMinutes: option.timeCostMinutes * 2,
+        timeDeltaMinutes: timeCost * 2,
         packageState: failPackage,
       ),
     };

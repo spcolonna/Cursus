@@ -2,6 +2,7 @@
 // adelantaban, nota S inalcanzable, opciones bloqueadas, multi-mensajero y
 // compras reales.
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:the_messenger/data/static_game_content.dart';
@@ -130,6 +131,18 @@ Messenger _messenger({
       aureos: aureos,
     );
 
+/// Devuelve siempre el mismo dado (recortado al rango pedido).
+class _FixedRng implements Random {
+  final int value;
+  _FixedRng(this.value);
+  @override
+  int nextInt(int max) => value.clamp(0, max - 1);
+  @override
+  bool nextBool() => value.isOdd;
+  @override
+  double nextDouble() => value / 100;
+}
+
 EventOption _option({
   int timeCost = 0,
   int risk = 1,
@@ -189,6 +202,7 @@ void main() {
     test('esperar demora la llegada y nunca la deja antes de la salida',
         () async {
       // Roma→Tibur (30 min) con una espera de 120 min: antes trababa la misión.
+      // Ahora el costo se topa en un cuarto de la ruta (el doble si falla).
       final ev = _event('e1', now.subtract(const Duration(minutes: 1)),
           option: _option(timeCost: 120));
       final mission = _mission(
@@ -205,7 +219,28 @@ void main() {
       expect(after.deadlineAt.isAfter(mission.deadlineAt), isTrue);
       expect(after.deadlineAt.isAfter(after.startedAt), isTrue);
       final delay = after.deadlineAt.difference(mission.deadlineAt).inMinutes;
-      expect(delay, greaterThanOrEqualTo(120)); // 120, o 240 si falló
+      // 1 min congelado + 7 (un cuarto de 31), o 15 si falló.
+      expect(delay, inInclusiveRange(1, 16));
+    });
+
+    test('en una ruta larga el costo de tiempo se cobra entero', () async {
+      final ev = _event('e1', now.subtract(const Duration(minutes: 1)),
+          option: _option(timeCost: 120));
+      final mission = _mission(
+        startedAt: now.subtract(const Duration(hours: 2)),
+        deadlineAt: now.add(const Duration(hours: 8)),
+        events: [ev],
+      );
+      final repo = _MissionRepo(mission);
+      final res = await ResolveEventUseCase(
+              repo, _MessengerRepo([_messenger()]), _WorldRepo(), kContent)
+          .execute(mission: mission, event: ev, option: ev.options.first);
+      final expected = switch (res.outcome.type) {
+        OutcomeType.success => 0,
+        OutcomeType.partial => 120,
+        OutcomeType.fail => 240,
+      };
+      expect(res.outcome.timeDeltaMinutes, expected);
     });
 
     test('delayedBy corre los eventos futuros, no los pasados', () {
@@ -532,7 +567,7 @@ void main() {
       expect(ff.readyToDeliverAt(now.add(const Duration(seconds: 3))), isTrue);
     });
 
-    test('costo de adelantar: 2 denarios por minuto, entre 10 y 400', () {
+    test('costo de adelantar: 2 denarios por minuto, entre 10 y 1200', () {
       final now = t0.add(const Duration(minutes: 10));
       expect(SkipToNextEventUseCase.costFor(m(), now: now), 40);
       final llegado = _mission(
@@ -564,7 +599,54 @@ void main() {
               .execute();
       expect(report, hasLength(1));
       expect(missions.saved!.events.single.status, EventStatus.resolved);
-      expect(messengers.messengers.single.health, 95);
+      expect(messengers.messengers.single.health, isIn([100, 95, 80]));
+    });
+
+    Future<(Mission, Messenger)> instinto(int dado) async {
+      final now = DateTime.now();
+      final mission = _mission(
+        startedAt: now.subtract(const Duration(hours: 4)),
+        deadlineAt: now.add(const Duration(hours: 1)),
+        events: [_event('e1', now.subtract(const Duration(hours: 3)))],
+      );
+      final missions = _MissionRepo(mission);
+      final messengers = _MessengerRepo([_messenger()]);
+      await AutoResolveExpiredEventsUseCase(messengers, missions, _WorldRepo(),
+              rng: _FixedRng(dado))
+          .execute();
+      return (missions.saved!, messengers.messengers.single);
+    }
+
+    test('el instinto tira dados: con mala suerte falla y moja el paquete',
+        () async {
+      final (mission, messenger) = await instinto(0);
+      expect(mission.events.single.outcome!.type, OutcomeType.fail);
+      expect(mission.packageState, PackageState.wetMinor);
+      expect(messenger.health, 80);
+    });
+
+    test('el instinto tira dados: con buena suerte sale bien', () async {
+      final (mission, messenger) = await instinto(99);
+      expect(mission.events.single.outcome!.type, OutcomeType.success);
+      expect(messenger.health, 100);
+    });
+  });
+
+  group('Aureo por anuncios', () {
+    test('1 Aureo cada 2 anuncios, máximo 1 por día', () {
+      expect([for (var n = 1; n <= 6; n++) adEarnsAureo(n)],
+          [false, true, false, false, false, false]);
+    });
+
+    test('se acredita en el principal solo en el anuncio que corresponde',
+        () async {
+      final repo = _MessengerRepo(
+          [_messenger(), _messenger(id: 'm2', name: 'Livia')]);
+      expect(await GrantAdAureoUseCase(repo).execute(1), isFalse);
+      expect(await GrantAdAureoUseCase(repo).execute(2), isTrue);
+      expect(await GrantAdAureoUseCase(repo).execute(4), isFalse);
+      expect(repo.messengers[0].aureos, 1);
+      expect(repo.messengers[1].aureos, 0);
     });
   });
 

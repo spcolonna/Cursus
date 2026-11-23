@@ -1868,6 +1868,12 @@ abstract class AppLocalizations {
   /// **'Adelantaste 30 minutos de camino'**
   String get missionAdSkipped;
 
+  /// No description provided for @missionAdSkippedAureo.
+  ///
+  /// In es, this message translates to:
+  /// **'Adelantaste 30 minutos y ganaste 1 Aureo'**
+  String get missionAdSkippedAureo;
+
   /// No description provided for @missionYouChose.
   ///
   /// In es, this message translates to:

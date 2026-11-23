@@ -701,15 +701,21 @@ class _TravelAdButtonState extends ConsumerState<_TravelAdButton> {
         return;
       }
       if (outcome != AdOutcome.rewarded) return;
-      await ref.read(playerProgressProvider).recordTravelAd();
+      final progress = ref.read(playerProgressProvider);
+      await progress.recordTravelAd();
+      final used = await progress.travelAdsUsedToday();
+      // Antes de adelantar: el refresco del Home ya lee el Aureo nuevo.
+      final earned =
+          await ref.read(grantAdAureoUseCaseProvider).execute(used);
       await ref.read(homeProvider.notifier).advanceMissionMinutes(
             widget.mission.messengerId,
             30,
           );
-      final used = await ref.read(playerProgressProvider).travelAdsUsedToday();
       if (mounted) {
         setState(() => _usedToday = used);
-        showGameSnack(context, AppLocalizations.of(context).missionAdSkipped);
+        final l = AppLocalizations.of(context);
+        showGameSnack(
+            context, earned ? l.missionAdSkippedAureo : l.missionAdSkipped);
       }
     } catch (e) {
       if (mounted) showErrorSnack(context, e);

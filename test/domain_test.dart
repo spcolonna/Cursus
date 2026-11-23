@@ -48,7 +48,7 @@ void main() {
         for (final s in SkillType.values) s: s == SkillType.speed ? 10 : 1
       });
       expect(SkillPerks.missionDurationFactor(base), 1.0);
-      expect(SkillPerks.missionDurationFactor(veloz), 0.88);
+      expect(SkillPerks.missionDurationFactor(veloz), 0.92);
       expect(SkillPerks.gradeSBonus(veloz), 25);
     });
 
@@ -72,7 +72,7 @@ void main() {
       });
       expect(SkillPerks.fatiguePerEvent(_messenger()), 8);
       expect(SkillPerks.fatiguePerEvent(superviviente), 4);
-      expect(SkillPerks.fatiguePenaltyFactor(superviviente), 0.0);
+      expect(SkillPerks.fatiguePenaltyFactor(superviviente), 0.5);
     });
 
     test('Contactos multiplica la paga', () {

@@ -37,11 +37,17 @@ Flutter, arquitectura limpia (`domain/` → `infrastructure/` → `presentation/
 
 1. En el Home elegís una ruta disponible según tu rank y la aceptás.
 2. Corre un **timer real** (`MissionProgressNotifier`, tick de 1s). El progreso es `tiempo transcurrido / duración`.
-3. Los eventos se distribuyen en slots a lo largo de la duración. Cuando un evento llega, **el progreso se congela** hasta que lo resuelvas. Si no lo resolvés en 60 minutos, el mensajero actúa por instinto: elige la opción más segura que puede usar, con resultado parcial (−5 de salud) y el costo de tiempo de esa opción. El tiempo detenido nunca supera esa ventana, y toda la misión se corre en el tiempo, así que esperar no infla la duración ni la paga.
+3. Los eventos se distribuyen en slots a lo largo de la duración. Cuando un evento llega, **el progreso se congela** hasta que lo resuelvas. Si no lo resolvés en 60 minutos, el mensajero actúa por instinto: elige la opción más segura que puede usar y tira los dados con ella, igual que si la hubiera elegido el jugador pero sin ganar XP. Puede salir bien, parcial o mal (salud, tiempo y paquete incluidos): ignorar un evento nunca conviene más que contestarlo. El tiempo detenido nunca supera esa ventana, y toda la misión se corre en el tiempo, así que esperar no infla la duración ni la paga.
 4. Cada evento ofrece 2-3 opciones con `riskLevel` (1-5), `timeCostMinutes` y `requiredSkills` (gating: sin el nivel de skill, la opción no está disponible).
-5. **Fórmula de resolución** (`ResolveEventUseCase._calculateOutcome` en `lib/domain/usecases/usecases.dart:439`):
-   `score = 40 base + (nivel de skill usada × 15) − (riesgo × 8) − fatiga (−10 si ≥40, −20 si ≥70) + azar`
-   Resultado: éxito / parcial / fallo. Afecta salud, llegada (el costo de tiempo **demora** la llegada y corre los eventos que faltan; el fallo cuesta el doble) y estado del paquete (intacto → dañado → perdido). Cada evento resuelto suma **+8 de fatiga** y **+25 XP a la skill usada**.
+5. **Fórmula de resolución** (`OutcomeRoller.roll` en `lib/domain/usecases/usecases.dart`; constantes compartidas con el pronóstico en `skill_tree.dart`):
+   `score = 40 + habilidad + perks − riesgo − fatiga + azar`
+   - **Habilidad** (`skillScore`): 15 por nivel hasta un nivel por encima del que pide la opción, y +2 por cada nivel extra. Ej.: en una opción que pide 3, nivel 3 = 45, nivel 4 = 60, nivel 10 = 72. Una opción **sin habilidad** suma +15 ("Sentido común"), como un nivel 1.
+   - **Riesgo efectivo** (`riskPenalty`): 0 / 8 / 16 / 24 / **40 / 56** para riesgo 0-5.
+   - **Fatiga:** −7 si ≥40, −15 si ≥70 (Supervivencia 9/10 la atenúa un 25%/50%).
+   - **Azar del camino:** uniforme de −25 a +24.
+   - Éxito ≥55 · parcial ≥30 · fallo <30.
+   Casos borde (éxito/parcial/fallo %, fatiga baja, opción que pide 3): nivel 3 riesgo 5 → 5/41/54 · nivel 5 → 32/42/25 · nivel 10 → 49/41/10 · Combate 10 → 66/24/10. Sin habilidad: riesgo 0 → 52/48/0, riesgo 1 → 37/48/15.
+   Resultado: éxito / parcial / fallo. Afecta salud, llegada (el costo de tiempo **demora** la llegada y corre los eventos que faltan; se topa en un cuarto de la duración de la ruta y el fallo cuesta el doble, así que un rodeo de 6 h no hunde una ruta de 45 min) y estado del paquete (intacto → dañado → perdido). Cada evento resuelto suma **+8 de fatiga** y **+25 XP a la skill usada**.
    **Tiradas críticas** (d100 aparte, `mishapPercent` / `kLuckyBreakPercent` en `forecast.dart`): *Imprevisto* = fallo seguro el 5% de las veces en riesgo nominal 4 y el 10% en riesgo 5 (los perks de Sigilo no lo anulan); *Golpe de suerte* = éxito seguro el 5% de las veces en cualquier opción. Garantizan que el maxeado pueda fallar y que una opción sin oficio pueda salir bien. Ambos aparecen en el desglose de la tirada y entran en el pronóstico.
 6. Al llegar al 100%, botón **"ENTREGAR MENSAJE"** (no autocompleta). Nota final = `30% tiempo + 35% paquete + 35% decisiones` → **S/A/B/C/F** → paga **135/90/55/28/10 Denarios × factor de la ruta** (§6.2) y −10 de fatiga. El puntaje de tiempo mide los minutos que costaron las decisiones (`timeScoreFor`: sin retraso = 100, 25% de retraso = 50, piso 20); cuánto tarda el jugador en tocar ENTREGAR no cuenta.
 7. **Billetera común:** Denarios, Aureos y Sellos viven en el mensajero principal. La paga de cualquier mensajero va ahí, y de ahí salen las compras de la tienda y "adelantar". En la tienda se elige a qué mensajero se le aplica el efecto.
@@ -57,9 +63,9 @@ Flutter, arquitectura limpia (`domain/` → `infrastructure/` → `presentation/
 
 - **Skills:** 5 ramas (Velocidad, Sigilo, Combate, Supervivencia, Contactos), niveles 1-5, XP creciente (100/125/175/250). Sin nombres de habilidad ni perks: son solo un número que gatea opciones y suma al score.
 - **Rank:** derivado de la suma de niveles de skill → títulos Correo / Mensajero / Courier / Maestro / Leyenda. Gatea rutas.
-- **Fatiga:** 0-100. +8 por evento, −10 por entrega, se limpia con item de tienda. Penaliza el score de eventos.
+- **Fatiga:** 0-100. +8 por evento, −10 por entrega, se limpia con item de tienda. Penaliza el score de eventos (−7 desde 40, −15 desde 70).
 - **Multi-mensajero:** hasta 4 mensajeros con misiones paralelas. Slots 2/3/4 cuestan **20/50/100 Aureos** (requiere tutorial completo).
-- **Economía:** se arranca con **200 Denarios y 5 Aureos**. Tienda (`shop_screen.dart`, catálogo `shopCatalogue`): pociones (50/120 Denarios), descanso (80), manuales de skill (200/500/1.200/2.500 según el nivel; no se venden en nivel 5), Sandalias de Mercurio −20% tiempo (3 Aureos), Mapa del explorador revela evento (5 Aureos). "Adelantar" la misión cuesta 2 Denarios/minuto (clamp 10-400).
+- **Economía:** se arranca con **200 Denarios y 5 Aureos**. Tienda (`shop_screen.dart`, catálogo `shopCatalogue`): pociones (50/120 Denarios), descanso (80), manuales de skill (200/500/1.200/2.500 según el nivel; no se venden en nivel 5), Sandalias de Mercurio −20% tiempo (3 Aureos), Mapa del explorador revela evento (5 Aureos). "Adelantar" la misión cuesta 2 Denarios/minuto (clamp 10-1.200).
 - **Perfil:** skills con barras de XP + historial de últimas 10 misiones con nota.
 - **Día/noche:** el fondo del Home cambia según la hora real del dispositivo, y el cielo de cada escenario de evento también. Detalle ambiental muy alineado con el pilar 2.
 
@@ -187,16 +193,18 @@ Una pantalla nueva (pestaña o desde el perfil): 5 columnas/caminos — **Veloci
 
 ### 5.2 Efectos: incidencia real sin romper el sistema
 
-- **Niveles 1-5 (base):** mantienen exactamente el rol actual — gatean opciones de evento y suman `nivel × 15` al score. Solo ganan nombre y descripción.
-- **Niveles 6-10 (élite):** además del score, cada nivel otorga un **perk pasivo**. Ejemplos iniciales:
+- **Niveles 1-5 (base):** gatean opciones de evento y suman al score según `skillScore` (§2.1): 15 por nivel hasta un nivel por encima de lo que pide la opción, +2 por nivel extra. El árbol muestra el aporte contra la opción más exigente (pide 3): +15/30/45/60/62.
+- **Niveles 6-10 (élite):** suman +2 por nivel al score y cada uno otorga un **perk pasivo** (implementado en `SkillPerks`, `skill_tree.dart`):
 
-| Camino | Nv. 6 | Nv. 8 | Nv. 10 (capstone) |
-|---|---|---|---|
-| Velocidad | −3% duración de misiones | −6% duración | "Correo del César": −10% duración y las notas S pagan +25 Denarios |
-| Sigilo | Los eventos de patrulla siempre ofrecen opción de sigilo | −1 de riesgo efectivo en opciones de sigilo | "Invisible": 1 evento por misión puede evitarse sin tirada |
-| Combate | +10 al score en opciones de combate | Los fallos de combate no dañan el paquete | "Gladiador": los bandidos pueden rendirse (éxito automático 25%) |
-| Supervivencia | Fatiga por evento 8→6 | Clima: −50% costo de tiempo en eventos de tormenta | "Incansable": la fatiga nunca penaliza el score |
-| Contactos | +5% paga de misiones | Descuento 20% en la tienda de Denarios | "Red imperial": 1 reintento gratis de evento fallado por día |
+| Camino | Nv. 6 | Nv. 7 | Nv. 8 | Nv. 9 | Nv. 10 |
+|---|---|---|---|---|---|
+| Velocidad | −2% duración | −3% | −5% | −6% | −8% y las notas S pagan +25 Denarios |
+| Sigilo | Opciones de Sigilo exigen 1 nivel menos | +4 al score | +3 (total +7) | +3 (total +10) | −1 de riesgo efectivo |
+| Combate | +3 al score | +3 (total +6) | Los fallos no dañan el paquete | +4 (total +10) | Los fallos cuestan la mitad de salud |
+| Supervivencia | Fatiga por evento 8→6 | Parciales −3 de salud en vez de −5 | Fatiga por evento 6→4 | Penalización por fatiga −25% | Penalización por fatiga −50% |
+| Contactos | Paga +5% | +8% | +12% | +16% | +20% |
+
+Los perks de score/riesgo solo aplican cuando la opción usa esa habilidad. Recorte de 2026-11-23: Velocidad 10 daba ≈ +32% de Denarios por hora (era −12%) y Supervivencia 10 anulaba toda la fatiga; Sigilo daba +25 y −2 de riesgo, más que la banda de azar entera.
 
 **Legibilidad (implementado):** la pantalla del árbol lee `SkillPerks` y muestra el efecto con números — "Suma a tus tiradas +45", "Duración de las misiones −7%" — más un bloque "qué ganás" con el antes → después de cada nivel y el costo en Sellos de todos los nodos élite, no solo el próximo.
 
@@ -235,14 +243,16 @@ Jugador que hace 3 sesiones, completa 2-3 misiones y los 3 contratos:
 
 | Faucet | Denarios | Aureos | Sellos |
 |---|---|---|---|
-| Misiones (una corta + una larga, nota A/B) | ~152 | — | — |
+| Misiones (corta, media y larga, nota media B) | ~186 | — | — |
 | Encargos semanales (2 de Denarios + el del Sello) | ~25 | — | ~0,14 |
 | Contratos del día | ~141 | — | 1 |
 | Paga del gremio (promedio) | ~75 | ~0,4 | ~0,15 |
-| Rewarded ads (2-3 vistas) | ~60 | ~1 | — |
-| **Total/día** | **~435** | **~1,5** | **~1,1-1,3** |
+| Rewarded ads (2+ vistas: 1 Aureo cada 2, tope 1/día) | — | ~1 | — |
+| **Total/día** | **~424** | **~1,4** | **~1,1-1,3** |
 
-**Paga por ruta (implementado).** Cada ruta tiene un factor que se fija al aceptar, con la duración *nominal* (un boost de velocidad no baja la paga): `factor = clamp(0,6 + 0,15·log2(horas+1) + 0,3·peligro, 0,7, 1,6)`. Ruta de 2 h ≈ ×0,9 · 8 h ≈ ×1,2 · 3 días = ×1,6. Crece con el logaritmo: la ruta larga paga más en total pero menos por hora. Los capítulos de historia pagan ×1,3. La card de ruta muestra "Paga ~N" (nota A) y el resultado explica "Nota A: 90 × ruta 1,2". Lo verifica `test/progression_test.dart` (día típico 435 ±10%; hoy da ~449).
+Simulación con la fórmula de 2026-11-23 (paga por misión, 3 misiones/día): rango 1 ≈ 155 (día ~390), rango 2 ≈ 210 (~450), rango 3 ≈ 265 (~500), todas en 5 ≈ 300 (~540). Antes de la fórmula nueva, desde rango 3 la nota S salía casi siempre y el día llegaba a ~650-785. Los anuncios no dan Denarios: solo adelantan 30 min y dan Aureos.
+
+**Paga por ruta (implementado).** Cada ruta tiene un factor que se fija al aceptar, con la duración *nominal* (un boost de velocidad no baja la paga): `factor = clamp(0,6 + 0,15·log2(horas+1) + 0,3·peligro, 0,7, 1,6)`. Ruta de 2 h ≈ ×0,9 · 8 h ≈ ×1,2 · 3 días = ×1,6. Crece con el logaritmo: la ruta larga paga más en total pero menos por hora. Los capítulos de historia pagan ×1,3. La card de ruta muestra "Paga ~N" (nota A) y el resultado explica "Nota A: 90 × ruta 1,2". Lo verifica `test/progression_test.dart` (día típico 435 ±10%, hoy ~424; Aureos 1,5 ±10%, hoy ~1,43).
 
 **Logros y títulos (implementado).** 30 logros (incluye terminar los tres arcos y encontrar 4/6/9 finales; la galería de finales permite volver a recorrer un arco sin tocar la partida) en `data/progression_content.dart` (camino, notas, gremio, oficio, historia, fortuna). Premios: Denarios de una sola vez, un título, y como mucho 1 Sello por logro con **tope de 8 Sellos en toda la partida**; nunca Aureos. Las estadísticas viven en `progression_v2`; al migrar se reconstruyen desde el historial y los logros ya cumplidos se pagan en silencio. Celebraciones: cinta de logro desde arriba y laurel a pantalla completa al subir de rango; nunca durante un evento.
 
@@ -262,7 +272,7 @@ Compliance: si algún paquete futuro tiene contenido aleatorio, publicar odds (p
 
 ### 6.4 Rewarded ads (AdMob, a integrar)
 
-1. **−30 min de viaje** de una misión activa (cap 4/día) — el placement estrella.
+1. **−30 min de viaje** de una misión activa (cap 4/día) — el placement estrella. El 2.º anuncio del día da además **1 Aureo** (`GrantAdAureoUseCase`: 1 cada 2 anuncios, tope 1 por día).
 2. **Reintentar un evento fallado** (1/misión).
 3. **Doblar la paga** de una entrega (1/día).
 4. **+1 contrato extra** en el tablón (1/día).
@@ -348,7 +358,7 @@ Todo se ve completo sin ilustraciones: lo que no está dibujado a mano se pinta 
 
 1. **Timers largos sin notificaciones = churn.** El jugador acepta una misión de 8h, se olvida, y al volver la encuentra congelada en un evento. Push es prerrequisito de todo lo demás; ninguna feature de retención compensa su ausencia.
 2. **Auto-resolución mal calibrada** puede sentirse castigo (si es muy mala) o hacer el juego jugable-sin-jugar (si es muy buena). Parcial fijo con la opción segura es el punto de partida; ajustar con datos.
-3. **Inflación de Denarios** si contratos + racha pagan de más: el "adelantar misión" (1 Denario/min) se vuelve gratis y canibaliza los ads de −30 min. Vigilar el presupuesto de §6.2.
+3. **Inflación de Denarios** si contratos + racha pagan de más: el "adelantar misión" (2 Denarios/min, tope 1.200) se vuelve gratis y canibaliza los ads de −30 min. Vigilar el presupuesto de §6.2.
 4. **El árbol no debe trivializar los eventos** (cap +25%, el azar siempre permite fallo en riesgo alto). P2W en PvE es tolerable, pero un jugador que nunca falla se aburre y churnea.
 5. **Misión "vacía"** (riesgo señalado ya en el GDD v1): una misión de 72h con pocos eventos se siente muerta. Regla: mínimo 1 evento cada 8h de misión; las misiones largas deben pagar acorde.
 

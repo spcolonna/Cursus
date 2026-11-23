@@ -7,26 +7,26 @@ description: Ajustar números y economía de Via Imperia — fórmula de resoluc
 
 Regla madre: **el jugador maxeado sigue pudiendo fallar.** Si un cambio elimina el fallo en riesgo 4-5, es un cambio malo aunque se sienta bien.
 
-## Fórmula de resolución (`_calculateOutcome`, `lib/domain/usecases/usecases.dart:663`)
+## Fórmula de resolución (`OutcomeRoller.roll`, `lib/domain/usecases/usecases.dart`)
+
+Constantes compartidas con el pronóstico en `lib/domain/entities/skill_tree.dart` (`skillScore`, `riskPenalty`, `kLuckMin/Max`, `kNoSkillBonus`): tocá ahí, no en dos lugares.
 
 ```
 score  = 40
-       + Σ (nivel de cada skill requerida × 15)
-       + SkillPerks.scoreBonus(skill, messenger)
-       − riesgo_efectivo × 8        (riesgo − SkillPerks.riskReduction, clamp 0-5)
+       + skillScore(nivel, requerido)   15/nivel hasta requerido+1, después +2/nivel
+         (opción sin habilidad: +15 "Sentido común")
+       + SkillPerks.scoreBonus(skill, messenger)        Sigilo/Combate hasta +10
+       − riskPenalty(riesgo_efectivo)   0/8/16/24/40/56  (Sigilo 10: riesgo −1)
        − 7  si fatiga ≥ 40   |   − 15 si fatiga ≥ 70   (× fatiguePenaltyFactor)
-       + rng(0..29) − 10
+       + azar uniforme −25..+24
 
 score ≥ 55 → éxito   ·   ≥ 30 → parcial   ·   < 30 → fallo
-
-d100 aparte (tiradas críticas, forecast.dart):
-  < mishapPercent(riesgo nominal)   → Imprevisto: fallo   (riesgo 4: 5%, riesgo 5: 10%)
-  ≥ 100 − kLuckyBreakPercent (5)    → Golpe de suerte: éxito
++ tiradas críticas: Imprevisto 5%/10% en riesgo 4/5, Golpe de suerte 5%
 ```
 
-Consecuencias: +8 fatiga y +25 XP a la skill usada por evento resuelto. Fallo: −20 salud (−10 en tutorial) y paquete a `wetMinor`. Parcial: −5 salud.
+Consecuencias: +8 fatiga y +25 XP a la skill usada por evento resuelto. Fallo: −20 salud (−10 en tutorial) y paquete a `wetMinor`. Parcial: −5 salud. Costo de tiempo topado en ¼ de la ruta (el fallo cuesta el doble). El instinto (evento vencido) tira con la opción más segura, sin XP.
 
-**La banda de azar es de solo 30 puntos** — cada punto que agregues al score mueve el resultado mucho. Antes de cambiar cualquier constante, calculá la probabilidad de fallo en los casos borde: skill 1 / riesgo 5, y skill 10 / riesgo 5.
+Casos borde de referencia (opción que pide 3, riesgo 5): nivel 3 → 5/41/54 · nivel 5 → 32/42/25 · nivel 10 → 49/41/10 · Combate 10 → 66/24/10. Antes de cambiar cualquier constante, recalculá estos casos y el de nivel 1 / riesgo 5 (≈95% fallo).
 
 ## Nota y paga de misión (`CompleteMissionUseCase`, ~línea 431)
 
@@ -45,8 +45,8 @@ Consecuencias: +8 fatiga y +25 XP a la skill usada por evento resuelto. Fallo: �
 
 | Moneda | Rol | Faucets | Sinks |
 |---|---|---|---|
-| **Denarios** | operación diaria | misiones (nota × ruta), contratos, racha, logros (una vez) | pociones, descanso, manuales, adelantar misión (2 Den/min, clamp 10-400, ajustable en remoto) |
-| **Aureos** | premium (la única comprable) | IAP, gotas de racha | slots de mensajero 20/50/100, boosts, Sellos |
+| **Denarios** | operación diaria | misiones (nota × ruta), contratos, racha, logros (una vez) | pociones, descanso, manuales, adelantar misión (2 Den/min, clamp 10-1200, ajustable en remoto) |
+| **Aureos** | premium (la única comprable) | IAP, gotas de racha, 1 cada 2 anuncios (tope 1/día) | slots de mensajero 20/50/100, boosts, Sellos |
 | **Sellos** | élite | 3.er contrato diario, día 7 de racha, 1.ª nota S semanal | **solo** niveles 6-10 del árbol |
 
 Presupuesto objetivo del jugador activo (3 sesiones/día): **~435 Denarios · ~1,5 Aureos · ~1,1 Sellos** por día. Meta de diseño: nivel 10 de UN camino ≈ 5-7 semanas gratis.

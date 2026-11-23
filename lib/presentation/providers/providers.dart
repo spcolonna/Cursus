@@ -233,6 +233,9 @@ final autoResolveExpiredEventsUseCaseProvider =
   ref.read(missionRepositoryProvider),
   ref.read(worldRepositoryProvider),
 ));
+final grantAdAureoUseCaseProvider = Provider((ref) => GrantAdAureoUseCase(
+  ref.read(messengerRepositoryProvider),
+));
 final claimChecklistRewardUseCaseProvider =
     Provider((ref) => ClaimChecklistRewardUseCase(
   ref.read(messengerRepositoryProvider),

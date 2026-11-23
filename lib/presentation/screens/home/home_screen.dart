@@ -488,7 +488,7 @@ class _RosterChip extends StatelessWidget {
 
 // ─── Lo que pasó mientras no estabas ─────────────────────────────────────────
 // Si el jugador no responde un evento en 60 minutos, el mensajero actúa por
-// instinto: opción más segura, resultado parcial. Nunca destruye la misión,
+// instinto: opción más segura, con su tirada (sin XP). Nunca destruye la misión,
 // pero tiene que enterarse — si no, la decisión desaparece sin explicación.
 class _AutoResolvedNotice extends StatelessWidget {
   final List<AutoResolvedEvent> events;

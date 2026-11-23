@@ -527,7 +527,7 @@ const List<RealEventConfig> storyEventPool = [
         outcomeFail: 'Te arrodillas del lado equivocado del altar y un sacerdote menor te sermonea cinco minutos sobre liturgia. El barrendero-que-no-barre te estudia todo ese tiempo. Entregas igual, pero fichado.',
       ),
       RealOptionConfig(
-        id: 'opt_wait_shift', text: 'Esperas el cambio de guardia de los "mendigos"',
+        id: 'opt_doorway_wait', text: 'Esperas el cambio de guardia de los "mendigos"',
         riskLevel: 2, timeCostMinutes: 45, requiredSkills: {SkillType.stealth: 2},
         outcomeSuccess: 'A la hora undécima, el mendigo-que-no-pide se levanta y otro viene a reemplazarlo. En los treinta pasos que caminan para cruzarse, la escalinata queda ciega. Ya estás adentro.',
         outcomePartial: 'El cambio de guardia tarda más de lo esperado y esperar sin hacer nada es un arte que todavía no dominas. Un vendedor te ofrece castañas tres veces. Entras al fin, con hambre.',
@@ -615,6 +615,13 @@ const List<RealEventConfig> storyEventPool = [
         outcomeSuccess: 'Bajas a las entrañas de Roma con una antorcha robada de un altar. La Cloaca Máxima huele a imperio digerido, pero es recta, rápida y absolutamente desierta. Sales a dos calles del destino, oliendo a historia.',
         outcomePartial: 'El túnel funciona, aunque dos ratas del tamaño de gatos te disputan el paso y una cascada inesperada te bautiza. Llegas. Mojado, pero llegas.',
         outcomeFail: 'Te equivocas de ramal y terminas bajo el mercado de ganado, que gotea lo que gotea el ganado. Sales por la primera rejilla que cede. La túnica va a necesitar un funeral.',
+      ),
+      RealOptionConfig(
+        id: 'opt_curfew_hide', text: 'Te escondes en un portal hasta el cambio de guardia',
+        riskLevel: 1, timeCostMinutes: 60, requiredSkills: {},
+        outcomeSuccess: 'Te acurrucas en un portal oscuro y cuentas los pasos de la patrulla. Al cambio de guardia hay un hueco de pocos minutos, y lo cruzas sin que nadie levante la antorcha.',
+        outcomePartial: 'El cambio de guardia tarda más de lo que esperabas. Cuando por fin se abre el hueco, ya perdiste una hora de noche y te duelen las rodillas de estar agachado.',
+        outcomeFail: 'Un vigil se detiene justo frente a tu portal a orinar. Te ve. Corres antes de que grite, pero la patrulla entera te persigue tres calles y te obliga a dar un rodeo enorme.',
       ),
     ],
   ),

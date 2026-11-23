@@ -52,8 +52,12 @@ const Map<String, String> kDomainStrings = {
   'ui.journal.faction_tier': '{faction} ahora te tiene por {tier}.',
   'ui.journal.arc_repaired':
       'Las cosas se acomodaron solas mientras no mirabas. El camino siguió por donde siguió.',
-  'ui.instinct.narrative':
+  'ui.instinct.narrative.success':
+      'No estabas ahí para decidir. Tu mensajero actuó por instinto: {option}. Le salió bien.',
+  'ui.instinct.narrative.partial':
       'No estabas ahí para decidir. Tu mensajero actuó por instinto: {option}. Salió del paso, pero perdió tiempo.',
+  'ui.instinct.narrative.fail':
+      'No estabas ahí para decidir. Tu mensajero actuó por instinto: {option}. Le salió mal y lo pagó caro.',
   'ui.instinct.option': '{option} (por instinto)',
   'ui.instinct.journal': 'No estabas: tu mensajero decidió por ti. {note}',
   'ui.outcome.success.0':
@@ -73,6 +77,7 @@ const Map<String, String> kDomainStrings = {
   'ui.outcome.fail.1':
       'Una decisión equivocada. Ahora vas más lento y el tiempo corre.',
   'ui.outcome.fail.2': 'El camino te venció esta vez. Pero sigues en pie.',
+  'ui.factor.common_sense': 'Sentido común',
   'ui.factor.craft': 'Oficio de mensajero',
   'ui.factor.skill': '{skill} Nv.{level}',
   'ui.factor.perks': 'Perks de {skill}',
@@ -176,76 +181,85 @@ const Map<String, String> kDomainStrings = {
   'ui.skill_node.speed.1.perk': 'Desbloquea opciones de Velocidad Nv.1',
   'ui.skill_node.speed.2.name': 'Trote sostenido',
   'ui.skill_node.speed.2.perk':
-      '+30 a tus tiradas · opciones de Velocidad Nv.2',
+      'Hasta +30 a tus tiradas · opciones de Velocidad Nv.2',
   'ui.skill_node.speed.3.name': 'Zancada larga',
   'ui.skill_node.speed.3.perk':
-      '+45 a tus tiradas · opciones de Velocidad Nv.3',
+      'Hasta +45 a tus tiradas · opciones de Velocidad Nv.3',
   'ui.skill_node.speed.4.name': 'Pies de viento',
   'ui.skill_node.speed.4.perk':
-      '+60 a tus tiradas · opciones de Velocidad Nv.4',
+      'Hasta +60 a tus tiradas · opciones de Velocidad Nv.4',
   'ui.skill_node.speed.5.name': 'Corredor de postas',
   'ui.skill_node.speed.5.perk':
-      '+75 a tus tiradas · todas las opciones de Velocidad',
+      'Hasta +62 a tus tiradas · todas las opciones de Velocidad',
   'ui.skill_node.speed.6.name': 'Atajos del Imperio',
-  'ui.skill_node.speed.6.perk': 'Misiones -3% de duración',
+  'ui.skill_node.speed.6.perk':
+      'Misiones -2% de duración',
   'ui.skill_node.speed.7.name': 'Ritmo de campaña',
-  'ui.skill_node.speed.7.perk': 'Misiones -5% de duración',
+  'ui.skill_node.speed.7.perk':
+      'Misiones -3% de duración',
   'ui.skill_node.speed.8.name': 'Viento del norte',
-  'ui.skill_node.speed.8.perk': 'Misiones -7% de duración',
+  'ui.skill_node.speed.8.perk':
+      'Misiones -5% de duración',
   'ui.skill_node.speed.9.name': 'Sombra en el camino',
-  'ui.skill_node.speed.9.perk': 'Misiones -9% de duración',
+  'ui.skill_node.speed.9.perk':
+      'Misiones -6% de duración',
   'ui.skill_node.speed.10.name': 'Correo del César',
   'ui.skill_node.speed.10.perk':
-      'Misiones -12% y las notas S pagan +25 denarios',
+      'Misiones -8% y las notas S pagan +25 denarios',
   'ui.skill_node.stealth.1.name': 'Pisada suave',
   'ui.skill_node.stealth.1.perk': 'Desbloquea opciones de Sigilo Nv.1',
   'ui.skill_node.stealth.2.name': 'Entre las sombras',
   'ui.skill_node.stealth.2.perk':
-      '+30 a tus tiradas · opciones de Sigilo Nv.2',
+      'Hasta +30 a tus tiradas · opciones de Sigilo Nv.2',
   'ui.skill_node.stealth.3.name': 'Rostro anónimo',
   'ui.skill_node.stealth.3.perk':
-      '+45 a tus tiradas · opciones de Sigilo Nv.3',
+      'Hasta +45 a tus tiradas · opciones de Sigilo Nv.3',
   'ui.skill_node.stealth.4.name': 'Manto gris',
   'ui.skill_node.stealth.4.perk':
-      '+60 a tus tiradas · opciones de Sigilo Nv.4',
+      'Hasta +60 a tus tiradas · opciones de Sigilo Nv.4',
   'ui.skill_node.stealth.5.name': 'Fantasma del foro',
   'ui.skill_node.stealth.5.perk':
-      '+75 a tus tiradas · todas las opciones de Sigilo',
+      'Hasta +62 a tus tiradas · todas las opciones de Sigilo',
   'ui.skill_node.stealth.6.name': 'Callejones conocidos',
   'ui.skill_node.stealth.6.perk':
       'Las opciones de Sigilo exigen 1 nivel menos',
   'ui.skill_node.stealth.7.name': 'Paso de gato',
-  'ui.skill_node.stealth.7.perk': '+5 a tus tiradas de Sigilo',
+  'ui.skill_node.stealth.7.perk':
+      '+4 a tus tiradas de Sigilo',
   'ui.skill_node.stealth.8.name': 'Niebla romana',
   'ui.skill_node.stealth.8.perk':
-      'Las opciones de Sigilo tienen 1 punto menos de riesgo',
+      '+3 extra a tus tiradas de Sigilo',
   'ui.skill_node.stealth.9.name': 'Nadie te vio',
-  'ui.skill_node.stealth.9.perk': '+10 extra a tus tiradas de Sigilo',
+  'ui.skill_node.stealth.9.perk':
+      '+3 extra a tus tiradas de Sigilo',
   'ui.skill_node.stealth.10.name': 'Invisible',
   'ui.skill_node.stealth.10.perk':
-      'Riesgo -2 y +10 extra en opciones de Sigilo',
+      'Las opciones de Sigilo tienen 1 punto menos de riesgo',
   'ui.skill_node.combat.1.name': 'Guardia alzada',
   'ui.skill_node.combat.1.perk': 'Desbloquea opciones de Combate Nv.1',
   'ui.skill_node.combat.2.name': 'Puño del camino',
   'ui.skill_node.combat.2.perk':
-      '+30 a tus tiradas · opciones de Combate Nv.2',
+      'Hasta +30 a tus tiradas · opciones de Combate Nv.2',
   'ui.skill_node.combat.3.name': 'Reflejos de legión',
   'ui.skill_node.combat.3.perk':
-      '+45 a tus tiradas · opciones de Combate Nv.3',
+      'Hasta +45 a tus tiradas · opciones de Combate Nv.3',
   'ui.skill_node.combat.4.name': 'Acero prestado',
   'ui.skill_node.combat.4.perk':
-      '+60 a tus tiradas · opciones de Combate Nv.4',
+      'Hasta +60 a tus tiradas · opciones de Combate Nv.4',
   'ui.skill_node.combat.5.name': 'Veterano de riñas',
   'ui.skill_node.combat.5.perk':
-      '+75 a tus tiradas · todas las opciones de Combate',
+      'Hasta +62 a tus tiradas · todas las opciones de Combate',
   'ui.skill_node.combat.6.name': 'Postura firme',
-  'ui.skill_node.combat.6.perk': '+5 a tus tiradas de Combate',
+  'ui.skill_node.combat.6.perk':
+      '+3 a tus tiradas de Combate',
   'ui.skill_node.combat.7.name': 'Contragolpe',
-  'ui.skill_node.combat.7.perk': '+10 a tus tiradas de Combate',
+  'ui.skill_node.combat.7.perk':
+      '+6 a tus tiradas de Combate',
   'ui.skill_node.combat.8.name': 'Escudo del correo',
   'ui.skill_node.combat.8.perk': 'Los fallos en Combate no dañan el paquete',
   'ui.skill_node.combat.9.name': 'Furia controlada',
-  'ui.skill_node.combat.9.perk': '+10 extra a tus tiradas de Combate',
+  'ui.skill_node.combat.9.perk':
+      '+4 extra a tus tiradas de Combate',
   'ui.skill_node.combat.10.name': 'Gladiador',
   'ui.skill_node.combat.10.perk':
       'Los fallos en Combate te cuestan la mitad de salud',
@@ -253,16 +267,16 @@ const Map<String, String> kDomainStrings = {
   'ui.skill_node.survival.1.perk': 'Desbloquea opciones de Supervivencia Nv.1',
   'ui.skill_node.survival.2.name': 'Piel curtida',
   'ui.skill_node.survival.2.perk':
-      '+30 a tus tiradas · opciones de Supervivencia Nv.2',
+      'Hasta +30 a tus tiradas · opciones de Supervivencia Nv.2',
   'ui.skill_node.survival.3.name': 'Aguas y raíces',
   'ui.skill_node.survival.3.perk':
-      '+45 a tus tiradas · opciones de Supervivencia Nv.3',
+      'Hasta +45 a tus tiradas · opciones de Supervivencia Nv.3',
   'ui.skill_node.survival.4.name': 'Refugio rápido',
   'ui.skill_node.survival.4.perk':
-      '+60 a tus tiradas · opciones de Supervivencia Nv.4',
+      'Hasta +60 a tus tiradas · opciones de Supervivencia Nv.4',
   'ui.skill_node.survival.5.name': 'Hijo del camino',
   'ui.skill_node.survival.5.perk':
-      '+75 a tus tiradas · todas las opciones de Supervivencia',
+      'Hasta +62 a tus tiradas · todas las opciones de Supervivencia',
   'ui.skill_node.survival.6.name': 'Segundo aliento',
   'ui.skill_node.survival.6.perk': 'Los eventos te fatigan menos (8 → 6)',
   'ui.skill_node.survival.7.name': 'Sangre dura',
@@ -272,23 +286,25 @@ const Map<String, String> kDomainStrings = {
   'ui.skill_node.survival.8.perk':
       'Los eventos te fatigan mucho menos (6 → 4)',
   'ui.skill_node.survival.9.name': 'Marcha forzada',
-  'ui.skill_node.survival.9.perk': 'La fatiga alta te penaliza la mitad',
+  'ui.skill_node.survival.9.perk':
+      'La fatiga alta te penaliza un 25% menos',
   'ui.skill_node.survival.10.name': 'Incansable',
-  'ui.skill_node.survival.10.perk': 'La fatiga nunca penaliza tus tiradas',
+  'ui.skill_node.survival.10.perk':
+      'La fatiga alta te penaliza la mitad',
   'ui.skill_node.contacts.1.name': 'Cara conocida',
   'ui.skill_node.contacts.1.perk': 'Desbloquea opciones de Contactos Nv.1',
   'ui.skill_node.contacts.2.name': 'Amigo del tabernero',
   'ui.skill_node.contacts.2.perk':
-      '+30 a tus tiradas · opciones de Contactos Nv.2',
+      'Hasta +30 a tus tiradas · opciones de Contactos Nv.2',
   'ui.skill_node.contacts.3.name': 'Deudas y favores',
   'ui.skill_node.contacts.3.perk':
-      '+45 a tus tiradas · opciones de Contactos Nv.3',
+      'Hasta +45 a tus tiradas · opciones de Contactos Nv.3',
   'ui.skill_node.contacts.4.name': 'Oído en el foro',
   'ui.skill_node.contacts.4.perk':
-      '+60 a tus tiradas · opciones de Contactos Nv.4',
+      'Hasta +60 a tus tiradas · opciones de Contactos Nv.4',
   'ui.skill_node.contacts.5.name': 'Red de porteros',
   'ui.skill_node.contacts.5.perk':
-      '+75 a tus tiradas · todas las opciones de Contactos',
+      'Hasta +62 a tus tiradas · todas las opciones de Contactos',
   'ui.skill_node.contacts.6.name': 'Comisión del gremio',
   'ui.skill_node.contacts.6.perk': 'Las entregas pagan +5% de denarios',
   'ui.skill_node.contacts.7.name': 'Cliente frecuente',

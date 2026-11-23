@@ -233,15 +233,15 @@ void main() {
 
   // ─── Presupuesto diario (GDD §6.2) ──────────────────────────────────────────
   group('Presupuesto diario', () {
-    // Jugador activo: 3 sesiones, una ruta corta y una larga, nota A/B.
+    // Jugador activo: 3 sesiones (ruta corta, media y larga) con nota media B,
+    // que es lo que sale en simulación para rango 2 con la fórmula actual.
     int missionsPerDay() {
-      final short = allRealMissions.firstWhere((r) => r.id == 'real_01');
-      final long = allRealMissions.firstWhere((r) => r.id == 'real_02');
-      final avgAB = (gradeBaseReward('A') + gradeBaseReward('B')) / 2;
-      return (avgAB *
-              (routePayFactor(short.durationMinutes, short.danger) +
-                  routePayFactor(long.durationMinutes, long.danger)))
-          .round();
+      final ids = ['real_01', 'real_08', 'real_02'];
+      final factors = ids.map((id) {
+        final r = allRealMissions.firstWhere((m) => m.id == id);
+        return routePayFactor(r.durationMinutes, r.danger);
+      });
+      return (gradeBaseReward('B') * factors.reduce((a, b) => a + b)).round();
     }
 
     test('un día típico da ~435 Denarios (±10%)', () {
@@ -259,20 +259,29 @@ void main() {
       final paid = weeklyCommissionPool.where((d) => d.id != kWeeklySealId);
       final weekly =
           2 * paid.fold<int>(0, (a, d) => a + d.denarios) / paid.length / 7;
-      const ads = 60; // rewarded ads, GDD §6.4
-      final total = missionsPerDay() + contracts + dailyPay + weekly + ads;
+      // Los anuncios no dan Denarios (adelantan 30 min y dan Aureos).
+      final total = missionsPerDay() + contracts + dailyPay + weekly;
       expect(total, inInclusiveRange(435 * 0.9, 435 * 1.1),
           reason: 'misiones ${missionsPerDay()} · contratos $contracts · '
               'paga ${dailyPay.round()} · semanales ${weekly.round()} · '
               'total ${total.round()}');
     });
 
+    test('un día típico da ~1,5 Aureos (±10%)', () {
+      final streak = dailyPaySchedule.fold<int>(0, (a, r) => a + r.aureos) /
+          dailyPaySchedule.length;
+      // Anuncios: 1 Aureo cada 2, tope 1 por día (GrantAdAureoUseCase).
+      const ads = kMaxAdAureosPerDay;
+      expect(streak + ads, inInclusiveRange(1.5 * 0.9, 1.5 * 1.1),
+          reason: 'racha $streak · anuncios $ads');
+    });
+
     test('adelantar una ruta corta cuesta más de lo que paga', () {
       final short = allRealMissions.firstWhere((r) => r.id == 'real_01');
       final payA = gradeBaseReward('A') *
           routePayFactor(short.durationMinutes, short.danger);
-      // 1 Denario por minuto adelantado (SkipToNextEventUseCase).
-      expect(short.durationMinutes, greaterThan(payA));
+      // 2 Denarios por minuto adelantado (SkipToNextEventUseCase).
+      expect(short.durationMinutes * 2, greaterThan(payA));
     });
   });
 

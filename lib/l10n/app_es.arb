@@ -855,6 +855,7 @@
   },
   "adsUnavailable": "No hay anuncios disponibles ahora. Inténtalo en un rato.",
   "missionAdSkipped": "Adelantaste 30 minutos de camino",
+  "missionAdSkippedAureo": "Adelantaste 30 minutos y ganaste 1 Aureo",
   "missionYouChose": "Decidiste: {choice}",
   "@missionYouChose": {
     "placeholders": {

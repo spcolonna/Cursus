@@ -1118,6 +1118,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get missionAdSkipped => 'You skipped 30 minutes of road';
 
   @override
+  String get missionAdSkippedAureo =>
+      'You skipped 30 minutes and earned 1 aureus';
+
+  @override
   String missionYouChose(String choice) {
     return 'You chose: $choice';
   }

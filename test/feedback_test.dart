@@ -273,14 +273,15 @@ void main() {
         );
         final res = await useCase.execute(
             mission: _mission(event), event: event, option: option);
-        // El azar del camino va de -10 a +19 (sin contar tiradas críticas).
+        // El azar del camino va de kLuckMin a kLuckMax (sin tiradas críticas).
         final critico = res.scoreFactors
             .where(
                 (f) => f.label == 'Imprevisto' || f.label == 'Golpe de suerte')
             .fold<int>(0, (acc, f) => acc + f.value);
         final sinCritico = res.score - critico;
-        expect(sinCritico, greaterThanOrEqualTo(pronostico.baseScore - 10));
-        expect(sinCritico, lessThanOrEqualTo(pronostico.baseScore + 19));
+        expect(sinCritico,
+            greaterThanOrEqualTo(pronostico.baseScore + kLuckMin));
+        expect(sinCritico, lessThanOrEqualTo(pronostico.baseScore + kLuckMax));
       }
     });
 
@@ -320,7 +321,7 @@ void main() {
       final option = _option(risk: 5, skills: {SkillType.stealth: 3});
       final f =
           forecastFor(option, _messenger(skills: {SkillType.stealth: 10}));
-      expect(f.effectiveRisk, 3); // 5 − 2 de "Invisible"
+      expect(f.effectiveRisk, 4); // 5 − 1 de "Invisible"
     });
   });
 
@@ -406,7 +407,7 @@ void main() {
           final efectos = skillEffectsAt(skill, level);
           final suma =
               efectos.firstWhere((e) => e.label == 'Suma a tus tiradas');
-          expect(suma.value, '+${level * 15}');
+          expect(suma.value, '+${skillScore(level, kMaxOptionRequirement)}');
         }
       }
     });
@@ -426,9 +427,9 @@ void main() {
       // Contactos 10 paga +20%: si alguien toca el perk, esto se cae.
       final contactos = skillEffectsAt(SkillType.contacts, 10);
       expect(contactos.any((e) => e.value == '+20%'), isTrue);
-      // Supervivencia 10 anula el castigo por fatiga.
+      // Supervivencia 10 deja el castigo por fatiga a la mitad.
       final superv = skillEffectsAt(SkillType.survival, 10);
-      expect(superv.any((e) => e.value == 'ninguno'), isTrue);
+      expect(superv.any((e) => e.value == '−50%'), isTrue);
     });
 
     test('todos los niveles élite tienen precio en Sellos', () {

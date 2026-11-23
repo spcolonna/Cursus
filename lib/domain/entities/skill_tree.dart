@@ -40,6 +40,34 @@ final Map<SkillType, List<SkillNodeDef>> skillTree = {
 SkillNodeDef skillNode(SkillType skill, int level) =>
     skillTree[skill]![(level - 1).clamp(0, kMaxSkillLevelElite - 1)];
 
+// ─── Fórmula de resolución compartida ────────────────────────────────────────
+// La usan ResolveEventUseCase._calculateOutcome y forecast.dart: un solo lugar
+// para que el pronóstico nunca se despegue de la tirada real.
+
+/// Azar del camino: uniforme en [kLuckMin, kLuckMax] (50 valores).
+const int kLuckMin = -25;
+const int kLuckMax = 24;
+
+/// Nivel más alto que exige hoy una opción: referencia del árbol.
+const int kMaxOptionRequirement = 3;
+
+/// Aporte de una habilidad al score. Hasta un nivel por encima de lo que pide
+/// la opción suma 15 por nivel; de ahí en más, 2 por nivel. Sin este codo la
+/// habilidad tapaba toda la banda de azar desde el nivel 4-5.
+int skillScore(int level, int required) {
+  final cap = (required < 1 ? 1 : required) + 1;
+  return level <= cap ? level * 15 : cap * 15 + (level - cap) * 2;
+}
+
+/// Las opciones sin habilidad cuentan como oficio básico (nivel 1): con la
+/// banda de azar de 50 puntos, sin esto la vía prudente fallaba más que la
+/// arriesgada y convenía ignorar el evento.
+const int kNoSkillBonus = 15;
+
+/// Penalización por riesgo efectivo: los riesgos 4 y 5 pesan más que lineal,
+/// para que el fallo exista también en el endgame.
+int riskPenalty(int risk) => const [0, 8, 16, 24, 40, 56][risk.clamp(0, 5)];
+
 // ─── Perks pasivos — efectos reales en el juego ──────────────────────────────
 // Todos los efectos escalan lo que ya existe; ninguno elimina la decisión
 // ni rompe el gating por habilidad.
@@ -49,11 +77,11 @@ class SkillPerks {
   /// Velocidad 6-10: reduce la duración real de las misiones.
   static double missionDurationFactor(Messenger m) =>
       switch (m.skillLevel(SkillType.speed)) {
-        >= 10 => 0.88,
-        9 => 0.91,
-        8 => 0.93,
-        7 => 0.95,
-        6 => 0.97,
+        >= 10 => 0.92,
+        9 => 0.94,
+        8 => 0.95,
+        7 => 0.97,
+        6 => 0.98,
         _ => 1.0,
       };
 
@@ -68,20 +96,17 @@ class SkillPerks {
     final level = m.skillLevel(usedSkill);
     return switch (usedSkill) {
       SkillType.stealth =>
-        (level >= 7 ? 5 : 0) + (level >= 9 ? 10 : 0) + (level >= 10 ? 10 : 0),
+        (level >= 7 ? 4 : 0) + (level >= 8 ? 3 : 0) + (level >= 9 ? 3 : 0),
       SkillType.combat =>
-        (level >= 6 ? 5 : 0) + (level >= 7 ? 5 : 0) + (level >= 9 ? 10 : 0),
+        (level >= 6 ? 3 : 0) + (level >= 7 ? 3 : 0) + (level >= 9 ? 4 : 0),
       _ => 0,
     };
   }
 
-  /// Sigilo 8/10: reduce el riesgo efectivo de las opciones de Sigilo.
+  /// Sigilo 10: reduce en 1 el riesgo efectivo de las opciones de Sigilo.
   static int riskReduction(SkillType? usedSkill, Messenger m) {
     if (usedSkill != SkillType.stealth) return 0;
-    final level = m.skillLevel(SkillType.stealth);
-    if (level >= 10) return 2;
-    if (level >= 8) return 1;
-    return 0;
+    return m.skillLevel(SkillType.stealth) >= 10 ? 1 : 0;
   }
 
   /// Sigilo 6: las opciones de Sigilo exigen 1 nivel menos.
@@ -102,8 +127,8 @@ class SkillPerks {
   /// Supervivencia 9/10: atenúa la penalización por fatiga alta.
   static double fatiguePenaltyFactor(Messenger m) =>
       switch (m.skillLevel(SkillType.survival)) {
-        >= 10 => 0.0,
-        >= 9 => 0.5,
+        >= 10 => 0.5,
+        >= 9 => 0.75,
         _ => 1.0,
       };
 
@@ -169,8 +194,9 @@ class SkillEffect {
 List<SkillEffect> skillEffectsAt(SkillType skill, int level) {
   final m = _probe(skill, level);
   final effects = <SkillEffect>[
-    // Base común a los cinco caminos: cada nivel suma 15 a la tirada.
-    SkillEffect(ds('ui.effect.roll_bonus'), '+${level * 15}'),
+    // Base común a los cinco caminos, contra la opción más exigente.
+    SkillEffect(ds('ui.effect.roll_bonus'),
+        '+${skillScore(level, kMaxOptionRequirement)}'),
     SkillEffect(ds('ui.effect.options'),
         ds('ui.effect.options_value', {'level': level})),
   ];
