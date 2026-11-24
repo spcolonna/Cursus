@@ -1160,6 +1160,30 @@ abstract class AppLocalizations {
   /// **'Responder a tiempo siempre sale mejor.'**
   String get homeAwayHint;
 
+  /// No description provided for @homeRestBoth.
+  ///
+  /// In es, this message translates to:
+  /// **'{messenger} descansó: +{health} de salud y −{fatigue} de fatiga.'**
+  String homeRestBoth(String messenger, int health, int fatigue);
+
+  /// No description provided for @homeRestHealth.
+  ///
+  /// In es, this message translates to:
+  /// **'{messenger} descansó: +{health} de salud.'**
+  String homeRestHealth(String messenger, int health);
+
+  /// No description provided for @homeRestFatigue.
+  ///
+  /// In es, this message translates to:
+  /// **'{messenger} descansó: −{fatigue} de fatiga.'**
+  String homeRestFatigue(String messenger, int fatigue);
+
+  /// No description provided for @homeRestHealed.
+  ///
+  /// In es, this message translates to:
+  /// **'{messenger} se recuperó de sus heridas y ya puede volver al camino.'**
+  String homeRestHealed(String messenger);
+
   /// No description provided for @splashSubtitle.
   ///
   /// In es, this message translates to:

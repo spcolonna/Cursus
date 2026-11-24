@@ -415,10 +415,10 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
     if (autoResolved.isNotEmpty) {
       _track(AnalyticsEvent.eventsAutoResolved(autoResolved.length));
     }
-    await ref.read(recoverRestingUseCaseProvider).execute();
+    final rested = await ref.read(recoverRestingUseCaseProvider).execute();
     final home = await ref
         .read(getHomeStateUseCaseProvider)
-        .execute(autoResolved: autoResolved);
+        .execute(autoResolved: autoResolved, rested: rested);
     final analytics = ref.read(analyticsProvider);
     analytics.setUserProperty('player_rank', '${home.messenger?.rank ?? 1}');
     analytics.setUserProperty('messengers', '${home.slots.length}');

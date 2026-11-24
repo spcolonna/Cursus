@@ -957,6 +957,30 @@ void main() {
       expect(repo.messengers[0].fatigue, 30);
       expect(repo.messengers[1].fatigue, 40);
     });
+
+    test('el caso de uso avisa lo que vale la pena y nada más', () async {
+      final repo = _MessengerRepo([
+        idle().copyWith(fatigue: 40, health: 80, restingSince: t0),
+        _messenger(id: 'm2').copyWith(
+            status: MessengerStatus.idle, fatigue: 40, restingSince: t0),
+        _messenger(id: 'm3').copyWith(
+            status: MessengerStatus.injured, health: 45, restingSince: t0),
+      ]);
+      // 1 h: m1 recupera 5 + 5 = 10 (se avisa), m2 solo 5 de fatiga (no),
+      // m3 llega a 50 y se cura (se avisa aunque sea poco).
+      final notices = await RecoverRestingUseCase(repo)
+          .execute(now: t0.add(const Duration(hours: 1)));
+      expect(notices, hasLength(2));
+      expect(notices[0].health, 5);
+      expect(notices[0].fatigue, 5);
+      expect(notices[0].healed, isFalse);
+      expect(notices[1].healed, isTrue);
+      // Recargar enseguida no vuelve a avisar.
+      expect(
+          await RecoverRestingUseCase(repo)
+              .execute(now: t0.add(const Duration(hours: 1, minutes: 5))),
+          isEmpty);
+    });
   });
 
   group('Recuperación pasiva de salud', () {

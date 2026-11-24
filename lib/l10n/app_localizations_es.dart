@@ -681,6 +681,26 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeAwayHint => 'Responder a tiempo siempre sale mejor.';
 
   @override
+  String homeRestBoth(String messenger, int health, int fatigue) {
+    return '$messenger descansó: +$health de salud y −$fatigue de fatiga.';
+  }
+
+  @override
+  String homeRestHealth(String messenger, int health) {
+    return '$messenger descansó: +$health de salud.';
+  }
+
+  @override
+  String homeRestFatigue(String messenger, int fatigue) {
+    return '$messenger descansó: −$fatigue de fatiga.';
+  }
+
+  @override
+  String homeRestHealed(String messenger) {
+    return '$messenger se recuperó de sus heridas y ya puede volver al camino.';
+  }
+
+  @override
   String get splashSubtitle => 'Imperio Romano, 50 a.C.';
 
   @override

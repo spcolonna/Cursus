@@ -103,6 +103,8 @@ class HomeState {
   /// Eventos que se resolvieron solos mientras el jugador no estaba mirando.
   /// El Home tiene que avisarlo: pasó algo y no fue decisión suya.
   final List<AutoResolvedEvent> autoResolved;
+  /// Lo que recuperaron descansando los mensajeros libres desde la última vez.
+  final List<RestRecovery> rested;
 
   const HomeState({
     required this.slots,
@@ -111,6 +113,7 @@ class HomeState {
     this.lockedStory,
     this.storyIsReplay = false,
     this.autoResolved = const [],
+    this.rested = const [],
   });
 
   // Retrocompat — primer mensajero
@@ -163,10 +166,12 @@ class GetHomeStateUseCase {
   GetHomeStateUseCase(
       this._messenger, this._mission, this._world, this._content);
 
-  /// Solo lee. [autoResolved] es lo que devolvió
-  /// [AutoResolveExpiredEventsUseCase] justo antes, para avisarle al jugador.
+  /// Solo lee. [autoResolved] y [rested] son lo que devolvieron
+  /// [AutoResolveExpiredEventsUseCase] y [RecoverRestingUseCase] justo antes,
+  /// para avisarle al jugador.
   Future<HomeState> execute(
-      {List<AutoResolvedEvent> autoResolved = const []}) async {
+      {List<AutoResolvedEvent> autoResolved = const [],
+      List<RestRecovery> rested = const []}) async {
     final messengers = await _messenger.getAllMessengers();
     if (messengers.isEmpty) {
       return const HomeState(slots: []);
@@ -236,6 +241,7 @@ class GetHomeStateUseCase {
       lockedStory: teaser ? step : null,
       storyIsReplay: open && step.isReplay,
       autoResolved: autoResolved,
+      rested: rested,
     );
   }
 }
@@ -862,15 +868,34 @@ bool adEarnsAureo(int adsToday) =>
     adsToday % kAdsPerAureo == 0 &&
     adsToday ~/ kAdsPerAureo <= kMaxAdAureosPerDay;
 
-/// Acredita el Aureo del anuncio en la billetera común (el principal).
+/// Lo que recuperó un mensajero descansando, para avisarlo en el Home.
+class RestRecovery {
+  final String messengerName;
+  final int health;
+  final int fatigue;
+  /// Estaba herido y ya puede volver al camino.
+  final bool healed;
+  const RestRecovery({
+    required this.messengerName,
+    required this.health,
+    required this.fatigue,
+    this.healed = false,
+  });
+}
+
+/// Puntos (salud + fatiga) desde los que el descanso se avisa: menos es
+/// ruido de una recarga del Home, no "volviste y descansó".
+const int kRestNoticeMinPoints = 10;
+
 /// Aplica la recuperación pasiva (fatiga y salud) a los mensajeros sin misión.
-/// Solo escribe a los que cambiaron.
+/// Solo escribe a los que cambiaron. Devuelve lo que vale la pena avisar.
 class RecoverRestingUseCase {
   final MessengerRepository _messenger;
   RecoverRestingUseCase(this._messenger);
 
-  Future<void> execute({DateTime? now}) async {
+  Future<List<RestRecovery>> execute({DateTime? now}) async {
     final at = now ?? GameClock.now();
+    final notices = <RestRecovery>[];
     for (final m in await _messenger.getAllMessengers()) {
       final r = m.recoverWhileResting(at);
       if (r.fatigue != m.fatigue ||
@@ -879,10 +904,23 @@ class RecoverRestingUseCase {
           r.restingSince != m.restingSince) {
         await _messenger.saveMessenger(r);
       }
+      final health = r.health - m.health;
+      final fatigue = m.fatigue - r.fatigue;
+      final healed = m.status == MessengerStatus.injured &&
+          r.status != MessengerStatus.injured;
+      if (healed || health + fatigue >= kRestNoticeMinPoints) {
+        notices.add(RestRecovery(
+            messengerName: m.name,
+            health: health,
+            fatigue: fatigue,
+            healed: healed));
+      }
     }
+    return notices;
   }
 }
 
+/// Acredita el Aureo del anuncio en la billetera común (el principal).
 class GrantAdAureoUseCase {
   final MessengerRepository _messenger;
   GrantAdAureoUseCase(this._messenger);

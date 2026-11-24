@@ -274,8 +274,8 @@ class _BodyState extends ConsumerState<_Body> {
           AppSpacing.lg, AppSpacing.lg, AppSpacing.lg, AppSpacing.xl),
       children: [
         // ── Lo que pasó mientras no estabas
-        if (state.autoResolved.isNotEmpty) ...[
-          _AutoResolvedNotice(events: state.autoResolved)
+        if (state.autoResolved.isNotEmpty || state.rested.isNotEmpty) ...[
+          _AwayNotice(events: state.autoResolved, rested: state.rested)
               .animate(delay: next())
               .fadeIn(duration: AppMotion.of(context, AppMotion.base))
               .slideY(begin: 0.06, end: 0),
@@ -490,12 +490,28 @@ class _RosterChip extends StatelessWidget {
 // Si el jugador no responde un evento en 60 minutos, el mensajero actúa por
 // instinto: opción más segura, con su tirada (sin XP). Nunca destruye la misión,
 // pero tiene que enterarse — si no, la decisión desaparece sin explicación.
-class _AutoResolvedNotice extends StatelessWidget {
+class _AwayNotice extends StatelessWidget {
   final List<AutoResolvedEvent> events;
-  const _AutoResolvedNotice({required this.events});
+  final List<RestRecovery> rested;
+  const _AwayNotice({required this.events, required this.rested});
+
+  static String _restLine(AppLocalizations l, RestRecovery r) {
+    if (r.healed) return l.homeRestHealed(r.messengerName);
+    if (r.health > 0 && r.fatigue > 0) {
+      return l.homeRestBoth(r.messengerName, r.health, r.fatigue);
+    }
+    if (r.health > 0) return l.homeRestHealth(r.messengerName, r.health);
+    return l.homeRestFatigue(r.messengerName, r.fatigue);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    Widget line(String text) => Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+          child: Text(text,
+              style: AppTextStyles.bodyMedium.copyWith(height: 1.4)),
+        );
     return GameCard(
       padding: const EdgeInsets.all(14),
       borderColor: AppColors.sienna.withValues(alpha: 0.6),
@@ -504,7 +520,7 @@ class _AutoResolvedNotice extends StatelessWidget {
           const Icon(Icons.history_toggle_off,
               color: AppColors.sienna, size: 18),
           const SizedBox(width: AppSpacing.sm),
-          Text(AppLocalizations.of(context).homeAwayHeader,
+          Text(l.homeAwayHeader,
               style: AppTextStyles.ui(12,
                   color: AppColors.sienna,
                   weight: FontWeight.bold,
@@ -512,17 +528,13 @@ class _AutoResolvedNotice extends StatelessWidget {
         ]),
         const SizedBox(height: AppSpacing.sm),
         for (final e in events)
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-            child: Text(
-              AppLocalizations.of(context).homeAwayLine(e.messengerName,
-                  e.eventTitle, e.chosenOptionText.toLowerCase()),
-              style: AppTextStyles.bodyMedium.copyWith(height: 1.4),
-            ),
-          ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(AppLocalizations.of(context).homeAwayHint,
-            style: AppTextStyles.bodySmall),
+          line(l.homeAwayLine(e.messengerName, e.eventTitle,
+              e.chosenOptionText.toLowerCase())),
+        for (final r in rested) line(_restLine(l, r)),
+        if (events.isNotEmpty) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(l.homeAwayHint, style: AppTextStyles.bodySmall),
+        ],
       ]),
     );
   }

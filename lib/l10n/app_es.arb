@@ -367,6 +367,50 @@
     }
   },
   "homeAwayHint": "Responder a tiempo siempre sale mejor.",
+  "homeRestBoth": "{messenger} descansó: +{health} de salud y −{fatigue} de fatiga.",
+  "@homeRestBoth": {
+    "placeholders": {
+      "messenger": {
+        "type": "String"
+      },
+      "health": {
+        "type": "int"
+      },
+      "fatigue": {
+        "type": "int"
+      }
+    }
+  },
+  "homeRestHealth": "{messenger} descansó: +{health} de salud.",
+  "@homeRestHealth": {
+    "placeholders": {
+      "messenger": {
+        "type": "String"
+      },
+      "health": {
+        "type": "int"
+      }
+    }
+  },
+  "homeRestFatigue": "{messenger} descansó: −{fatigue} de fatiga.",
+  "@homeRestFatigue": {
+    "placeholders": {
+      "messenger": {
+        "type": "String"
+      },
+      "fatigue": {
+        "type": "int"
+      }
+    }
+  },
+  "homeRestHealed": "{messenger} se recuperó de sus heridas y ya puede volver al camino.",
+  "@homeRestHealed": {
+    "placeholders": {
+      "messenger": {
+        "type": "String"
+      }
+    }
+  },
   "splashSubtitle": "Imperio Romano, 50 a.C.",
   "storyChip": "HISTORIA",
   "storyStart": "COMENZAR CAPÍTULO",
