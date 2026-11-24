@@ -503,7 +503,7 @@ const List<RealEventConfig> realEventPool = [
         requiredFlag: 'spared_thief',
         outcomeSuccess: 'Es el chico al que no perseguiste. Sin decir palabra, vuelca un cajón de gallinas en medio del control. En el caos, te cruza por un pasillo que solo los pibes de la calle conocen. Ya estás del otro lado.',
         outcomePartial: 'El chico te guía por los techos bajos del mercado. Casi te caes dos veces, pero funcionó. Antes de irse te dice: "Ahora estamos a mano."',
-        outcomeFail: 'La distracción funciona a medias: pasas, pero un legionario te vio salir del callejón. Mejor no volver por acá en unos días.',
+        outcomeFail: 'La distracción funciona a medias: pasas, pero un legionario te vio salir del callejón. Mejor no volver por aquí en unos días.',
         journalNote: 'El chico de la bolsa me devolvió el favor frente a la patrulla. En Roma, nadie olvida.',
       ),
       RealOptionConfig(
@@ -577,7 +577,7 @@ const List<RealEventConfig> realEventPool = [
         riskLevel: 2, timeCostMinutes: 120, requiredSkills: {SkillType.contacts: 1},
         repDelta: {Faction.underworld: 1},
         outcomeSuccess: 'El barquero no pregunta qué llevas y tú no preguntas por qué su barca tiene doble fondo. Cruce limpio, trato justo, y un contacto nuevo en la orilla.',
-        outcomePartial: 'El barquero acepta, pero primero termina "un asunto" en la otra orilla. Esperas viendo el agua pasar, que es lo único que acá se apura.',
+        outcomePartial: 'El barquero acepta, pero primero termina "un asunto" en la otra orilla. Esperas viendo el agua pasar, que es lo único que aquí se apura.',
         outcomeFail: 'El barquero quiere el triple al ver tu apuro. Regateas, pierdes, pagas con tiempo: te lleva último, después de tres viajes de cabras.',
       ),
     ],
@@ -782,7 +782,7 @@ const List<RealEventConfig> realEventPool = [
         repDelta: {Faction.guild: 1},
         outcomeSuccess: 'Lo dices sin levantar la voz. El hombre del norte recoge la bolsa despacio, como si se le hubiera caído, y se va sin terminar el vino. En las postas de la red, una amenaza del Gremio vale más que una espada.',
         outcomePartial: 'Duda, calcula y al final se levanta, pero antes te deja dicho que el Gremio no está en todas las posadas. Tiene razón. Esta noche duermes con el bolso de almohada.',
-        outcomeFail: 'Se ríe. "El Gremio está lejos y yo estoy acá." No se va hasta que el posadero, que sí conoce a Varus, le pide que pague y se retire. Te salvó el posadero, no tu nombre. Todavía.',
+        outcomeFail: 'Se ríe. "El Gremio está lejos y yo estoy aquí." No se va hasta que el posadero, que sí conoce a Varus, le pide que pague y se retire. Te salvó el posadero, no tu nombre. Todavía.',
       ),
       RealOptionConfig(
         id: 'opt_known_cipher', text: 'Reconoces la cifra: es la del rollo que leíste',

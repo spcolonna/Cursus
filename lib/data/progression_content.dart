@@ -34,7 +34,7 @@ const allAchievements = <AchievementDef>[
     reward: AchievementReward(seals: 1, title: 'Correo del Imperio'),
   ),
   AchievementDef(
-    id: 'ach_routes_all', name: 'Conocés el mapa',
+    id: 'ach_routes_all', name: 'Conoces el mapa',
     goal: 'Completa 4 rutas distintas.',
     kind: AchievementKind.road, metric: StatMetric.distinctRoutes, target: 4,
     reward: AchievementReward(denarios: 120, title: 'Cartógrafo'),

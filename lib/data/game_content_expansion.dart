@@ -384,7 +384,7 @@ const List<RealEventConfig> expansionEvents = [
       RealOptionConfig(
         id: 'opt_wolf_read', text: 'Lees el terreno y encuentras dónde no están',
         riskLevel: 3, timeCostMinutes: 30, requiredSkills: {SkillType.survival: 2},
-        outcomeSuccess: 'Reconoces las señales: pisadas frescas, marcaciones en la corteza. La manada caza río abajo, no acá. Cruzas el tramo tranquilo, casi curioso de tu propio oficio.',
+        outcomeSuccess: 'Reconoces las señales: pisadas frescas, marcaciones en la corteza. La manada caza río abajo, no aquí. Cruzas el tramo tranquilo, casi curioso de tu propio oficio.',
         outcomePartial: 'Tu lectura del terreno es correcta a medias: evitas a la manada pero no a un zorro nervioso que te sigue gruñendo un buen trecho.',
         outcomeFail: 'Confundes marcas viejas con frescas y el atajo que eliges te acerca más de la cuenta. Retrocedes despacio, sin apuro, con el corazón en la garganta.',
       ),
@@ -623,7 +623,7 @@ const List<RealEventConfig> expansionEvents = [
         id: 'opt_spy_read', text: 'Lo abres un segundo, apenas para entender qué es',
         riskLevel: 4, timeCostMinutes: 15, requiredSkills: {SkillType.stealth: 2},
         setFlags: ['saw_the_message'],
-        journalNote: 'Abrí un rollo que no era mío en una plaza vacía. Lo que leí, no lo cuento. Ni acá.',
+        journalNote: 'Abrí un rollo que no era mío en una plaza vacía. Lo que leí, no lo cuento. Ni aquí.',
         outcomeSuccess: 'Rompes el sello con dedos de cirujano y lo vuelves a cerrar sin que se note. Lo que leíste no era para ti, pero ahora lo sabes igual. Guardas silencio, y el rollo, donde estaba.',
         outcomePartial: 'Alcanzas a leer la mitad antes de que pasos cercanos te obliguen a cerrarlo de golpe. El sello queda un poco torcido, y la mitad del mensaje, sin sentido claro.',
         outcomeFail: 'El sello se rompe mal y queda evidente que alguien lo abrió. Lo dejas donde estaba de todos modos, esperando que nadie relacione el desastre contigo.',

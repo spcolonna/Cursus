@@ -38,6 +38,19 @@ void main() {
     }
   });
 
+  // Mismos topes que content_validator_test, pero para el inglés: si no,
+  // la pantalla del evento queda chica solo en un idioma.
+  test('el inglés respeta los topes de largo', () {
+    final bad = [
+      for (final e in en.entries)
+        if (e.key.endsWith('.description') && e.value.length > 240 ||
+            RegExp(r'\.(success|partial|fail)$').hasMatch(e.key) &&
+                e.value.length > 320)
+          '${e.key}: ${e.value.length}',
+    ];
+    expect(bad, isEmpty);
+  });
+
   test('el catálogo entrega el texto del idioma activo', () {
     const catalog = StaticGameContent();
     final es = catalog.eventById('evt_patrol')!.title;

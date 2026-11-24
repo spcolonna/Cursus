@@ -272,7 +272,7 @@ const List<RealEventConfig> consequenceEvents = [
         outcomeFail: 'Les pagas, pero el más chico quiere además una disculpa. Te arrodillas en el puente, con los carros pasando. Te duele más que el dinero. Cuenta cerrada, orgullo abierto.',
       ),
       RealOptionConfig(
-        id: 'opt_smuggler_jump', text: 'Saltas al río y nadás con el paquete en alto',
+        id: 'opt_smuggler_jump', text: 'Saltas al río y nadas con el paquete en alto',
         riskLevel: 4, timeCostMinutes: 0, requiredSkills: {SkillType.survival: 2},
         outcomeSuccess: 'Saltas antes de que te agarren. El río está frío y rápido, y tú nadas de costado con el paquete en la mano libre. Sales media milla más abajo, empapado y libre. Arriba, los tres todavía discuten.',
         outcomePartial: 'El salto sale bien, el río no tanto: una corriente te arrastra y el paquete se moja en una esquina. Sales a la orilla tosiendo agua y con el envoltorio a secar al sol.',

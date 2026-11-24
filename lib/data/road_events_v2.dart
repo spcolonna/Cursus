@@ -116,7 +116,7 @@ const List<RealEventConfig> roadEventsV2 = [
         riskLevel: 2, timeCostMinutes: 45, requiredSkills: {},
         outcomeSuccess: 'Los cazadores te miran, deciden que no vales el esfuerzo y siguen de largo. No ayudaste a nadie ni entregaste a nadie. El camino no te pide más que eso, por hoy.',
         outcomePartial: 'No te creen del todo y te revisan la bolsa por las dudas. Encuentran pan duro, una carta lacrada y tu mal humor. Te dejan ir con desprecio.',
-        outcomeFail: 'El jefe decide que nadie que pasa por acá deja de ver algo. Te tienen parado al sol hasta que encuentran rastros en otra dirección. Pierdes media tarde siendo sospechoso de nada.',
+        outcomeFail: 'El jefe decide que nadie que pasa por aquí deja de ver algo. Te tienen parado al sol hasta que encuentran rastros en otra dirección. Pierdes media tarde siendo sospechoso de nada.',
       ),
     ],
   ),
