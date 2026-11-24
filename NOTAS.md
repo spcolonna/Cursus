@@ -10,6 +10,6 @@ Punto de partida para un chat nuevo. Los números de diseño viven en `docs/GDD_
 
 ## Pendientes
 
-- Balance: falta revisar "1 evento cada 8 h" en todas las rutas (solo se corrigieron real_03 y real_15) y el playtest largo. El simulador no vive en el repo: se rearma como test temporal (OutcomeRoller + allRealMissions/allRealEvents, 3 sesiones/día).
+- Balance: falta el playtest largo. "1 evento cada 8 h" auditado en las 25 rutas (2026-11-24): todas cumplen, hueco máximo 7,2 h (real_03); lo traba `content_validator_test.dart`. El simulador no vive en el repo: se rearma como test temporal (OutcomeRoller + allRealMissions/allRealEvents, 3 sesiones/día).
 
 - El botón de ruta del herido muestra "Herido: descansa ~X h o cúrate" (`Messenger.injuryRestLeft`). La recuperación de fatiga/salud del libre no tiene aviso propio (solo cambian las barras).

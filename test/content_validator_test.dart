@@ -104,4 +104,31 @@ void main() {
         .toList();
     expect(dead, isEmpty);
   });
+
+  // Ritmo (GDD, skill balance): al menos 1 evento cada 8 h de ruta. Los
+  // eventos se reparten parejos, así que el hueco más largo es
+  // duración / (eventos + 1). Y el pool tiene que alcanzar sin contar los
+  // que dependen de flags, reputación o salen una sola vez.
+  test('cada ruta: al menos 1 evento cada 8 h y pool suficiente', () {
+    final byId = {for (final e in allRealEvents) e.id: e};
+    final problems = <String>[];
+    for (final m in allRealMissions) {
+      final need = (m.durationMinutes / 480).ceil();
+      if (m.minEvents < need) {
+        problems.add('${m.id}: minEvents ${m.minEvents} < $need');
+      }
+      final always = m.eventPoolIds
+          .map((id) => byId[id])
+          .where((e) =>
+              e != null &&
+              e.requiredFlag == null &&
+              !e.once &&
+              e.minReputation == null)
+          .length;
+      if (always < m.maxEvents) {
+        problems.add('${m.id}: pool fijo $always < maxEvents ${m.maxEvents}');
+      }
+    }
+    expect(problems, isEmpty);
+  });
 }
