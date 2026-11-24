@@ -7,29 +7,32 @@ import 'dart:math' as math;
 
 // ─── Paga por ruta ──────────────────────────────────────────────────────────
 
-/// Paga base por nota, antes del factor de la ruta (GDD §6.2).
+/// Paga base por nota, antes del factor de la ruta (GDD §6.2). La escala es
+/// achatada a propósito: al subir de rango la nota S sale seguido y, con una
+/// escala empinada, el día del jugador avanzado se iba un 30% sobre el
+/// presupuesto y adelantar viajes se volvía gratis.
 int gradeBaseReward(String grade) => switch (grade) {
-      'S' => 135,
-      'A' => 90,
-      'B' => 55,
-      'C' => 28,
-      _ => 10,
+      'S' => 110,
+      'A' => 80,
+      'B' => 60,
+      'C' => 45,
+      _ => 12,
     };
 
 /// Factor de paga de una ruta según su duración NOMINAL y su peligro (0-1).
 /// Crece con el logaritmo de las horas: una ruta de 3 días paga más que una
 /// de 2 h, pero bastante menos por hora, así que nadie gana más esperando.
-/// Ruta de 2 h tranquila ≈ 0,9 · 8 h ≈ 1,2 · 3 días = tope 1,6.
+/// Peligro 0,3: ruta de 2 h ≈ 0,84 · 8 h ≈ 1,03 · 1 día ≈ 1,2 · 3 días ≈ 1,4.
 double routePayFactor(int nominalMinutes, double danger) {
   final hours = math.max(0, nominalMinutes) / 60;
   final raw = 0.6 +
-      0.15 * (math.log(hours + 1) / math.ln2) +
-      0.3 * danger.clamp(0.0, 1.0);
+      0.12 * (math.log(hours + 1) / math.ln2) +
+      0.15 * danger.clamp(0.0, 1.0);
   return raw.clamp(kMinPayFactor, kMaxPayFactor).toDouble();
 }
 
 const double kMinPayFactor = 0.7;
-const double kMaxPayFactor = 1.6;
+const double kMaxPayFactor = 1.5;
 
 /// Los capítulos de historia son cortos pero pesan: pagan como ruta larga.
 const double kStoryPayFactor = 1.3;

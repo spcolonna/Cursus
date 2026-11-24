@@ -30,7 +30,7 @@ Casos borde de referencia (opción que pide 3, riesgo 5): nivel 3 → 5/41/54 ·
 
 ## Nota y paga de misión (`CompleteMissionUseCase`, ~línea 431)
 
-`total = 30% tiempo + 35% paquete + 35% decisiones` → **S/A/B/C/F** → **135/90/55/28/10** Denarios (`gradeBaseReward`) **× `mission.payFactor`**, y −10 fatiga. El factor sale de `routePayFactor(minutosNominales, peligro)` (0,7-1,6; historia 1,3), se fija al aceptar y se guarda en la misión. `SkillPerks.gradeSBonus` suma en nota S.
+`total = 30% tiempo + 35% paquete + 35% decisiones` → **S/A/B/C/F** → **110/80/60/45/12** Denarios (`gradeBaseReward`) **× `mission.payFactor`**, y −10 fatiga. El factor sale de `routePayFactor(minutosNominales, peligro)` (0,7-1,5; historia 1,3), se fija al aceptar y se guarda en la misión. `SkillPerks.gradeSBonus` suma en nota S.
 
 ## Progresión de skills
 

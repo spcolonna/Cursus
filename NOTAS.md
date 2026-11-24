@@ -5,9 +5,11 @@ Punto de partida para un chat nuevo. Los números de diseño viven en `docs/GDD_
 ## Balance (2026-11-23)
 
 - Resolución: `OutcomeRoller.roll` (`usecases.dart`) con helpers en `skill_tree.dart`. Azar ±25, umbrales 55/30, sin habilidad +15 ("Sentido común").
-- Economía simulada: ~390 Denarios/día en rango 1 → ~540 con todo en 5 (objetivo 435). Aureos ~1,43/día (2.º anuncio del día = 1 Aureo, máx. 1).
+- Economía (2026-11-24): paga por nota 110/80/60/45/12 × factor de ruta `0,6 + 0,12·log2(h+1) + 0,15·peligro` (0,7-1,5). Día completo con un mensajero: ~403 en rango 1 → ~498 con todo en 5 (~477 restando la tienda; objetivo 435). La tienda de recuperación consume ~20-45/día por el descanso pasivo. Sellos ~1,06-1,29/día (camino a 10 en ~6 semanas). Aureos ~1,43/día (2.º anuncio del día = 1 Aureo, máx. 1).
 - Descanso pasivo (`Messenger.recoverWhileResting`, se aplica al cargar Home): sin misión −5 fatiga y +5 salud por hora; el herido vuelve a salir con 50 de salud (~10 h).
 
 ## Pendientes
+
+- Balance: falta revisar "1 evento cada 8 h" en todas las rutas (solo se corrigieron real_03 y real_15) y el playtest largo. El simulador no vive en el repo: se rearma como test temporal (OutcomeRoller + allRealMissions/allRealEvents, 3 sesiones/día).
 
 - El botón de ruta del herido muestra "Herido: descansa ~X h o cúrate" (`Messenger.injuryRestLeft`). La recuperación de fatiga/salud del libre no tiene aviso propio (solo cambian las barras).
