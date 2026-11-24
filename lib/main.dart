@@ -126,6 +126,7 @@ class _TheMessengerAppState extends ConsumerState<TheMessengerApp> {
         music.resumeFromBackground();
       },
       onPause: () {
+        HomeNotifier.clearAway();
         sessions.pause();
         music.pauseForBackground();
         // Al salir, la partida sube ya (el teléfono puede cerrar la app).

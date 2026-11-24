@@ -110,6 +110,9 @@ class Messenger {
     final since = restingSince;
     // Puntos que faltan para quedar entero: lo que más tarde en recuperarse.
     final missing = max(fatigue, 100 - health);
+    // Entero no hay nada que recuperar: el ancla queda quieta (no se guarda
+    // en cada carga). Salud y fatiga solo empeoran en misión, que la reinicia.
+    if (since != null && missing <= 0 && !now.isBefore(since)) return this;
     if (since == null || missing <= 0 || now.isBefore(since)) {
       return copyWith(restingSince: now);
     }

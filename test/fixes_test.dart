@@ -600,6 +600,8 @@ void main() {
       expect(report, hasLength(1));
       expect(missions.saved!.events.single.status, EventStatus.resolved);
       expect(messengers.messengers.single.health, isIn([100, 95, 80]));
+      // El instinto también mueve la barra (1 de 1 resuelto → 85%).
+      expect(missions.saved!.progressPct, 85);
     });
 
     Future<(Mission, Messenger)> instinto(int dado) async {
@@ -997,6 +999,14 @@ void main() {
       expect(r.restingSince, t0.add(const Duration(hours: 4)));
       expect(r.recoverWhileResting(t0.add(const Duration(hours: 8))).health,
           100);
+    });
+
+    test('entero no reescribe el ancla (no se guarda en cada carga)', () {
+      final m = _messenger().copyWith(
+          status: MessengerStatus.idle, health: 100, fatigue: 0,
+          restingSince: t0);
+      final r = m.recoverWhileResting(t0.add(const Duration(hours: 3)));
+      expect(identical(r, m), isTrue);
     });
 
     test('el herido sigue herido hasta llegar a 50', () {

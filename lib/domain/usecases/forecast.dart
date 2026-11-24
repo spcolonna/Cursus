@@ -40,8 +40,6 @@ class OptionForecast {
 }
 
 // El azar del camino: uniforme en [kLuckMin, kLuckMax] (skill_tree.dart).
-const int _luckMin = kLuckMin;
-const int _luckMax = kLuckMax;
 const int _successThreshold = 55;
 const int _partialThreshold = 30;
 
@@ -68,10 +66,10 @@ double _successChance(int baseScore) =>
 /// Probabilidad (0..1) de que base + azar llegue a [threshold].
 double _chanceAtLeast(int baseScore, int threshold) {
   final needed = threshold - baseScore;
-  if (needed <= _luckMin) return 1.0;
-  if (needed > _luckMax) return 0.0;
-  const total = _luckMax - _luckMin + 1;
-  return (_luckMax - needed + 1) / total;
+  if (needed <= kLuckMin) return 1.0;
+  if (needed > kLuckMax) return 0.0;
+  const total = kLuckMax - kLuckMin + 1;
+  return (kLuckMax - needed + 1) / total;
 }
 
 /// Calcula el pronóstico de [option] para [messenger].

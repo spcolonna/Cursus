@@ -451,12 +451,14 @@ class _RouteCard extends ConsumerWidget {
         messenger.status == MessengerStatus.injured || messenger.health <= 0;
     final canAccept = messenger.status == MessengerStatus.idle && !isInjured;
     final l = AppLocalizations.of(context);
-    final restLeft = messenger.injuryRestLeft(GameClock.now());
-    final busyLabel = !isInjured
-        ? l.slotBusy
-        : restLeft == null || restLeft == Duration.zero
-            ? l.slotInjuredHeal
-            : l.slotInjuredRest((restLeft.inMinutes / 60).ceil());
+    // Se calcula al dibujar: las horas que faltan bajan solas (cada minuto).
+    String busyLabel() {
+      if (!isInjured) return l.slotBusy;
+      final restLeft = messenger.injuryRestLeft(GameClock.now());
+      return restLeft == null || restLeft == Duration.zero
+          ? l.slotInjuredHeal
+          : l.slotInjuredRest((restLeft.inMinutes / 60).ceil());
+    }
 
     return GameCard(
       padding: const EdgeInsets.all(14),
@@ -510,11 +512,17 @@ class _RouteCard extends ConsumerWidget {
         const SizedBox(height: AppSpacing.md),
         SizedBox(
           width: double.infinity,
-          child: GameButton(
-            label: canAccept ? l.slotAcceptMission : busyLabel,
-            fontSize: 15,
-            onTap: canAccept ? () => _accept(context, ref) : null,
-          ),
+          child: canAccept
+              ? GameButton(
+                  label: l.slotAcceptMission,
+                  fontSize: 15,
+                  onTap: () => _accept(context, ref),
+                )
+              : PeriodicBuilder(
+                  period: const Duration(minutes: 1),
+                  builder: (_) => GameButton(
+                      label: busyLabel(), fontSize: 15, onTap: null),
+                ),
         ),
       ]),
     );

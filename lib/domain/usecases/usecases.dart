@@ -337,6 +337,14 @@ class AbandonArcReplayUseCase {
 // Eventos cuya ventana de decisión venció se resuelven solos con la opción más
 // segura, tirando los dados como si el jugador la hubiera elegido. Evita misiones congeladas para siempre si el
 // jugador no abre la app. Escribe en disco: se corre antes de leer el Home.
+/// Avance de la misión según los eventos resueltos (10-90; 90 sin eventos).
+/// Lo usan la respuesta del jugador y el instinto: los dos mueven la barra.
+int eventProgressPct(List<MissionEvent> events) {
+  if (events.isEmpty) return 90;
+  final resolved = events.where((e) => e.status == EventStatus.resolved).length;
+  return ((resolved / events.length) * 85).round().clamp(10, 90);
+}
+
 class AutoResolveExpiredEventsUseCase {
   final MessengerRepository _messenger;
   final MissionRepository _mission;
@@ -415,16 +423,17 @@ class AutoResolveExpiredEventsUseCase {
           outcome.packageState.index > frozen.packageState.index
               ? outcome.packageState
               : frozen.packageState;
+      final events = frozen.events.map((e) {
+        if (e.id == expired.id) {
+          return e.copyWith(status: EventStatus.resolved, outcome: outcome);
+        }
+        return e;
+      }).toList();
       current = frozen
           .copyWith(
             packageState: worstPackage,
-            events: frozen.events.map((e) {
-              if (e.id == expired.id) {
-                return e.copyWith(
-                    status: EventStatus.resolved, outcome: outcome);
-              }
-              return e;
-            }).toList(),
+            events: events,
+            progressPct: eventProgressPct(events),
           )
           .delayedBy(outcome.timeDeltaMinutes);
       changed = true;
@@ -881,6 +890,14 @@ class RestRecovery {
     required this.fatigue,
     this.healed = false,
   });
+
+  /// Suma dos descansos del mismo mensajero (dos recargas seguidas).
+  RestRecovery plus(RestRecovery o) => RestRecovery(
+        messengerName: messengerName,
+        health: health + o.health,
+        fatigue: fatigue + o.fatigue,
+        healed: healed || o.healed,
+      );
 }
 
 /// Puntos (salud + fatiga) desde los que el descanso se avisa: menos es
@@ -1441,10 +1458,7 @@ class ResolveEventUseCase {
 
     // El siguiente evento queda `pending`: aparece recién en su `triggersAt`.
 
-    final resolvedCount = updatedEvents.where((e) => e.status == EventStatus.resolved).length;
-    final newProgress = updatedEvents.isEmpty
-        ? 90
-        : ((resolvedCount / updatedEvents.length) * 85).round().clamp(10, 90);
+    final newProgress = eventProgressPct(updatedEvents);
 
     // El paquete solo empeora: un éxito posterior no repara el daño previo.
     final worstPackage = outcome.packageState.index > mission.packageState.index

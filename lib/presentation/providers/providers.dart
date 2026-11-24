@@ -385,6 +385,18 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
   // Un doble toque en "Aceptar" no dispara dos aceptaciones.
   bool _accepting = false;
 
+  // El aviso "mientras no estabas" sobrevive a las recargas del Home (al
+  // volver se recarga dos veces: hora local y hora del servidor; también al
+  // llegar un evento). Se acumula hasta que la app pasa a segundo plano.
+  static final List<AutoResolvedEvent> _awayEvents = [];
+  static final Map<String, RestRecovery> _awayRested = {};
+
+  /// La app pasó a segundo plano: lo que se vio ya no es "mientras no estabas".
+  static void clearAway() {
+    _awayEvents.clear();
+    _awayRested.clear();
+  }
+
   Future<void> refresh() async {
     // No usar AsyncLoading — evita flashes en UI y re-triggers innecesarios
     state = AsyncData(await _load());
@@ -394,14 +406,6 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
   Future<HomeState> _load() {
     final next = _loading.then((_) => _loadNow());
     _loading = next.then((_) {}, onError: (_) {});
-    // La auto-resolución corrió llegadas y eventos: los avisos viejos
-    // sonarían antes de tiempo. Se reprograma cuando el estado ya está.
-    next.then((home) {
-      if (home.autoResolved.isNotEmpty) {
-        // El notifier pudo haberse reemplazado mientras tanto.
-        Future(syncAllNotifications).catchError((_) {});
-      }
-    }, onError: (_) {});
     return next;
   }
 
@@ -416,9 +420,19 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
       _track(AnalyticsEvent.eventsAutoResolved(autoResolved.length));
     }
     final rested = await ref.read(recoverRestingUseCaseProvider).execute();
-    final home = await ref
-        .read(getHomeStateUseCaseProvider)
-        .execute(autoResolved: autoResolved, rested: rested);
+    _awayEvents.addAll(autoResolved);
+    for (final r in rested) {
+      _awayRested.update(r.messengerName, (o) => o.plus(r), ifAbsent: () => r);
+    }
+    final home = await ref.read(getHomeStateUseCaseProvider).execute(
+        autoResolved: List.of(_awayEvents),
+        rested: _awayRested.values.toList());
+    if (autoResolved.isNotEmpty) {
+      // La auto-resolución corrió llegadas y eventos: los avisos viejos
+      // sonarían antes de tiempo. Se reprograman cuando el estado ya está
+      // (el notifier pudo haberse reemplazado mientras tanto).
+      Future(syncAllNotifications).catchError((_) {});
+    }
     final analytics = ref.read(analyticsProvider);
     analytics.setUserProperty('player_rank', '${home.messenger?.rank ?? 1}');
     analytics.setUserProperty('messengers', '${home.slots.length}');
