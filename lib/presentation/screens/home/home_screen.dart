@@ -56,7 +56,12 @@ class HomeScreen extends ConsumerWidget {
       ),
       data: (state) {
         if (state.messenger == null) {
+          // Recargando (p. ej. recién creado el mensajero) todavía se ve el
+          // valor viejo, sin mensajero: redirigir ahí manda a crear otro.
+          if (homeAsync.isLoading) return const _LoadingHome();
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            final now = ref.read(homeProvider);
+            if (now.isLoading || now.valueOrNull?.messenger != null) return;
             if (context.mounted) context.go('/character');
           });
           return const _LoadingHome();
@@ -138,7 +143,9 @@ class _HomeScaffoldState extends ConsumerState<_HomeScaffold> {
   Future<void> _maybeShowDailyPay() async {
     if (payDialogShownThisSession || !mounted) return;
     // Recién tiene sentido cuando ya pasó el onboarding inicial.
-    if (state.messenger == null) return;
+    // Y después del tutorial: antes de la primera prueba no hay "constancia"
+    // que premiar.
+    if (state.messenger == null || !state.tutorialDone) return;
     final guild = await ref.read(guildProvider.future);
     if (!mounted || !guild.canClaimDailyPay) return;
     payDialogShownThisSession = true;

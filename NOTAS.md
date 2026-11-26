@@ -12,4 +12,9 @@ Punto de partida para un chat nuevo. Los números de diseño viven en `docs/GDD_
 
 - Balance: falta el playtest largo. "1 evento cada 8 h" auditado en las 25 rutas (2026-11-24): todas cumplen, hueco máximo 7,2 h (real_03); lo traba `content_validator_test.dart`. El simulador no vive en el repo: se rearma como test temporal (OutcomeRoller + allRealMissions/allRealEvents, 3 sesiones/día).
 
+- Playtest en simulador (2026-11-26), para decidir junto con la simulación de balance:
+  - Opción "Fácil" (riesgo 1, sin skill) da 47 ± 25: 34% éxito, 50% parcial, 16% fallo, también en el tutorial (en la prueba salieron 2 fallos y 2 parciales en 5 eventos).
+  - Un parcial suma 0 en "Decisiones" de la nota, igual que un fallo, y la pantalla lo rotula "Malas decisiones".
+  - El anuncio de −30 min se ofrece aunque falten menos de 30 min (o en el tutorial).
+
 - El botón de ruta del herido muestra "Herido: descansa ~X h o cúrate" (`Messenger.injuryRestLeft`). La recuperación del libre se avisa en la tarjeta "Pasó mientras no estabas" del Home (`RestRecovery`, desde 10 puntos o al curarse). El aviso se acumula entre recargas del Home (`HomeNotifier._awayEvents/_awayRested`) y se borra al pasar a segundo plano.

@@ -1104,8 +1104,24 @@ class PrimerosPasosNotifier extends AsyncNotifier<PrimerosPasosState> {
   Future<PrimerosPasosState> build() async {
     final progress = ref.read(playerProgressProvider);
     final home = await ref.watch(homeProvider.future);
+    var completed = await progress.getCompletedTasks();
+    // Los avisos también se prenden desde Ajustes (o ya estaban): la tarea
+    // se da por hecha con ver el permiso concedido, no solo desde el diálogo.
+    if (!completed.contains(PlayerProgress.taskEnableNotifs)) {
+      try {
+        final scheduler = ref.read(notificationSchedulerProvider);
+        if (await scheduler.permissionStatus() ==
+                NotificationPermission.granted &&
+            (await scheduler.getPrefs()).enabled) {
+          await progress.completeTask(PlayerProgress.taskEnableNotifs);
+          completed = await progress.getCompletedTasks();
+        }
+      } catch (_) {
+        // Sin plugin de avisos (tests, plataforma sin soporte): queda pendiente.
+      }
+    }
     return PrimerosPasosState(
-      completed: await progress.getCompletedTasks(),
+      completed: completed,
       claimed: await progress.isChecklistClaimed(),
       tutorialDone: home.tutorialDone,
     );

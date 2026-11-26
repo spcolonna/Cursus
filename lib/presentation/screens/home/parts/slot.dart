@@ -589,7 +589,12 @@ class _ConfirmDialog extends StatelessWidget {
 /// (GDD §7). Varus explica por qué conviene decir que sí.
 Future<void> maybeAskForNotifications(
     BuildContext context, WidgetRef ref) async {
+  // Todo lo de `ref` se lee antes del primer await: quien llama es la
+  // tarjeta de la ruta, que desaparece apenas arranca la misión, y un `ref`
+  // de widget desmontado tira error (se perdía la tarea y el sync).
   final scheduler = ref.read(notificationSchedulerProvider);
+  final home = ref.read(homeProvider.notifier);
+  final pasos = ref.read(primerosPasosProvider.notifier);
   if (await scheduler.permissionStatus() !=
       NotificationPermission.notRequested) {
     return;
@@ -607,10 +612,8 @@ Future<void> maybeAskForNotifications(
     return;
   }
   await scheduler.requestPermission();
-  await ref.read(homeProvider.notifier).syncAllNotifications();
-  await ref
-      .read(primerosPasosProvider.notifier)
-      .markTask(PlayerProgress.taskEnableNotifs);
+  await home.syncAllNotifications();
+  await pasos.markTask(PlayerProgress.taskEnableNotifs);
 }
 
 class _VarusNotificationDialog extends StatelessWidget {

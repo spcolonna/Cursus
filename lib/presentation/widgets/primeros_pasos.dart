@@ -72,7 +72,8 @@ class PrimerosPasosCard extends ConsumerWidget {
                       child: Text(
                         labels[id] ?? id,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: ok ? AppColors.inkSoft : AppColors.paperHigh,
+                          // Lo pendiente se lee fuerte; lo hecho, tachado.
+                          color: ok ? AppColors.inkMuted : AppColors.ink,
                           decoration:
                               ok ? TextDecoration.lineThrough : null,
                         ),
