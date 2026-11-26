@@ -10,7 +10,15 @@ Punto de partida para un chat nuevo. Los números de diseño viven en `docs/GDD_
 
 ## Pendientes
 
-- Balance: falta el playtest largo. "1 evento cada 8 h" auditado en las 25 rutas (2026-11-24): todas cumplen, hueco máximo 7,2 h (real_03); lo traba `content_validator_test.dart`. El simulador no vive en el repo: se rearma como test temporal (OutcomeRoller + allRealMissions/allRealEvents, 3 sesiones/día).
+- Balance: "1 evento cada 8 h" auditado en las 25 rutas (2026-11-24): todas cumplen, hueco máximo 7,2 h (real_03); lo traba `content_validator_test.dart`. El simulador no vive en el repo: se rearma como test temporal (OutcomeRoller + allRealMissions/allRealEvents, 3 sesiones/día).
+
+- Simulación de 8 semanas (2026-11-26, 200 jugadores por perfil, 3 sesiones/día en ventanas de 5/8/11 h, sin decidir nada todavía):
+  - **Trampa de entrenamiento:** quien elige siempre la opción con más chance de éxito no sube nunca de nivel (8 semanas en nivel 1, rango 1). En nivel 1 la skill suma 15, lo mismo que "Sentido común", y las opciones con skill ≤1 tienen más riesgo (2,33 de media contra 1,48 de las libres). La opción sin skill no da XP.
+  - Quien prefiere opciones con skill llega a rango 3 en la semana 3 y a rango 4 en la 7. Su mejor camino llega a 9 en la semana 4 y a 10 en la 7 (Sellos 1,1/día; cumple la meta de 5-7 semanas).
+  - **Paga solo de misiones (Den/día):** ~157 en nivel 1, ~250 una vez avanzado. Contratos (~139) más racha (~71), menos tienda (30), dan ~337 al arrancar y ~430 avanzado, contra el objetivo de 435. La cuenta anterior (~403 en rango 1) era optimista.
+  - **Notas en nivel 1:** C 38%, F 12%, S 23%. Los eventos salen 37% éxito, 47% parcial, 16% fallo. La opción fácil sale 38% éxito / 15% fallo; para quien entrena, más adelante sube a ~35% de fallo por la fatiga.
+  - Si un **parcial valiera medio éxito** en "Decisiones": en nivel 1 C pasa de 38% a 22% y F de 12% a 5%, con +27 Den/día. Avanzado: S 39% y ~291 Den/día de misiones (~470 en total, 8% sobre el objetivo; habría que compensar).
+  - El simulador queda fuera del repo (scratchpad de la sesión); se rearma como test temporal.
 
 - Playtest en simulador (2026-11-26), para decidir junto con la simulación de balance:
   - Opción "Fácil" (riesgo 1, sin skill) da 47 ± 25: 34% éxito, 50% parcial, 16% fallo, también en el tutorial (en la prueba salieron 2 fallos y 2 parciales en 5 eventos).
