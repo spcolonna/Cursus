@@ -238,19 +238,58 @@ void main() {
       expect(res.outcome.xpGained, 25);
     });
 
-    test('una opción sin habilidad no otorga XP', () async {
+    test('una opción sin habilidad da XP menor a la habilidad más baja',
+        () async {
       final option = _option(risk: 1);
       final event = _event(option);
+      final m = _messenger();
       final useCase = ResolveEventUseCase(
         _FakeMissionRepo()..saved = _mission(event),
-        _FakeMessengerRepo([_messenger()]),
+        _FakeMessengerRepo([m]),
         _FakeWorldRepo(),
         kContent,
       );
       final res = await useCase.execute(
           mission: _mission(event), event: event, option: option);
-      expect(res.outcome.usedSkill, isNull);
-      expect(res.outcome.xpGained, 0);
+      expect(res.outcome.usedSkill, freeOptionXpSkill(m));
+      expect(res.outcome.xpGained, kFreeOptionXp);
+    });
+
+    test('la XP libre va a la habilidad más baja que todavía sube por XP', () {
+      final m = _messenger();
+      final low = SkillType.values.last;
+      final others = {
+        for (final s in SkillType.values) s: s == low ? 2 : kMaxSkillLevel
+      };
+      expect(freeOptionXpSkill(m.copyWith(skills: others)), low);
+      final maxed = {for (final s in SkillType.values) s: kMaxSkillLevel};
+      expect(freeOptionXpSkill(m.copyWith(skills: maxed)), isNull);
+    });
+  });
+
+  group('Nota: Decisiones', () {
+    MissionEvent resolvedAs(OutcomeType t) =>
+        _event(_option()).copyWith(
+          status: EventStatus.resolved,
+          outcome: EventOutcome(
+            type: t,
+            narrative: '',
+            healthDelta: 0,
+            timeDeltaMinutes: 0,
+            packageState: PackageState.intact,
+          ),
+        );
+
+    test('un parcial vale medio éxito y un fallo, cero', () {
+      expect(
+          decisionScoreFor([
+            resolvedAs(OutcomeType.success),
+            resolvedAs(OutcomeType.partial),
+            resolvedAs(OutcomeType.fail),
+            resolvedAs(OutcomeType.partial),
+          ]),
+          50);
+      expect(decisionScoreFor(const []), 70);
     });
   });
 

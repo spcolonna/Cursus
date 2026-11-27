@@ -645,6 +645,9 @@ class _SkipButtonState extends ConsumerState<_SkipButton> {
   }
 }
 
+/// Minutos de viaje que adelanta el anuncio.
+const int kTravelAdMinutes = 30;
+
 /// Rewarded: −30 min de viaje (cap 4/día). Simulado hasta AdMob real.
 class _TravelAdButton extends ConsumerStatefulWidget {
   final Mission mission;
@@ -668,6 +671,21 @@ class _TravelAdButtonState extends ConsumerState<_TravelAdButton> {
 
   @override
   Widget build(BuildContext context) {
+    // En el tutorial no se ofrece, y tampoco si faltan menos de 30 min:
+    // se gastaría un anuncio en un adelanto que no rinde entero.
+    if (widget.mission.isTutorial) return const SizedBox.shrink();
+    return PeriodicBuilder(
+      period: const Duration(seconds: 30),
+      builder: (context) {
+        final left =
+            widget.mission.deadlineAt.difference(GameClock.now()).inMinutes;
+        if (left < kTravelAdMinutes) return const SizedBox.shrink();
+        return _buildOffer(context);
+      },
+    );
+  }
+
+  Widget _buildOffer(BuildContext context) {
     final cap = ref.watch(remoteFlagsProvider).travelAdsPerDay;
     final remaining = cap - _usedToday;
     if (cap <= 0) return const SizedBox.shrink();
@@ -709,7 +727,7 @@ class _TravelAdButtonState extends ConsumerState<_TravelAdButton> {
           await ref.read(grantAdAureoUseCaseProvider).execute(used);
       await ref.read(homeProvider.notifier).advanceMissionMinutes(
             widget.mission.messengerId,
-            30,
+            kTravelAdMinutes,
           );
       if (mounted) {
         setState(() => _usedToday = used);

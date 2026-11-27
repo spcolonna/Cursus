@@ -10,12 +10,13 @@ import 'dart:math' as math;
 /// Paga base por nota, antes del factor de la ruta (GDD §6.2). La escala es
 /// achatada a propósito: al subir de rango la nota S sale seguido y, con una
 /// escala empinada, el día del jugador avanzado se iba un 30% sobre el
-/// presupuesto y adelantar viajes se volvía gratis.
+/// presupuesto y adelantar viajes se volvía gratis. Bajó de 110/80/60/45 al
+/// contar el parcial como medio éxito (simulación de 8 semanas, 2026-11-27).
 int gradeBaseReward(String grade) => switch (grade) {
-      'S' => 110,
-      'A' => 80,
-      'B' => 60,
-      'C' => 45,
+      'S' => 98,
+      'A' => 72,
+      'B' => 55,
+      'C' => 42,
       _ => 12,
     };
 

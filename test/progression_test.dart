@@ -233,15 +233,16 @@ void main() {
 
   // ─── Presupuesto diario (GDD §6.2) ──────────────────────────────────────────
   group('Presupuesto diario', () {
-    // Jugador activo: 3 sesiones (ruta corta, media y larga) con nota media B,
-    // que es lo que sale en simulación para rango 2 con la fórmula actual.
+    // Jugador activo: 3 sesiones (ruta corta, media y larga) con nota media A,
+    // que es lo que sale en simulación para rango 2-3 con el parcial como
+    // medio éxito (simulación de 8 semanas, 2026-11-27).
     int missionsPerDay() {
       final ids = ['real_01', 'real_08', 'real_02'];
       final factors = ids.map((id) {
         final r = allRealMissions.firstWhere((m) => m.id == id);
         return routePayFactor(r.durationMinutes, r.danger);
       });
-      return (gradeBaseReward('B') * factors.reduce((a, b) => a + b)).round();
+      return (gradeBaseReward('A') * factors.reduce((a, b) => a + b)).round();
     }
 
     test('un día típico da ~435 Denarios (±10%)', () {

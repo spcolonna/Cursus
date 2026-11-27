@@ -1105,6 +1105,25 @@ int plannedRouteMinutes(Mission mission) =>
     mission.deadlineAt.difference(mission.startedAt).inMinutes -
     _eventDelayMinutes(mission);
 
+/// Cuánto vale un parcial en "Decisiones": medio éxito. Contarlo como un
+/// fallo hundía la nota del principiante (casi la mitad de sus eventos son
+/// parciales) aunque el viaje saliera razonable.
+const double kPartialDecisionWeight = 0.5;
+
+/// Puntaje de "Decisiones" (0-100) de los eventos resueltos. Sin eventos, 70.
+double decisionScoreFor(Iterable<MissionEvent> resolved) {
+  if (resolved.isEmpty) return 70;
+  var points = 0.0;
+  for (final e in resolved) {
+    points += switch (e.outcome?.type) {
+      OutcomeType.success => 1.0,
+      OutcomeType.partial => kPartialDecisionWeight,
+      _ => 0.0,
+    };
+  }
+  return points / resolved.length * 100;
+}
+
 double timeScoreFor(Mission mission) {
   final delay = _eventDelayMinutes(mission);
   if (delay <= 0) return 100;
@@ -1144,8 +1163,7 @@ class CompleteMissionUseCase {
       PackageState.lost        => 0.0,
     };
     final resolved = mission.events.where((e) => e.status == EventStatus.resolved);
-    final successCount = resolved.where((e) => e.outcome?.type == OutcomeType.success).length;
-    final decisionScore = resolved.isEmpty ? 70.0 : (successCount / resolved.length * 100);
+    final decisionScore = decisionScoreFor(resolved);
     final total = timeScore * 0.30 + packageScore * 0.35 + decisionScore * 0.35;
     final grade = switch (total) {
       >= 90 => 'S', >= 75 => 'A', >= 60 => 'B', >= 40 => 'C', _ => 'F',
@@ -1419,8 +1437,12 @@ class ResolveEventUseCase {
     final roll = _roller.roll(option, messenger, mission.isTutorial,
         routeMinutes: plannedRouteMinutes(mission));
     final raw = roll.outcome;
-    final usedSkill = option.requiredSkills.keys.firstOrNull;
-    const xpPerEvent = 25;
+    // XP: a la habilidad que pide la opción; sin habilidad, una parte menor
+    // a la más baja ("se aprende en el camino").
+    final optionSkill = option.requiredSkills.keys.firstOrNull;
+    final usedSkill = optionSkill ??
+        (messenger == null ? null : freeOptionXpSkill(messenger));
+    final xpPerEvent = optionSkill != null ? kXpPerEvent : kFreeOptionXp;
     final outcome = EventOutcome(
       type: raw.type,
       narrative: raw.narrative,
@@ -1481,7 +1503,7 @@ class ResolveEventUseCase {
               SkillPerks.fatiguePerEvent(messenger))
           .clamp(0, 100);
       var updated = messenger.copyWith(health: newHealth, fatigue: newFatigue);
-      // XP solo a la skill que se usó (la primera requerida por la opción).
+      // XP a la skill que se usó (o a la más baja si la opción no pide).
       if (usedSkill != null) {
         final r = updated.addSkillXp(usedSkill, xpPerEvent);
         updated = r.messenger;

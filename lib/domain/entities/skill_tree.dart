@@ -64,6 +64,26 @@ int skillScore(int level, int required) {
 /// arriesgada y convenía ignorar el evento.
 const int kNoSkillBonus = 15;
 
+/// XP por evento resuelto con una opción que usa habilidad.
+const int kXpPerEvent = 25;
+
+/// XP de una opción sin habilidad: va a la habilidad más baja. Sin esto,
+/// quien elegía siempre lo más seguro no subía nunca de nivel (en nivel 1 la
+/// habilidad suma lo mismo que "Sentido común" y arriesga más).
+const int kFreeOptionXp = 10;
+
+/// A qué habilidad va la XP de una opción sin habilidad: la de menor nivel
+/// que todavía sube por XP (empate: la primera). Null si ya están todas en 5.
+SkillType? freeOptionXpSkill(Messenger m) {
+  SkillType? best;
+  for (final s in SkillType.values) {
+    final lvl = m.skillLevel(s);
+    if (lvl >= kMaxSkillLevel) continue;
+    if (best == null || lvl < m.skillLevel(best)) best = s;
+  }
+  return best;
+}
+
 /// Penalización por riesgo efectivo: los riesgos 4 y 5 pesan más que lineal,
 /// para que el fallo exista también en el endgame.
 int riskPenalty(int risk) => const [0, 8, 16, 24, 40, 56][risk.clamp(0, 5)];
