@@ -71,20 +71,20 @@ Flutter, arquitectura limpia (`domain/` → `infrastructure/` → `presentation/
 - **Perfil:** skills con barras de XP + historial de últimas 10 misiones con nota.
 - **Día/noche:** el fondo del Home cambia según la hora real del dispositivo, y el cielo de cada escenario de evento también. Detalle ambiental muy alineado con el pilar 2.
 
-### 2.4 Lo que NO existe (y el GDD v1 prometía)
+### 2.4 Lo que el GDD v1 prometía: estado
 
 | Sistema | Estado |
 |---|---|
 | **Notificaciones locales** | ✅ Implementadas (`flutter_local_notifications`): aviso de evento y de entrega, programadas al aceptar la misión y reprogramadas al resolver/adelantar. Permiso con contexto narrativo, silencio 22-08, opt-out por tipo en Ajustes y panel de diagnóstico. FCM sigue pendiente (necesita backend). |
-| **IAP real** | ❌ Los packs de Aureos ($1.99→50, $3.99→120, $7.99→300, $19.99→800+500 Denarios) y bundles ($2.99, $6.99) abren un paywall que dice "Tienda en construcción" y **no acreditan nada** (`shop_screen.dart:851`, TODO). |
+| **IAP real** | ✅ En código (`IapService`): precio localizado de la tienda, estados (acreditada, pendiente, cancelada, fallida) y crédito sin duplicar por transacción (`PurchaseLedger`). Falta cargar los productos en App Store Connect y Play Console. Sin validación de recibos en servidor (necesita Blaze). Ver docs/MONETIZACION.md. |
 | Auto-resolución de eventos | ✅ A los 60 min sin respuesta: opción de menor riesgo con la misma tirada que el jugador (sin XP), narrativa propia y aviso en el Home de lo que pasó mientras no estabas. |
-| Recompensas diarias / misiones diarias / eventos | ❌ |
+| Recompensas diarias / misiones diarias / eventos | ✅ Paga del gremio (login con racha de 7 días), 3 contratos diarios y encargos semanales por facción. ❌ Eventos de temporada (live-ops, Fase 4). |
 | Árbol de habilidades visual con perks nombrados | ✅ 5 caminos × 10 nodos con nombre, efecto numérico y comparación "ahora → próximo nivel" leída de `SkillPerks`. |
-| Ads | ❌ |
+| Ads | ✅ AdMob rewarded con consentimiento UMP, un solo lugar: "Ver anuncio · −30 min" en la misión (tope diario por Remote Config). Usa ids de prueba hasta crear la cuenta de AdMob. |
 | Reputación con efecto jugable | ✅ Escalones por facción que abren rutas, la tarifa +10% y títulos (§4.6). |
 | Épocas 2-6, cartas, gremios sociales, Battle Pass | ❌ (backlog, ver Apéndice) |
-| Auth real | ❌ (login hardcodeado) |
-| Backend | ❌ (todo SharedPreferences) |
+| Auth real | ✅ Cuenta anónima de Firebase; Google/Apple en código, apagados hasta configurar la consola (docs/CUENTAS.md). |
+| Backend | Parcial: Firebase Spark (Analytics, Crashlytics, Remote Config, Firestore). La partida vive en SharedPreferences; el guardado en la nube está apagado (`kCloudSaveReady = false`). Sin Cloud Functions. |
 
 ### 2.5 Deuda y basura conocida
 
@@ -262,7 +262,7 @@ Simulación de 8 semanas (2026-11-27, 200 jugadores por perfil, 3 sesiones/día 
 
 **Sellos con el encargo semanal.** El Sello de "primera S de la semana" estaba en §6.1 pero no en este presupuesto: suma ~0,14/día. Con eso, nivel 10 de un camino (50 Sellos) baja de ~6 a ~5,5 semanas, todavía dentro de la meta de 5-7. La tarifa de facción (+10% en las rutas de un patrón) solo llega tras semanas de reputación y no cambia el día típico.
 
-Sinks de referencia: curación completa 120, descanso 80, manual nivel 3 = 500 (≈ 2 días de ahorro), adelantar una misión de 2h ≈ 120. El Denario debe sentirse abundante para operar y justo para acelerar. Revisar estos números tras el primer playtest largo.
+Sinks de referencia: curación completa 120, descanso 80, manual nivel 3 = 500 (≈ 2 días de ahorro), adelantar una misión de 2 h entera ≈ 240 (2 Denarios/min). Adelantar nunca da ganancia: la ruta de 30 min (real_04) cuesta ~60 adelantarla entera y paga 69 con S (75 con la tarifa del gremio), 50 con A y 39 con B; en promedio queda en cero. Desde 45 min, adelantar una ruta entera siempre cuesta más que su paga (auditado 2026-11-27). El Denario debe sentirse abundante para operar y justo para acelerar. Revisar estos números tras el primer playtest largo.
 
 ### 6.3 IAP (a activar con `in_app_purchase`)
 
