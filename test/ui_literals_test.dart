@@ -66,4 +66,29 @@ void main() {
         reason: 'Pasá estos textos a lib/l10n/app_es.arb + app_en.arb:\n'
             '${offenders.join('\n')}');
   });
+
+  // Interfaz: sin emojis (skill interfaz, regla 2). Los íconos son Material.
+  test('ni la UI ni los textos tienen emojis', () {
+    final emoji = RegExp(r'[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}]',
+        unicode: true);
+    final files = [
+      ...Directory('lib').listSync(recursive: true).whereType<File>().where(
+          (f) => f.path.endsWith('.dart') || f.path.endsWith('.arb')),
+      ...Directory('assets/l10n')
+          .listSync()
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.json')),
+    ];
+    final offenders = <String>[];
+    for (final f in files) {
+      final lines = f.readAsLinesSync();
+      for (var i = 0; i < lines.length; i++) {
+        final m = emoji.firstMatch(lines[i]);
+        if (m != null) offenders.add('${f.path}:${i + 1}  ${m[0]}');
+      }
+    }
+    expect(offenders, isEmpty,
+        reason: 'Cambiá estos emojis por un ícono Material:\n'
+            '${offenders.join('\n')}');
+  });
 }
