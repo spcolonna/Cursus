@@ -14,7 +14,7 @@ Complementa al [GDD_MASTER_v2.md](GDD_MASTER_v2.md). Fases ordenadas por depende
 | 0.2 | Borrar `lib/presentation/widgets/Untitled-4.json` | 71 KB de datos de otro proyecto (ClashOfWarriors), sin uso. |
 | 0.3 | **Fix de legibilidad** | `app_theme.dart`: `textMuted #665544` → tono legible sobre navy (≥4.5:1, ej. `#9A8F7A` o más claro). Quitar `opacity 0.5` de los hints (usar `textSecondary`). Revisar botones "Cancelar" de diálogos. |
 | 0.4 | ~~Comprimir fondos~~ ✅ | Los PNG de 8-9 MB ya no existen: el cielo y los escenarios se dibujan por código y las ilustraciones son JPG calidad 82 (`tool/process_art.py`), de 300-430 KB cada uno. `assets/art` pesa 15 MB en total (auditado 2026-11-27). |
-| 0.5 | Unificar iconografía | Reemplazar emojis sueltos (splash 📜, perfil 🏃, outcomes ✅⚡❌) por íconos Material. |
+| 0.5 | ~~Unificar iconografía~~ ✅ | Ya no quedan emojis en `lib/presentation` ni en los ARB: todo son íconos Material (auditado 2026-11-27). |
 | 0.6 | Publicar GDD | Este par de documentos + nota en README. ✔ hecho en esta pasada. |
 
 ## Fase 1 — El hook: que el juego te busque (≈2-3 semanas)

@@ -90,7 +90,7 @@ Flutter, arquitectura limpia (`domain/` → `infrastructure/` → `presentation/
 
 - ~~`lib/presentation/widgets/[Interface]` (clave WireGuard) y `Untitled-4.json`~~ — ya no están en el repo. Si la clave privada estuvo versionada, rotarla igual en el servidor: borrar el archivo no la desactiva.
 - ~~Fondos PNG de 8-9 MB c/u sin optimizar~~ — resuelto: ilustraciones en JPG de 300-430 KB.
-- Emojis sueltos en splash y en los encabezados de sección del perfil (el 🏃 del avatar ya no está: lo reemplazó `MessengerAvatar`).
+- ~~Emojis sueltos en splash y perfil~~ — resuelto: la UI usa solo íconos Material.
 
 ---
 
@@ -327,7 +327,7 @@ Todo se ve completo sin ilustraciones: lo que no está dibujado a mano se pinta 
 2. **Fix concreto:** en `lib/presentation/theme/app_theme.dart`, `textMuted = #665544` (marrón oscuro) falla sobre los fondos navy (`bgDark #0F1E36`, `bgCard #142040`, `bgCard2 #0D1830`). Reemplazar por un tono legible que mantenga la paleta cálida, p. ej. **`#9A8F7A`** (o más claro; validar contraste). Afecta `bodySmall`, labels de stats, "Nv.X" de skills y botones "Cancelar".
 3. **Hints de inputs:** hoy usan `textMuted` con opacity 0.5 — doble penalización. Los hints usan `textSecondary` sin opacity.
 4. `textSecondary #AA9966` queda al límite: usarlo solo en tamaños ≥ 14 y nunca sobre imágenes sin scrim (gradiente negro 60%).
-5. **Iconografía:** un solo criterio. Los avatares custom marcan el estándar → reemplazar los emojis sueltos (📜 splash, 🏃 perfil, ✅⚡❌ outcomes) por íconos del set Material ya usado en la tienda.
+5. **Iconografía:** ✅ un solo criterio, íconos del set Material ya usado en la tienda; no quedan emojis en la UI.
 6. **Performance percibida:** ✅ fondos por debajo de 500 KB c/u (JPG calidad 82 desde `tool/process_art.py`; los PNG de 8-9 MB ya no están).
 
 ---
