@@ -440,6 +440,19 @@ void main() {
       expect(res.any((r) => r.outcome.type == OutcomeType.success), isTrue);
     });
 
+    test('la opción de riesgo 1 nunca falla, ni agotado', () async {
+      final agotado = _messenger().copyWith(fatigue: 90);
+      final res = await tirar(agotado, _option(risk: 1), 400);
+      expect(res.any((r) => r.outcome.type == OutcomeType.fail), isFalse);
+      expect(res.any((r) => r.outcome.type == OutcomeType.partial), isTrue);
+      for (final r in res) {
+        expect(r.scoreFactors.fold<int>(0, (a, f) => a + f.value), r.score);
+      }
+      // Riesgo 2 sigue pudiendo fallar.
+      final r2 = await tirar(agotado, _option(risk: 2), 400);
+      expect(r2.any((r) => r.outcome.type == OutcomeType.fail), isTrue);
+    });
+
     test('el pronóstico del maxeado en riesgo 5 ya no es certeza', () {
       expect(mishapPercent(5), greaterThan(0));
       expect(mishapPercent(4), greaterThan(0));
@@ -604,12 +617,16 @@ void main() {
       expect(missions.saved!.progressPct, 85);
     });
 
+    // Riesgo 2: el riesgo 1 ya no puede fallar (kSafeRiskMax).
     Future<(Mission, Messenger)> instinto(int dado) async {
       final now = DateTime.now();
       final mission = _mission(
         startedAt: now.subtract(const Duration(hours: 4)),
         deadlineAt: now.add(const Duration(hours: 1)),
-        events: [_event('e1', now.subtract(const Duration(hours: 3)))],
+        events: [
+          _event('e1', now.subtract(const Duration(hours: 3)),
+              option: _option(risk: 2))
+        ],
       );
       final missions = _MissionRepo(mission);
       final messengers = _MessengerRepo([_messenger()]);

@@ -56,6 +56,15 @@ int mishapPercent(int nominalRisk) => switch (nominalRisk) {
       _ => 0,
     };
 
+/// Riesgo nominal hasta el cual una opción no puede fallar: lo peor que sale
+/// es un parcial. Lo que se presenta como "fácil" tiene que serlo, también
+/// cansado y en el tutorial. Usa el riesgo NOMINAL: los perks de Sigilo no
+/// vuelven segura una opción peligrosa.
+const int kSafeRiskMax = 1;
+
+/// Si [nominalRisk] garantiza al menos un parcial.
+bool optionCannotFail(int nominalRisk) => nominalRisk <= kSafeRiskMax;
+
 /// % de "Golpe de suerte" (éxito seguro), igual para toda opción.
 const int kLuckyBreakPercent = 5;
 
@@ -126,7 +135,10 @@ OptionForecast forecastFor(EventOption option, Messenger? messenger) {
   // una opción prudente sin habilidad (casi siempre parcial) se pintaba
   // como "tirarse al vacío".
   final success = _successChance(score);
-  final partial = _chanceAtLeast(score, _partialThreshold) - success;
+  final partial = (optionCannotFail(option.riskLevel)
+          ? 1.0
+          : _chanceAtLeast(score, _partialThreshold)) -
+      success;
   final chance = lucky + (1 - mishap - lucky) * (success + partial * 0.5);
   final band = switch (chance) {
     >= 0.85 => ForecastBand.assured,

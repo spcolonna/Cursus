@@ -87,6 +87,7 @@ const Map<String, String> kDomainStrings = {
   'ui.factor.road': 'El camino',
   'ui.factor.mishap': 'Imprevisto',
   'ui.factor.lucky': 'Golpe de suerte',
+  'ui.factor.safe': 'Camino seguro',
   'ui.risk.minimal': 'mínimo',
   'ui.risk.low': 'bajo',
   'ui.risk.medium': 'medio',

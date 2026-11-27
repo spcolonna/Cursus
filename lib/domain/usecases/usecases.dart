@@ -1633,6 +1633,13 @@ class OutcomeRoller {
         : score >= 30 ? OutcomeType.partial
         : OutcomeType.fail;
 
+    // Opción segura: el camino puede salir regular, nunca mal.
+    if (type == OutcomeType.fail && optionCannotFail(option.riskLevel)) {
+      factors.add(ScoreFactor(label: ds('ui.factor.safe'), value: 30 - score));
+      score = 30;
+      type = OutcomeType.partial;
+    }
+
     // Tiradas críticas (ver forecast.dart). El ajuste entra al desglose para
     // que la suma de factores siga cerrando con el score.
     final crit = _rng.nextInt(100);

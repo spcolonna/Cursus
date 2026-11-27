@@ -2276,6 +2276,7 @@
  "ui.factor.craft": "Messenger's craft",
  "ui.factor.fatigue": "Fatigue {value}",
  "ui.factor.lucky": "Stroke of luck",
+ "ui.factor.safe": "Safe path",
  "ui.factor.mishap": "Mishap",
  "ui.factor.perks": "{skill} perks",
  "ui.factor.perks_generic": "Perks of your path",
