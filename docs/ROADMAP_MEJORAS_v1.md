@@ -13,7 +13,7 @@ Complementa al [GDD_MASTER_v2.md](GDD_MASTER_v2.md). Fases ordenadas por depende
 | 0.1 | **Borrar clave VPN del repo** | Eliminar `lib/presentation/widgets/[Interface]` (config WireGuard con PrivateKey real). **Rotar esa clave en el servidor VPN** — considerarla comprometida. Si el proyecto pasa a git, verificar que no quede en el historial. |
 | 0.2 | Borrar `lib/presentation/widgets/Untitled-4.json` | 71 KB de datos de otro proyecto (ClashOfWarriors), sin uso. |
 | 0.3 | **Fix de legibilidad** | `app_theme.dart`: `textMuted #665544` → tono legible sobre navy (≥4.5:1, ej. `#9A8F7A` o más claro). Quitar `opacity 0.5` de los hints (usar `textSecondary`). Revisar botones "Cancelar" de diálogos. |
-| 0.4 | Comprimir fondos | PNG de 8-9 MB → WebP < 500 KB c/u (`bg_home_day/night`, evento, login). |
+| 0.4 | ~~Comprimir fondos~~ ✅ | Los PNG de 8-9 MB ya no existen: el cielo y los escenarios se dibujan por código y las ilustraciones son JPG calidad 82 (`tool/process_art.py`), de 300-430 KB cada uno. `assets/art` pesa 15 MB en total (auditado 2026-11-27). |
 | 0.5 | Unificar iconografía | Reemplazar emojis sueltos (splash 📜, perfil 🏃, outcomes ✅⚡❌) por íconos Material. |
 | 0.6 | Publicar GDD | Este par de documentos + nota en README. ✔ hecho en esta pasada. |
 
@@ -75,6 +75,6 @@ Complementa al [GDD_MASTER_v2.md](GDD_MASTER_v2.md). Fases ordenadas por depende
 ## Pendiente inmediato (2026-07-27)
 
 1. **Validar las notificaciones en el iPhone físico.** El código y la configuración nativa están; falta la prueba de campo: aceptar una misión corta, cerrar la app por completo y confirmar que llega el aviso. La pantalla de Ajustes tiene un panel de diagnóstico (permiso, cola de avisos con su hora, disparo de prueba a 10 segundos) hecho justamente para eso.
-2. Comprimir los fondos PNG de 8-9 MB (tarea 0.4) — la única de la Fase 0 que sigue abierta.
+2. ~~Comprimir los fondos PNG de 8-9 MB (tarea 0.4)~~ — hecho: ya no hay PNG pesados (ver 0.4).
 
 > Las tareas 0.1 y 0.2 (clave de WireGuard y `Untitled-4.json`) ya no aplican: los archivos no están en el repo. **Si esa clave privada llegó a estar versionada alguna vez, sigue habiendo que rotarla en el servidor VPN** — borrar el archivo no la desactiva.

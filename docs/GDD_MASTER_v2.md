@@ -89,7 +89,7 @@ Flutter, arquitectura limpia (`domain/` → `infrastructure/` → `presentation/
 ### 2.5 Deuda y basura conocida
 
 - ~~`lib/presentation/widgets/[Interface]` (clave WireGuard) y `Untitled-4.json`~~ — ya no están en el repo. Si la clave privada estuvo versionada, rotarla igual en el servidor: borrar el archivo no la desactiva.
-- Fondos PNG de 8-9 MB c/u sin optimizar.
+- ~~Fondos PNG de 8-9 MB c/u sin optimizar~~ — resuelto: ilustraciones en JPG de 300-430 KB.
 - Emojis sueltos en splash y en los encabezados de sección del perfil (el 🏃 del avatar ya no está: lo reemplazó `MessengerAvatar`).
 
 ---
@@ -328,7 +328,7 @@ Todo se ve completo sin ilustraciones: lo que no está dibujado a mano se pinta 
 3. **Hints de inputs:** hoy usan `textMuted` con opacity 0.5 — doble penalización. Los hints usan `textSecondary` sin opacity.
 4. `textSecondary #AA9966` queda al límite: usarlo solo en tamaños ≥ 14 y nunca sobre imágenes sin scrim (gradiente negro 60%).
 5. **Iconografía:** un solo criterio. Los avatares custom marcan el estándar → reemplazar los emojis sueltos (📜 splash, 🏃 perfil, ✅⚡❌ outcomes) por íconos del set Material ya usado en la tienda.
-6. **Performance percibida:** comprimir los fondos PNG de 8-9 MB (objetivo < 500 KB c/u, WebP).
+6. **Performance percibida:** ✅ fondos por debajo de 500 KB c/u (JPG calidad 82 desde `tool/process_art.py`; los PNG de 8-9 MB ya no están).
 
 ---
 
